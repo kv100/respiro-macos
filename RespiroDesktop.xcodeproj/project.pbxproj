@@ -28,6 +28,7 @@
 		EDA8F7E436AF8ECC0A4755CB /* BreathingPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC1F2650C26A54BCF77961F /* BreathingPracticeView.swift */; };
 		APP_019 /* APIKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_021 /* APIKeyManager.swift */; };
 		APP_020 /* MonitoringService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_022 /* MonitoringService.swift */; };
+		APP_021 /* NudgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_023 /* NudgeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +56,7 @@
 		FILE_020 /* DismissalType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DismissalType.swift; sourceTree = "<group>"; };
 		FILE_021 /* APIKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyManager.swift; sourceTree = "<group>"; };
 		FILE_022 /* MonitoringService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringService.swift; sourceTree = "<group>"; };
+		FILE_023 /* NudgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NudgeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +111,7 @@
 		GROUP_NUDGE /* Nudge */ = {
 			isa = PBXGroup;
 			children = (
+				FILE_023 /* NudgeView.swift */,
 			);
 			path = Nudge;
 			sourceTree = "<group>";
@@ -283,6 +286,7 @@
 				EDA8F7E436AF8ECC0A4755CB /* BreathingPracticeView.swift in Sources */,
 				APP_019 /* APIKeyManager.swift in Sources */,
 				APP_020 /* MonitoringService.swift in Sources */,
+				APP_021 /* NudgeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

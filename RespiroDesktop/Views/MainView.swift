@@ -9,8 +9,7 @@ struct MainView: View {
             case .dashboard:
                 DashboardView()
             case .nudge:
-                Text("Nudge View (P0.7)")
-                    .foregroundStyle(.white)
+                NudgeView()
             case .practice:
                 BreathingPracticeView()
             case .weatherBefore:
