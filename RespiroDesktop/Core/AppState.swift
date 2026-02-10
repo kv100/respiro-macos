@@ -19,12 +19,16 @@ final class AppState {
     var isMonitoring: Bool = false
     var lastAnalysis: StressAnalysisResponse?
     var pendingNudge: NudgeDecision?
+    var selectedWeatherBefore: InnerWeather?
+    var selectedWeatherAfter: InnerWeather?
     @ObservationIgnored @AppStorage("isOnboardingComplete") var isOnboardingComplete: Bool = false
 
     // MARK: - Services
 
     private var monitoringService: MonitoringService?
     private var nudgeEngine: NudgeEngine?
+    private var dismissalLogger: DismissalLogger?
+    private var smartSuppression: SmartSuppression?
 
     func configureMonitoring(service: MonitoringService) {
         self.monitoringService = service
@@ -32,6 +36,14 @@ final class AppState {
 
     func configureNudgeEngine(_ engine: NudgeEngine) {
         self.nudgeEngine = engine
+    }
+
+    func configureDismissalLogger(_ logger: DismissalLogger) {
+        self.dismissalLogger = logger
+    }
+
+    func configureSmartSuppression(_ suppression: SmartSuppression) {
+        self.smartSuppression = suppression
     }
 
     func startMonitoring() async {
@@ -62,6 +74,16 @@ final class AppState {
         // Evaluate nudge decision asynchronously
         Task { @MainActor [weak self] in
             guard let self, let engine = self.nudgeEngine else { return }
+
+            // Check smart suppression first
+            if let suppression = self.smartSuppression {
+                let suppressionResult = suppression.shouldSuppress()
+                if let denied = engine.evaluateSuppression(suppressionResult) {
+                    self.pendingNudge = denied
+                    return
+                }
+            }
+
             let decision = await engine.shouldNudge(for: analysis)
             self.pendingNudge = decision
             if decision.shouldShow, let nudgeType = decision.nudgeType {
@@ -76,9 +98,24 @@ final class AppState {
         await nudgeEngine?.recordPracticeCompleted()
     }
 
-    func notifyDismissal() async {
+    func notifyDismissal(type: DismissalType = .imFine) async {
         await monitoringService?.onDismissal()
         await nudgeEngine?.recordDismissal()
+
+        // Log to SwiftData and update learned patterns for AI
+        if let logger = dismissalLogger, let analysis = lastAnalysis {
+            logger.logDismissal(
+                stressEntryID: UUID(), // Will be linked to actual entry when available
+                aiDetectedWeather: analysis.weather,
+                dismissalType: type,
+                suggestedPracticeID: analysis.suggestedPracticeID,
+                contextSignals: analysis.signals
+            )
+
+            // Rebuild learned patterns and feed to monitoring service
+            let patterns = logger.buildLearnedPatterns()
+            await monitoringService?.updateLearnedPatterns(patterns)
+        }
     }
 
     // MARK: - Navigation

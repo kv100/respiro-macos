@@ -22,6 +22,10 @@ actor MonitoringService {
 
     var onWeatherUpdate: (@Sendable (InnerWeather, StressAnalysisResponse) -> Void)?
 
+    // MARK: - Learned Patterns (from DismissalLogger)
+
+    private var learnedPatterns: String?
+
     // MARK: - Constants
 
     private enum Interval {
@@ -92,6 +96,10 @@ actor MonitoringService {
 
     func setWeatherCallback(_ callback: @escaping @Sendable (InnerWeather, StressAnalysisResponse) -> Void) {
         onWeatherUpdate = callback
+    }
+
+    func updateLearnedPatterns(_ patterns: String?) {
+        learnedPatterns = patterns
     }
 
     // MARK: - Read-only accessors
@@ -179,7 +187,7 @@ actor MonitoringService {
             lastNudgeType: nil,
             dismissalCount2h: dismissalCount,
             preferredPractices: ["physiological-sigh", "box-breathing"],
-            learnedPatterns: nil
+            learnedPatterns: learnedPatterns
         )
     }
 }

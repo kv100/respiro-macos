@@ -29,6 +29,17 @@
 		APP_019 /* APIKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_021 /* APIKeyManager.swift */; };
 		APP_020 /* MonitoringService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_022 /* MonitoringService.swift */; };
 		APP_021 /* NudgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_023 /* NudgeView.swift */; };
+		APP_030 /* WeatherPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_030 /* WeatherPickerView.swift */; };
+		APP_031 /* CompletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_031 /* CompletionView.swift */; };
+		APP_032 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_032 /* OnboardingView.swift */; };
+		APP_040 /* DismissalLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_040 /* DismissalLogger.swift */; };
+		APP_041 /* SmartSuppression.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_041 /* SmartSuppression.swift */; };
+		APP_050 /* BoxBreathingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_050 /* BoxBreathingView.swift */; };
+		APP_051 /* GroundingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_051 /* GroundingView.swift */; };
+		APP_052 /* STOPTechniqueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_052 /* STOPTechniqueView.swift */; };
+		APP_053 /* SelfCompassionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_053 /* SelfCompassionView.swift */; };
+		APP_054 /* PracticeRouterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_054 /* PracticeRouterView.swift */; };
+		APP_055 /* PracticeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_055 /* PracticeCatalog.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +68,17 @@
 		FILE_021 /* APIKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyManager.swift; sourceTree = "<group>"; };
 		FILE_022 /* MonitoringService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringService.swift; sourceTree = "<group>"; };
 		FILE_023 /* NudgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NudgeView.swift; sourceTree = "<group>"; };
+		FILE_030 /* WeatherPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherPickerView.swift; sourceTree = "<group>"; };
+		FILE_031 /* CompletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionView.swift; sourceTree = "<group>"; };
+		FILE_032 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		FILE_040 /* DismissalLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DismissalLogger.swift; sourceTree = "<group>"; };
+		FILE_041 /* SmartSuppression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartSuppression.swift; sourceTree = "<group>"; };
+		FILE_050 /* BoxBreathingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxBreathingView.swift; sourceTree = "<group>"; };
+		FILE_051 /* GroundingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroundingView.swift; sourceTree = "<group>"; };
+		FILE_052 /* STOPTechniqueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STOPTechniqueView.swift; sourceTree = "<group>"; };
+		FILE_053 /* SelfCompassionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfCompassionView.swift; sourceTree = "<group>"; };
+		FILE_054 /* PracticeRouterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeRouterView.swift; sourceTree = "<group>"; };
+		FILE_055 /* PracticeCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeCatalog.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +102,8 @@
 				FILE_007 /* NudgeEngine.swift */,
 				FILE_008 /* PracticeManager.swift */,
 				FILE_022 /* MonitoringService.swift */,
+				FILE_040 /* DismissalLogger.swift */,
+				FILE_041 /* SmartSuppression.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -119,6 +143,7 @@
 		GROUP_ONBOARDING /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
+				FILE_032 /* OnboardingView.swift */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -127,6 +152,13 @@
 			isa = PBXGroup;
 			children = (
 				BBC1F2650C26A54BCF77961F /* BreathingPracticeView.swift */,
+				FILE_050 /* BoxBreathingView.swift */,
+				FILE_051 /* GroundingView.swift */,
+				FILE_052 /* STOPTechniqueView.swift */,
+				FILE_053 /* SelfCompassionView.swift */,
+				FILE_054 /* PracticeRouterView.swift */,
+				FILE_030 /* WeatherPickerView.swift */,
+				FILE_031 /* CompletionView.swift */,
 			);
 			path = Practice;
 			sourceTree = "<group>";
@@ -134,6 +166,7 @@
 		GROUP_PRACTICES /* Practices */ = {
 			isa = PBXGroup;
 			children = (
+				FILE_055 /* PracticeCatalog.swift */,
 			);
 			path = Practices;
 			sourceTree = "<group>";
@@ -287,6 +320,17 @@
 				APP_019 /* APIKeyManager.swift in Sources */,
 				APP_020 /* MonitoringService.swift in Sources */,
 				APP_021 /* NudgeView.swift in Sources */,
+				APP_030 /* WeatherPickerView.swift in Sources */,
+				APP_031 /* CompletionView.swift in Sources */,
+				APP_032 /* OnboardingView.swift in Sources */,
+				APP_040 /* DismissalLogger.swift in Sources */,
+				APP_041 /* SmartSuppression.swift in Sources */,
+				APP_050 /* BoxBreathingView.swift in Sources */,
+				APP_051 /* GroundingView.swift in Sources */,
+				APP_052 /* STOPTechniqueView.swift in Sources */,
+				APP_053 /* SelfCompassionView.swift in Sources */,
+				APP_054 /* PracticeRouterView.swift in Sources */,
+				APP_055 /* PracticeCatalog.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

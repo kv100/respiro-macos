@@ -58,5 +58,19 @@ struct RespiroDesktopApp: App {
 
         appState.configureMonitoring(service: service)
         appState.configureNudgeEngine(nudgeEngine)
+
+        // Wire DismissalLogger for "I'm Fine" learning
+        let modelContext = sharedModelContainer.mainContext
+        let dismissalLogger = DismissalLogger(modelContext: modelContext)
+        appState.configureDismissalLogger(dismissalLogger)
+
+        // Load initial learned patterns into monitoring service
+        if let patterns = dismissalLogger.buildLearnedPatterns() {
+            await service.updateLearnedPatterns(patterns)
+        }
+
+        // Wire SmartSuppression for intelligent nudge gating
+        let smartSuppression = SmartSuppression()
+        appState.configureSmartSuppression(smartSuppression)
     }
 }

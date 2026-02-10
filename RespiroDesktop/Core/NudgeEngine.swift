@@ -38,6 +38,28 @@ actor NudgeEngine {
     private var dailyPracticeNudgeCount: Int = 0
     private var dailyResetDate: Date = Calendar.current.startOfDay(for: Date())
 
+    // MARK: - Smart Suppression
+
+    private var pendingDelay: (until: Date, reason: String)?
+
+    /// Check suppression result from SmartSuppression (called from @MainActor before shouldNudge)
+    nonisolated func evaluateSuppression(_ result: SuppressionResult) -> NudgeDecision? {
+        switch result {
+        case .allowed:
+            return nil
+        case .neverNow(let reason):
+            return NudgeDecision(
+                shouldShow: false, nudgeType: nil, message: nil,
+                suggestedPracticeID: nil, reason: "suppressed_\(reason)"
+            )
+        case .delayFor(_, let reason):
+            return NudgeDecision(
+                shouldShow: false, nudgeType: nil, message: nil,
+                suggestedPracticeID: nil, reason: "delayed_\(reason)"
+            )
+        }
+    }
+
     // MARK: - Main Decision Logic
 
     func shouldNudge(for analysis: StressAnalysisResponse) -> NudgeDecision {
