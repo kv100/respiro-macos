@@ -1,9 +1,8 @@
 import SwiftUI
 
-struct BreathingPracticeView: View {
+struct CoherentBreathingView: View {
     @Environment(AppState.self) private var appState
     @State private var practiceManager = PracticeManager()
-    @State private var glowRadius: CGFloat = 10
 
     var body: some View {
         ZStack {
@@ -11,30 +10,24 @@ struct BreathingPracticeView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Header
                 practiceHeader
                     .padding(.top, 16)
 
                 Spacer()
 
-                // Breathing circle
                 breathingCircle
 
-                // Phase label
                 phaseLabel
                     .padding(.top, 20)
 
                 Spacer()
 
-                // Progress dots
                 progressDots
                     .padding(.bottom, 16)
 
-                // Timer
                 timerLabel
                     .padding(.bottom, 12)
 
-                // Controls
                 controlButtons
                     .padding(.bottom, 20)
             }
@@ -42,7 +35,7 @@ struct BreathingPracticeView: View {
         }
         .frame(width: 360, height: 480)
         .onAppear {
-            practiceManager.startPractice()
+            practiceManager.startPractice(type: .coherentBreathing)
         }
         .onDisappear {
             practiceManager.stopPractice()
@@ -69,13 +62,12 @@ struct BreathingPracticeView: View {
 
             Spacer()
 
-            Text("Physiological Sigh")
+            Text("Coherent Breathing")
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
 
             Spacer()
 
-            // Balance the back button width
             Color.clear.frame(width: 50)
         }
     }
@@ -84,7 +76,6 @@ struct BreathingPracticeView: View {
 
     private var breathingCircle: some View {
         ZStack {
-            // Outer glow
             Circle()
                 .fill(
                     RadialGradient(
@@ -99,7 +90,6 @@ struct BreathingPracticeView: View {
                 )
                 .frame(width: 240, height: 240)
 
-            // Main breathing circle
             Circle()
                 .fill(
                     RadialGradient(
@@ -113,14 +103,10 @@ struct BreathingPracticeView: View {
                     )
                 )
                 .frame(width: 160, height: 160)
-                .shadow(color: Color(hex: "#10B981").opacity(glowOpacityForPhase), radius: glowRadius)
                 .scaleEffect(scaleForPhase)
                 .opacity(opacityForPhase)
                 .animation(animationForPhase, value: practiceManager.currentPhase)
                 .animation(animationForPhase, value: practiceManager.phaseDuration)
-        }
-        .onChange(of: practiceManager.currentPhase) { _, newPhase in
-            animateGlow(for: newPhase)
         }
     }
 
@@ -140,38 +126,12 @@ struct BreathingPracticeView: View {
         }
     }
 
-    private var glowOpacityForPhase: Double {
-        switch practiceManager.currentPhase {
-        case .inhale: return 0.5
-        case .hold: return 0.35
-        case .exhale: return 0.15
-        case .idle: return 0.1
-        }
-    }
-
     private var animationForPhase: Animation {
-        .easeInOut(duration: practiceManager.currentPhase == .idle ? 0.3 : practiceManager.phaseDuration)
-    }
-
-    private func animateGlow(for phase: BreathPhase) {
-        let duration = practiceManager.phaseDuration
-        switch phase {
-        case .inhale:
-            withAnimation(.easeInOut(duration: duration)) {
-                glowRadius = 25
-            }
-        case .hold:
-            withAnimation(.easeInOut(duration: duration)) {
-                glowRadius = 20
-            }
-        case .exhale:
-            withAnimation(.easeInOut(duration: duration)) {
-                glowRadius = 8
-            }
-        case .idle:
-            withAnimation(.easeInOut(duration: 0.3)) {
-                glowRadius = 10
-            }
+        switch practiceManager.currentPhase {
+        case .idle: return .easeInOut(duration: 0.3)
+        case .inhale: return .easeInOut(duration: practiceManager.phaseDuration)
+        case .hold: return .easeInOut(duration: practiceManager.phaseDuration)
+        case .exhale: return .easeInOut(duration: practiceManager.phaseDuration)
         }
     }
 
@@ -236,7 +196,6 @@ struct BreathingPracticeView: View {
                 .buttonStyle(.plain)
                 .keyboardShortcut(.space, modifiers: [])
             } else {
-                // Practice completed
                 Button(action: {
                     appState.showDashboard()
                 }) {
@@ -255,6 +214,6 @@ struct BreathingPracticeView: View {
 }
 
 #Preview {
-    BreathingPracticeView()
+    CoherentBreathingView()
         .environment(AppState())
 }

@@ -15,6 +15,9 @@ enum PracticeType: String, Sendable {
     case grounding = "grounding-54321"
     case stopTechnique = "stop-technique"
     case selfCompassion = "self-compassion"
+    case extendedExhale = "extended-exhale"
+    case thoughtDefusion = "thought-defusion"
+    case coherentBreathing = "coherent-breathing"
 }
 
 // MARK: - Grounding
@@ -119,6 +122,46 @@ enum CompassionPhase: String, Sendable {
     var duration: Double { 30 }
 }
 
+// MARK: - Thought Defusion
+
+enum DefusionPhase: String, Sendable {
+    case nameThought = "name"
+    case noticeThought = "notice"
+    case watchItPass = "watch"
+
+    var title: String {
+        switch self {
+        case .nameThought: return "Name the Thought"
+        case .noticeThought: return "Notice the Thought"
+        case .watchItPass: return "Watch It Pass"
+        }
+    }
+
+    var instruction: String {
+        switch self {
+        case .nameThought: return "What thought keeps returning?\nGive it a simple name.\n\"Worry about deadline\" or \"Self-doubt.\""
+        case .noticeThought: return "Say to yourself:\n\"I notice I'm having the thought\nthat...\" and complete the sentence."
+        case .watchItPass: return "Imagine this thought as a cloud\nfloating across the sky.\nWatch it drift by, without holding on."
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .nameThought: return "Name"
+        case .noticeThought: return "Notice"
+        case .watchItPass: return "Watch"
+        }
+    }
+
+    var duration: Double {
+        switch self {
+        case .nameThought: return 30
+        case .noticeThought: return 30
+        case .watchItPass: return 60
+        }
+    }
+}
+
 @MainActor
 @Observable
 final class PracticeManager {
@@ -145,6 +188,9 @@ final class PracticeManager {
 
     // Self-Compassion state
     var currentCompassionPhase: CompassionPhase = .mindfulness
+
+    // Thought Defusion state
+    var currentDefusionPhase: DefusionPhase = .nameThought
 
     // MARK: - Private
 
@@ -191,6 +237,15 @@ final class PracticeManager {
         case .selfCompassion:
             totalDuration = 90
             currentCompassionPhase = .mindfulness
+        case .extendedExhale:
+            totalCycles = 9
+            totalDuration = 90  // 9 cycles x (4+6)s = 90s
+        case .thoughtDefusion:
+            totalDuration = 120
+            currentDefusionPhase = .nameThought
+        case .coherentBreathing:
+            totalCycles = 12
+            totalDuration = 120  // 12 cycles x (5+5)s = 120s
         }
 
         remainingSeconds = totalDuration
@@ -269,6 +324,12 @@ final class PracticeManager {
             await runSTOPTechnique()
         case .selfCompassion:
             await runSelfCompassion()
+        case .extendedExhale:
+            await runExtendedExhale()
+        case .thoughtDefusion:
+            await runThoughtDefusion()
+        case .coherentBreathing:
+            await runCoherentBreathing()
         }
     }
 
@@ -388,6 +449,77 @@ final class PracticeManager {
             let duration = phase.duration
             if await sleepPhase(seconds: duration) { return }
             remainingSeconds = max(0, remainingSeconds - Int(duration))
+        }
+
+        completePractice()
+    }
+
+    // MARK: - Extended Exhale Pattern
+
+    // inhale(4s) + exhale(6s) x 9 = 90s
+    private func runExtendedExhale() async {
+        let startCycle = completedCycles
+        let cycleLength = 10 // 4+6
+
+        for cycle in startCycle..<totalCycles {
+            guard !Task.isCancelled else { return }
+
+            // Phase 1: Inhale (4s)
+            currentPhase = .inhale
+            phaseDuration = 4.0
+            if await sleepPhase(seconds: 4.0) { return }
+
+            // Phase 2: Long exhale (6s)
+            currentPhase = .exhale
+            phaseDuration = 6.0
+            if await sleepPhase(seconds: 6.0) { return }
+
+            completedCycles = cycle + 1
+            remainingSeconds = max(0, totalDuration - (completedCycles * cycleLength))
+        }
+
+        completePractice()
+    }
+
+    // MARK: - Thought Defusion
+
+    private func runThoughtDefusion() async {
+        let phases: [DefusionPhase] = [.nameThought, .noticeThought, .watchItPass]
+
+        for phase in phases {
+            guard !Task.isCancelled else { return }
+
+            currentDefusionPhase = phase
+            let duration = phase.duration
+            if await sleepPhase(seconds: duration) { return }
+            remainingSeconds = max(0, remainingSeconds - Int(duration))
+        }
+
+        completePractice()
+    }
+
+    // MARK: - Coherent Breathing Pattern
+
+    // inhale(5s) + exhale(5s) x 12 = 120s
+    private func runCoherentBreathing() async {
+        let startCycle = completedCycles
+        let cycleLength = 10 // 5+5
+
+        for cycle in startCycle..<totalCycles {
+            guard !Task.isCancelled else { return }
+
+            // Phase 1: Inhale (5s)
+            currentPhase = .inhale
+            phaseDuration = 5.0
+            if await sleepPhase(seconds: 5.0) { return }
+
+            // Phase 2: Exhale (5s)
+            currentPhase = .exhale
+            phaseDuration = 5.0
+            if await sleepPhase(seconds: 5.0) { return }
+
+            completedCycles = cycle + 1
+            remainingSeconds = max(0, totalDuration - (completedCycles * cycleLength))
         }
 
         completePractice()

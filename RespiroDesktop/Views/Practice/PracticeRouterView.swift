@@ -15,6 +15,12 @@ struct PracticeRouterView: View {
             STOPTechniqueView()
         case .selfCompassion:
             SelfCompassionView()
+        case .extendedExhale:
+            ExtendedExhaleView()
+        case .thoughtDefusion:
+            ThoughtDefusionView()
+        case .coherentBreathing:
+            CoherentBreathingView()
         }
     }
 }

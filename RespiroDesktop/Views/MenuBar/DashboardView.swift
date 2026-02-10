@@ -18,6 +18,7 @@ struct DashboardView: View {
                 VStack(spacing: 12) {
                     weatherStatusCard
                     monitoringCard
+                    daySummaryButton
                 }
                 .padding(16)
             }
@@ -42,9 +43,11 @@ struct DashboardView: View {
                 Image(systemName: appState.isMonitoring ? appState.currentWeather.sfSymbol : "moon.zzz")
                     .font(.system(size: 32))
                     .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(Color(hex: "#10B981"))
+                    .foregroundStyle(weatherAccentColor(appState.currentWeather))
                     .contentTransition(.symbolEffect(.replace))
+                    .symbolEffect(.bounce, value: appState.currentWeather)
                     .scaleEffect(iconScale)
+                    .animation(.easeInOut(duration: 0.3), value: appState.currentWeather)
                     .onChange(of: appState.currentWeather) { _, _ in
                         withAnimation(.easeOut(duration: 0.15)) {
                             iconScale = 1.15
@@ -154,6 +157,40 @@ struct DashboardView: View {
         .padding(12)
         .background(Color(hex: "#C7E8DE").opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    // MARK: - Day Summary Button
+
+    private var daySummaryButton: some View {
+        Button(action: {
+            appState.showSummary()
+        }) {
+            HStack(spacing: 10) {
+                Image(systemName: "chart.bar.xaxis")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color(hex: "#D4AF37"))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Day Summary")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
+
+                    Text("AI reflection on your day")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.40))
+            }
+            .padding(12)
+            .background(Color(hex: "#C7E8DE").opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Zone C: Action Bar

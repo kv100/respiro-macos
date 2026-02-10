@@ -3,6 +3,7 @@ import SwiftUI
 struct BoxBreathingView: View {
     @Environment(AppState.self) private var appState
     @State private var practiceManager = PracticeManager()
+    @State private var glowRadius: CGFloat = 10
 
     var body: some View {
         ZStack {
@@ -105,10 +106,14 @@ struct BoxBreathingView: View {
                     )
                 )
                 .frame(width: 160, height: 160)
+                .shadow(color: Color(hex: "#10B981").opacity(glowOpacityForPhase), radius: glowRadius)
                 .scaleEffect(scaleForPhase)
                 .opacity(opacityForPhase)
                 .animation(animationForPhase, value: practiceManager.currentPhase)
                 .animation(animationForPhase, value: practiceManager.phaseDuration)
+        }
+        .onChange(of: practiceManager.currentPhase) { _, newPhase in
+            animateGlow(for: newPhase)
         }
     }
 
@@ -135,12 +140,38 @@ struct BoxBreathingView: View {
         }
     }
 
-    private var animationForPhase: Animation {
+    private var glowOpacityForPhase: Double {
         switch practiceManager.currentPhase {
-        case .idle: return .easeInOut(duration: 0.3)
-        case .inhale: return .easeInOut(duration: practiceManager.phaseDuration)
-        case .hold: return .easeInOut(duration: practiceManager.phaseDuration)
-        case .exhale: return .easeInOut(duration: practiceManager.phaseDuration)
+        case .inhale: return 0.5
+        case .hold: return 0.35
+        case .exhale: return 0.15
+        case .idle: return 0.1
+        }
+    }
+
+    private var animationForPhase: Animation {
+        .easeInOut(duration: practiceManager.currentPhase == .idle ? 0.3 : practiceManager.phaseDuration)
+    }
+
+    private func animateGlow(for phase: BreathPhase) {
+        let duration = practiceManager.phaseDuration
+        switch phase {
+        case .inhale:
+            withAnimation(.easeInOut(duration: duration)) {
+                glowRadius = 25
+            }
+        case .hold:
+            withAnimation(.easeInOut(duration: duration)) {
+                glowRadius = 20
+            }
+        case .exhale:
+            withAnimation(.easeInOut(duration: duration)) {
+                glowRadius = 8
+            }
+        case .idle:
+            withAnimation(.easeInOut(duration: 0.3)) {
+                glowRadius = 10
+            }
         }
     }
 

@@ -22,14 +22,18 @@ struct MainView: View {
                     WeatherPickerView(isBefore: false)
                 case .completion:
                     CompletionView()
+                case .whatHelped:
+                    WhatHelpedView(practiceCategory: appState.lastPracticeCategory ?? .breathing)
                 case .settings:
-                    Text("Settings View (P2.5)")
-                        .foregroundStyle(.white)
+                    SettingsView()
                 case .onboarding:
                     OnboardingView()
+                case .summary:
+                    DaySummaryView()
                 }
             }
         }
+        .animation(.easeInOut(duration: 0.3), value: appState.currentScreen)
     }
 }
 

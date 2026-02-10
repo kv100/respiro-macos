@@ -7,6 +7,9 @@ enum PracticeCatalog {
         grounding54321,
         stopTechnique,
         selfCompassion,
+        extendedExhale,
+        thoughtDefusion,
+        coherentBreathing,
     ]
 
     static let physiologicalSigh = Practice(
@@ -71,6 +74,40 @@ enum PracticeCatalog {
             PracticeStep(id: "sc-mindful", instruction: "Acknowledge what you're feeling", duration: 30),
             PracticeStep(id: "sc-humanity", instruction: "Connect with shared human experience", duration: 30),
             PracticeStep(id: "sc-kindness", instruction: "Offer yourself kindness", duration: 30),
+        ]
+    )
+
+    static let extendedExhale = Practice(
+        id: "extended-exhale",
+        title: "Extended Exhale",
+        category: .breathing,
+        duration: 90,
+        steps: [
+            PracticeStep(id: "ee-inhale", instruction: "Breathe in slowly", duration: 4),
+            PracticeStep(id: "ee-exhale", instruction: "Long, slow exhale", duration: 6),
+        ]
+    )
+
+    static let thoughtDefusion = Practice(
+        id: "thought-defusion",
+        title: "Thought Defusion",
+        category: .mind,
+        duration: 120,
+        steps: [
+            PracticeStep(id: "td-name", instruction: "Name the recurring thought", duration: 30),
+            PracticeStep(id: "td-notice", instruction: "I notice I'm having the thought...", duration: 30),
+            PracticeStep(id: "td-watch", instruction: "Watch the thought float by like a cloud", duration: 60),
+        ]
+    )
+
+    static let coherentBreathing = Practice(
+        id: "coherent-breathing",
+        title: "Coherent Breathing",
+        category: .breathing,
+        duration: 120,
+        steps: [
+            PracticeStep(id: "cb-inhale", instruction: "Breathe in for 5 seconds", duration: 5),
+            PracticeStep(id: "cb-exhale", instruction: "Breathe out for 5 seconds", duration: 5),
         ]
     )
 

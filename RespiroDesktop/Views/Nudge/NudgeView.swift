@@ -5,6 +5,20 @@ struct NudgeView: View {
     @State private var isVisible = false
     @State private var autoDismissTask: Task<Void, Never>?
 
+    // MARK: - Fallback Messages
+
+    private static let encouragementMessages = [
+        "Nice focus streak! You've been in the zone for a while.",
+        "Smooth sailing — your work rhythm looks great today.",
+        "Heads up: you've been at it for a while. Still feeling good?",
+    ]
+
+    private static let acknowledgmentMessages = [
+        "Weather's clearing up — nice recovery.",
+        "Looking calmer now. Whatever you did, it worked.",
+        "The storm seems to be passing. Good job riding it out.",
+    ]
+
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
@@ -14,6 +28,7 @@ struct NudgeView: View {
                     .padding(16)
                     .offset(y: isVisible ? 0 : 8)
                     .opacity(isVisible ? 1 : 0)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
             Spacer()
@@ -65,14 +80,12 @@ struct NudgeView: View {
                     .buttonStyle(.plain)
                 }
 
-                // AI message
-                if let message = nudge.message, !message.isEmpty {
-                    Text(message)
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
-                        .lineLimit(3)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+                // AI message or fallback
+                Text(displayMessage(for: nudge, type: type))
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 // Action buttons based on nudge type
                 actionButtons(for: type)
@@ -81,6 +94,23 @@ struct NudgeView: View {
         }
         .background(Color(hex: "#C7E8DE").opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    // MARK: - Message Resolution
+
+    private func displayMessage(for nudge: NudgeDecision, type: NudgeType) -> String {
+        if let message = nudge.message, !message.isEmpty {
+            return message
+        }
+        // Fallback to random message based on type
+        switch type {
+        case .encouragement:
+            return Self.encouragementMessages.randomElement() ?? Self.encouragementMessages[0]
+        case .acknowledgment:
+            return Self.acknowledgmentMessages.randomElement() ?? Self.acknowledgmentMessages[0]
+        case .practice:
+            return "A quick practice might help you feel more centered."
+        }
     }
 
     // MARK: - Action Buttons
@@ -99,7 +129,7 @@ struct NudgeView: View {
 
     private var practiceButtons: some View {
         VStack(spacing: 8) {
-            // Start Practice — primary action
+            // Start Practice -- primary action
             Button {
                 autoDismissTask?.cancel()
                 appState.showPractice()
@@ -169,9 +199,9 @@ struct NudgeView: View {
 
     private func accentColor(for type: NudgeType) -> Color {
         switch type {
-        case .practice: Color(hex: "#10B981")     // Gentle Nudge — jade
-        case .encouragement: Color(hex: "#8BA4B0") // Reassuring — blue-gray
-        case .acknowledgment: Color(hex: "#D4AF37") // Celebration — gold
+        case .practice: Color(hex: "#10B981")     // Gentle Nudge -- jade
+        case .encouragement: Color(hex: "#8BA4B0") // Reassuring -- blue-gray
+        case .acknowledgment: Color(hex: "#D4AF37") // Celebration -- gold
         }
     }
 
@@ -259,7 +289,7 @@ struct NudgeView: View {
     state.pendingNudge = NudgeDecision(
         shouldShow: true,
         nudgeType: .encouragement,
-        message: "You've been focused for a while. Great flow state!",
+        message: nil,
         suggestedPracticeID: nil,
         reason: "approved"
     )
@@ -272,7 +302,7 @@ struct NudgeView: View {
     state.pendingNudge = NudgeDecision(
         shouldShow: true,
         nudgeType: .acknowledgment,
-        message: "Weather clearing up. Nice work.",
+        message: nil,
         suggestedPracticeID: nil,
         reason: "approved"
     )

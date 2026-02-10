@@ -4,6 +4,9 @@ struct CompletionView: View {
     @Environment(AppState.self) private var appState
     @State private var checkmarkScale: CGFloat = 0
     @State private var checkmarkOpacity: Double = 0
+    @State private var sparklePhase: Int = 0
+    @State private var deltaBadgeOffset: CGFloat = 10
+    @State private var deltaBadgeOpacity: Double = 0
 
     private let scienceSnippets = [
         "Slow breathing activates your parasympathetic nervous system, lowering cortisol within minutes.",
@@ -19,9 +22,12 @@ struct CompletionView: View {
         VStack(spacing: 0) {
             Spacer()
 
-            // Checkmark animation
-            checkmarkBadge
-                .padding(.bottom, 24)
+            // Checkmark animation with sparkles
+            ZStack {
+                sparkleEffect
+                checkmarkBadge
+            }
+            .padding(.bottom, 24)
 
             // Title
             Text("Practice Complete")
@@ -34,6 +40,8 @@ struct CompletionView: View {
                let after = appState.selectedWeatherAfter {
                 deltaBadge(before: before, after: after)
                     .padding(.bottom, 20)
+                    .offset(y: deltaBadgeOffset)
+                    .opacity(deltaBadgeOpacity)
             }
 
             // Science snippet
@@ -48,9 +56,14 @@ struct CompletionView: View {
 
             // Done button
             Button(action: {
-                appState.selectedWeatherBefore = nil
-                appState.selectedWeatherAfter = nil
-                appState.showDashboard()
+                appState.completedPracticeCount += 1
+                if appState.completedPracticeCount >= 3 {
+                    appState.showWhatHelped()
+                } else {
+                    appState.selectedWeatherBefore = nil
+                    appState.selectedWeatherAfter = nil
+                    appState.showDashboard()
+                }
             }) {
                 Text("Done")
                     .font(.system(size: 14, weight: .medium))
@@ -72,6 +85,42 @@ struct CompletionView: View {
                 checkmarkScale = 1.0
                 checkmarkOpacity = 1.0
             }
+            withAnimation(.easeOut(duration: 0.4).delay(0.5)) {
+                deltaBadgeOffset = 0
+                deltaBadgeOpacity = 1.0
+            }
+            // Trigger sparkle cycle
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 400_000_000)
+                withAnimation(.easeInOut(duration: 0.6)) {
+                    sparklePhase = 1
+                }
+                try? await Task.sleep(nanoseconds: 600_000_000)
+                withAnimation(.easeInOut(duration: 0.8)) {
+                    sparklePhase = 2
+                }
+            }
+        }
+    }
+
+    // MARK: - Sparkle Effect
+
+    private var sparkleEffect: some View {
+        ZStack {
+            ForEach(0..<6, id: \.self) { index in
+                let angle = Double(index) * 60.0
+                let radians = angle * .pi / 180.0
+                let radius: CGFloat = sparklePhase >= 1 ? 56 : 20
+                Image(systemName: "sparkle")
+                    .font(.system(size: sparklePhase >= 2 ? 8 : 10))
+                    .foregroundStyle(Color(hex: "#10B981").opacity(sparklePhase >= 1 ? 0.7 : 0))
+                    .offset(
+                        x: cos(radians) * radius,
+                        y: sin(radians) * radius
+                    )
+                    .scaleEffect(sparklePhase >= 2 ? 0.3 : 1.0)
+                    .opacity(sparklePhase >= 2 ? 0 : 1)
+            }
         }
     }
 
@@ -91,6 +140,7 @@ struct CompletionView: View {
                 .font(.system(size: 32, weight: .bold))
                 .foregroundStyle(Color(hex: "#10B981"))
         }
+        .shadow(color: Color(hex: "#10B981").opacity(0.3), radius: 15)
         .scaleEffect(checkmarkScale)
         .opacity(checkmarkOpacity)
     }

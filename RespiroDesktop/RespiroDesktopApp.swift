@@ -72,5 +72,10 @@ struct RespiroDesktopApp: App {
         // Wire SmartSuppression for intelligent nudge gating
         let smartSuppression = SmartSuppression()
         appState.configureSmartSuppression(smartSuppression)
+
+        // Wire PreferenceLearner for practice preference learning (P2.4)
+        let preferenceLearner = PreferenceLearner(modelContext: modelContext)
+        let rankedPractices = preferenceLearner.rankedPracticeIDs()
+        await service.updatePreferredPractices(rankedPractices)
     }
 }

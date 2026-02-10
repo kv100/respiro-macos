@@ -25,6 +25,7 @@ actor MonitoringService {
     // MARK: - Learned Patterns (from DismissalLogger)
 
     private var learnedPatterns: String?
+    private var preferredPracticeIDs: [String] = ["physiological-sigh", "box-breathing"]
 
     // MARK: - Constants
 
@@ -100,6 +101,12 @@ actor MonitoringService {
 
     func updateLearnedPatterns(_ patterns: String?) {
         learnedPatterns = patterns
+    }
+
+    func updatePreferredPractices(_ practiceIDs: [String]) {
+        if !practiceIDs.isEmpty {
+            preferredPracticeIDs = practiceIDs
+        }
     }
 
     // MARK: - Read-only accessors
@@ -186,7 +193,7 @@ actor MonitoringService {
             lastNudgeMinutesAgo: nil,
             lastNudgeType: nil,
             dismissalCount2h: dismissalCount,
-            preferredPractices: ["physiological-sigh", "box-breathing"],
+            preferredPractices: preferredPracticeIDs,
             learnedPatterns: learnedPatterns
         )
     }

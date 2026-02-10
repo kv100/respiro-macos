@@ -10,8 +10,10 @@ final class AppState {
         case weatherBefore
         case weatherAfter
         case completion
+        case whatHelped
         case settings
         case onboarding
+        case summary
     }
 
     var currentScreen: Screen = .dashboard
@@ -21,6 +23,9 @@ final class AppState {
     var pendingNudge: NudgeDecision?
     var selectedWeatherBefore: InnerWeather?
     var selectedWeatherAfter: InnerWeather?
+    var completedPracticeCount: Int = 0
+    var lastWhatHelped: [String]?
+    var lastPracticeCategory: PracticeCategory?
     @ObservationIgnored @AppStorage("isOnboardingComplete") var isOnboardingComplete: Bool = false
 
     // MARK: - Services
@@ -144,11 +149,19 @@ final class AppState {
         currentScreen = .completion
     }
 
+    func showWhatHelped() {
+        currentScreen = .whatHelped
+    }
+
     func showSettings() {
         currentScreen = .settings
     }
 
     func showOnboarding() {
         currentScreen = .onboarding
+    }
+
+    func showSummary() {
+        currentScreen = .summary
     }
 }
