@@ -31,6 +31,7 @@ struct SettingsView: View {
             // Scrollable settings content
             ScrollView {
                 VStack(spacing: 16) {
+                    demoModeSection
                     activeHoursSection
                     preferencesSection
                     apiKeySection
@@ -76,6 +77,52 @@ struct SettingsView: View {
             Color.clear.frame(width: 50)
         }
         .padding(.horizontal, 16)
+    }
+
+    // MARK: - Demo Mode
+
+    private var demoModeSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionHeader(title: "Demo Mode", icon: "theatermasks")
+
+            VStack(alignment: .leading, spacing: 8) {
+                Toggle(isOn: Binding(
+                    get: { appState.isDemoMode },
+                    set: { newValue in
+                        Task {
+                            await appState.setDemoMode(newValue, modelContext: modelContext)
+                        }
+                    }
+                )) {
+                    Text("Enable Demo Mode")
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
+                }
+                .toggleStyle(.switch)
+                .tint(Color(hex: "#10B981"))
+                .padding(.horizontal, 4)
+
+                Text("Simulates stress detection without API key. Uses pre-recorded scenarios for testing and demos.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
+                    .padding(.horizontal, 4)
+
+                if appState.isDemoMode {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 10))
+                            .foregroundStyle(Color(hex: "#10B981"))
+                        Text("Using simulated responses")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color(hex: "#10B981"))
+                    }
+                    .padding(.horizontal, 4)
+                }
+            }
+        }
+        .padding(12)
+        .background(Color(hex: "#C7E8DE").opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     // MARK: - Active Hours

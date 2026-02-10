@@ -49,6 +49,7 @@
 		APP_081 /* CoherentBreathingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_081 /* CoherentBreathingView.swift */; };
 		APP_082 /* ThoughtDefusionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_082 /* ThoughtDefusionView.swift */; };
 		APP_083 /* WhatHelpedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_083 /* WhatHelpedView.swift */; };
+		APP_090 /* DemoModeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_090 /* DemoModeService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -97,6 +98,7 @@
 		FILE_081 /* CoherentBreathingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoherentBreathingView.swift; sourceTree = "<group>"; };
 		FILE_082 /* ThoughtDefusionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtDefusionView.swift; sourceTree = "<group>"; };
 		FILE_083 /* WhatHelpedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatHelpedView.swift; sourceTree = "<group>"; };
+		FILE_090 /* DemoModeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoModeService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +126,7 @@
 				FILE_041 /* SmartSuppression.swift */,
 				FILE_060 /* DaySummaryService.swift */,
 				FILE_061 /* PreferenceLearner.swift */,
+				FILE_090 /* DemoModeService.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -375,6 +378,7 @@
 				APP_081 /* CoherentBreathingView.swift in Sources */,
 				APP_082 /* ThoughtDefusionView.swift in Sources */,
 				APP_083 /* WhatHelpedView.swift in Sources */,
+				APP_090 /* DemoModeService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 @MainActor
 @Observable
@@ -28,12 +29,20 @@ final class AppState {
     var lastPracticeCategory: PracticeCategory?
     @ObservationIgnored @AppStorage("isOnboardingComplete") var isOnboardingComplete: Bool = false
 
+    // MARK: - Demo Mode
+
+    var isDemoMode: Bool {
+        get { demoModeService?.isEnabled ?? false }
+        set { demoModeService?.isEnabled = newValue }
+    }
+
     // MARK: - Services
 
     private var monitoringService: MonitoringService?
     private var nudgeEngine: NudgeEngine?
     private var dismissalLogger: DismissalLogger?
     private var smartSuppression: SmartSuppression?
+    private var demoModeService: DemoModeService?
 
     func configureMonitoring(service: MonitoringService) {
         self.monitoringService = service
@@ -51,16 +60,52 @@ final class AppState {
         self.smartSuppression = suppression
     }
 
+    func configureDemoMode(_ service: DemoModeService) {
+        self.demoModeService = service
+    }
+
+    func setDemoMode(_ enabled: Bool, modelContext: ModelContext) async {
+        guard let service = demoModeService else { return }
+
+        // Update the flag
+        service.isEnabled = enabled
+
+        // If enabling, seed demo data
+        if enabled {
+            service.seedDemoData(modelContext: modelContext)
+        }
+
+        // If monitoring is active, restart it with new mode
+        if isMonitoring {
+            await stopMonitoring()
+            await startMonitoring()
+        }
+    }
+
     func startMonitoring() async {
-        guard let service = monitoringService else { return }
         isMonitoring = true
-        await service.startMonitoring()
+
+        // Use demo mode if enabled
+        if isDemoMode, let demoService = demoModeService {
+            let state = self
+            demoService.startDemoLoop { @Sendable weather, analysis in
+                Task { @MainActor in
+                    state.updateWeather(weather, analysis: analysis)
+                }
+            }
+        } else if let service = monitoringService {
+            await service.startMonitoring()
+        }
     }
 
     func stopMonitoring() async {
-        guard let service = monitoringService else { return }
         isMonitoring = false
-        await service.stopMonitoring()
+
+        if isDemoMode {
+            demoModeService?.stopDemoLoop()
+        } else if let service = monitoringService {
+            await service.stopMonitoring()
+        }
     }
 
     func toggleMonitoring() async {

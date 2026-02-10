@@ -38,6 +38,17 @@ struct RespiroDesktopApp: App {
 
     @MainActor
     private func setupMonitoring() async {
+        let modelContext = sharedModelContainer.mainContext
+
+        // Wire up DemoModeService first
+        let demoModeService = DemoModeService()
+        appState.configureDemoMode(demoModeService)
+
+        // Seed demo data if demo mode is enabled
+        if demoModeService.isEnabled {
+            demoModeService.seedDemoData(modelContext: modelContext)
+        }
+
         let screenMonitor = ScreenMonitor()
 
         // Try to create vision client; if no API key, monitoring won't auto-start
@@ -60,7 +71,6 @@ struct RespiroDesktopApp: App {
         appState.configureNudgeEngine(nudgeEngine)
 
         // Wire DismissalLogger for "I'm Fine" learning
-        let modelContext = sharedModelContainer.mainContext
         let dismissalLogger = DismissalLogger(modelContext: modelContext)
         appState.configureDismissalLogger(dismissalLogger)
 
