@@ -46,6 +46,7 @@ struct RespiroDesktopApp: App {
         }
 
         let service = MonitoringService(screenMonitor: screenMonitor, visionClient: visionClient)
+        let nudgeEngine = NudgeEngine()
 
         // Wire up weather callback — captures appState for @MainActor update
         let state = appState
@@ -56,5 +57,6 @@ struct RespiroDesktopApp: App {
         }
 
         appState.configureMonitoring(service: service)
+        appState.configureNudgeEngine(nudgeEngine)
     }
 }
