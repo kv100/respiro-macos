@@ -27,7 +27,7 @@ enum ClaudeAPIError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .noAPIKey:
-            return "ANTHROPIC_API_KEY environment variable not set"
+            return "No API key found. Set ANTHROPIC_API_KEY environment variable, Info.plist key, or enter in Settings."
         case .networkError(let error):
             return "Network error: \(error.localizedDescription)"
         case .invalidResponse(let code, let body):
@@ -88,7 +88,7 @@ struct ClaudeVisionClient: Sendable {
     // MARK: - Init
 
     init() throws {
-        guard let key = ProcessInfo.processInfo.environment["ANTHROPIC_API_KEY"], !key.isEmpty else {
+        guard let key = APIKeyManager.getAPIKey() else {
             throw ClaudeAPIError.noAPIKey
         }
         self.apiKey = key

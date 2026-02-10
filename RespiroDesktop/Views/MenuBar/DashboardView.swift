@@ -180,7 +180,7 @@ struct DashboardView: View {
 
             // Toggle monitoring
             Button(action: {
-                appState.toggleMonitoring()
+                Task { await appState.toggleMonitoring() }
             }) {
                 Image(systemName: appState.isMonitoring ? "pause.fill" : "play.fill")
                     .font(.system(size: 13))

@@ -27,9 +27,34 @@ struct RespiroDesktopApp: App {
                 .modelContainer(sharedModelContainer)
                 .frame(width: 360, height: 480)
                 .preferredColorScheme(.dark)
+                .task {
+                    await setupMonitoring()
+                }
         } label: {
             Image(systemName: appState.isMonitoring ? appState.currentWeather.sfSymbol : "moon.zzz")
         }
         .menuBarExtraStyle(.window)
+    }
+
+    @MainActor
+    private func setupMonitoring() async {
+        let screenMonitor = ScreenMonitor()
+
+        // Try to create vision client; if no API key, monitoring won't auto-start
+        guard let visionClient = try? ClaudeVisionClient() else {
+            return
+        }
+
+        let service = MonitoringService(screenMonitor: screenMonitor, visionClient: visionClient)
+
+        // Wire up weather callback — captures appState for @MainActor update
+        let state = appState
+        await service.setWeatherCallback { @Sendable weather, analysis in
+            Task { @MainActor in
+                state.updateWeather(weather, analysis: analysis)
+            }
+        }
+
+        appState.configureMonitoring(service: service)
     }
 }

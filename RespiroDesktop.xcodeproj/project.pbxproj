@@ -26,6 +26,8 @@
 		APP_017 /* NudgeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_019 /* NudgeType.swift */; };
 		APP_018 /* DismissalType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_020 /* DismissalType.swift */; };
 		EDA8F7E436AF8ECC0A4755CB /* BreathingPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC1F2650C26A54BCF77961F /* BreathingPracticeView.swift */; };
+		APP_019 /* APIKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_021 /* APIKeyManager.swift */; };
+		APP_020 /* MonitoringService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_022 /* MonitoringService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,6 +53,8 @@
 		FILE_018 /* Practice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Practice.swift; sourceTree = "<group>"; };
 		FILE_019 /* NudgeType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NudgeType.swift; sourceTree = "<group>"; };
 		FILE_020 /* DismissalType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DismissalType.swift; sourceTree = "<group>"; };
+		FILE_021 /* APIKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyManager.swift; sourceTree = "<group>"; };
+		FILE_022 /* MonitoringService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,10 +72,12 @@
 			isa = PBXGroup;
 			children = (
 				FILE_002 /* AppState.swift */,
+				FILE_021 /* APIKeyManager.swift */,
 				FILE_005 /* ScreenMonitor.swift */,
 				FILE_006 /* ClaudeVisionClient.swift */,
 				FILE_007 /* NudgeEngine.swift */,
 				FILE_008 /* PracticeManager.swift */,
+				FILE_022 /* MonitoringService.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -275,6 +281,8 @@
 				APP_017 /* NudgeType.swift in Sources */,
 				APP_018 /* DismissalType.swift in Sources */,
 				EDA8F7E436AF8ECC0A4755CB /* BreathingPracticeView.swift in Sources */,
+				APP_019 /* APIKeyManager.swift in Sources */,
+				APP_020 /* MonitoringService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

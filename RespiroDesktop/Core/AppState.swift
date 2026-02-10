@@ -17,7 +17,50 @@ final class AppState {
     var currentScreen: Screen = .dashboard
     var currentWeather: InnerWeather = .clear
     var isMonitoring: Bool = false
+    var lastAnalysis: StressAnalysisResponse?
     @ObservationIgnored @AppStorage("isOnboardingComplete") var isOnboardingComplete: Bool = false
+
+    // MARK: - Monitoring Service
+
+    private var monitoringService: MonitoringService?
+
+    func configureMonitoring(service: MonitoringService) {
+        self.monitoringService = service
+    }
+
+    func startMonitoring() async {
+        guard let service = monitoringService else { return }
+        isMonitoring = true
+        await service.startMonitoring()
+    }
+
+    func stopMonitoring() async {
+        guard let service = monitoringService else { return }
+        isMonitoring = false
+        await service.stopMonitoring()
+    }
+
+    func toggleMonitoring() async {
+        if isMonitoring {
+            await stopMonitoring()
+        } else {
+            await startMonitoring()
+        }
+    }
+
+    /// Called from MonitoringService callback when new analysis arrives.
+    func updateWeather(_ weather: InnerWeather, analysis: StressAnalysisResponse) {
+        currentWeather = weather
+        lastAnalysis = analysis
+    }
+
+    func notifyPracticeCompleted() async {
+        await monitoringService?.onPracticeCompleted()
+    }
+
+    func notifyDismissal() async {
+        await monitoringService?.onDismissal()
+    }
 
     // MARK: - Navigation
 
@@ -51,9 +94,5 @@ final class AppState {
 
     func showOnboarding() {
         currentScreen = .onboarding
-    }
-
-    func toggleMonitoring() {
-        isMonitoring.toggle()
     }
 }
