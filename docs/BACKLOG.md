@@ -7,18 +7,18 @@
 
 ## P0 — Demo Minimum (Day 1-2)
 
-| ID    | Task                                                                     | Est | Agent           | Depends    | Status |
-| ----- | ------------------------------------------------------------------------ | --- | --------------- | ---------- | ------ |
-| P0.1  | Create Xcode project, MenuBarExtra with .window style, AppState          | 2h  | swift-developer | —          | todo   |
-| P0.2  | SF Symbol weather icons in menu bar (sun/cloud/storm), transitions       | 1h  | swiftui-pro     | P0.1       | todo   |
-| P0.3  | ScreenCaptureKit screenshot capture to memory buffer                     | 3h  | swift-developer | P0.1       | todo   |
-| P0.4  | ClaudeVisionClient — send screenshot to Opus 4.6, parse JSON             | 4h  | swift-developer | P0.1       | todo   |
-| P0.5  | MonitoringService actor — timer loop, adaptive interval, capture+analyze | 2h  | swift-developer | P0.3, P0.4 | todo   |
-| P0.6  | NudgeEngine actor — basic cooldown, shouldNudge() logic                  | 2h  | swift-developer | P0.5       | todo   |
-| P0.7  | Nudge popup (NSPopover) — AI message + [Start Practice] + [I'm Fine]     | 2h  | swiftui-pro     | P0.6       | todo   |
-| P0.8  | Physiological Sigh practice — breathing circle + timer (60s)             | 3h  | swiftui-pro     | P0.1       | todo   |
-| P0.9  | SwiftData models — StressEntry, PracticeSession, DismissalEvent          | 2h  | swift-developer | P0.1       | todo   |
-| P0.10 | API key config — embedded key via env var or plist                       | 1h  | swift-developer | P0.4       | todo   |
+| ID    | Task                                                                     | Est | Agent           | Depends    | Status  |
+| ----- | ------------------------------------------------------------------------ | --- | --------------- | ---------- | ------- |
+| P0.1  | Create Xcode project, MenuBarExtra with .window style, AppState          | 2h  | swift-developer | —          | done ✅ |
+| P0.2  | SF Symbol weather icons in menu bar (sun/cloud/storm), transitions       | 1h  | swiftui-pro     | P0.1       | done ✅ |
+| P0.3  | ScreenCaptureKit screenshot capture to memory buffer                     | 3h  | swift-developer | P0.1       | done ✅ |
+| P0.4  | ClaudeVisionClient — send screenshot to Opus 4.6, parse JSON             | 4h  | swift-developer | P0.1       | done ✅ |
+| P0.5  | MonitoringService actor — timer loop, adaptive interval, capture+analyze | 2h  | swift-developer | P0.3, P0.4 | done ✅ |
+| P0.6  | NudgeEngine actor — basic cooldown, shouldNudge() logic                  | 2h  | swift-developer | P0.5       | done ✅ |
+| P0.7  | Nudge popup (NSPopover) — AI message + [Start Practice] + [I'm Fine]     | 2h  | swiftui-pro     | P0.6       | done ✅ |
+| P0.8  | Physiological Sigh practice — breathing circle + timer (60s)             | 3h  | swiftui-pro     | P0.1       | done ✅ |
+| P0.9  | SwiftData models — StressEntry, PracticeSession, DismissalEvent          | 2h  | swift-developer | P0.1       | done ✅ |
+| P0.10 | API key config — embedded key via env var or plist                       | 1h  | swift-developer | P0.4       | done ✅ |
 
 **P0 deliverable:** Menu bar icon changes from screenshot analysis. Nudge suggests breathing. Practice completes. Icon returns to sunny.
 
@@ -26,19 +26,19 @@
 
 ## P1 — Impressive Demo (Day 3-4)
 
-| ID    | Task                                                                         | Est | Agent           | Depends    | Status |
-| ----- | ---------------------------------------------------------------------------- | --- | --------------- | ---------- | ------ |
-| P1.1  | Box Breathing practice (90s, 4-4-4-4)                                        | 1h  | swiftui-pro     | P0.8       | todo   |
-| P1.2  | 5-4-3-2-1 Grounding practice (2min, interactive checklist)                   | 2h  | swiftui-pro     | P0.8       | todo   |
-| P1.3  | STOP Technique practice (60s, guided text cards)                             | 1h  | swiftui-pro     | P0.8       | todo   |
-| P1.4  | Self-Compassion Break practice (90s, guided text)                            | 1h  | swiftui-pro     | P0.8       | todo   |
-| P1.5  | Weather picker before/after — 3-option tap (clear/cloudy/stormy)             | 2h  | swiftui-pro     | P0.8       | todo   |
-| P1.6  | Completion screen — delta badge (before -> after), science snippet           | 1h  | swiftui-pro     | P1.5       | todo   |
-| P1.7  | "I'm Fine" learning — log dismissals, feed override history to AI prompt     | 3h  | swift-developer | P0.6, P0.9 | todo   |
-| P1.8  | Adaptive screenshot interval — slow down when clear, speed up when stormy    | 2h  | swift-developer | P0.5       | todo   |
-| P1.9  | Nudge cooldown — 3 dismissals = 2h silence, daily limits, post-practice rest | 2h  | swift-developer | P0.6, P1.7 | todo   |
-| P1.10 | Onboarding — 3 screens (what/how/privacy) + Screen Recording permission      | 3h  | swiftui-pro     | P0.1       | todo   |
-| P1.11 | Smart suppression — skip nudge during video calls, presentations, typing     | 2h  | swift-developer | P0.5       | todo   |
+| ID    | Task                                                                         | Est | Agent           | Depends    | Status  |
+| ----- | ---------------------------------------------------------------------------- | --- | --------------- | ---------- | ------- |
+| P1.1  | Box Breathing practice (90s, 4-4-4-4)                                        | 1h  | swiftui-pro     | P0.8       | done ✅ |
+| P1.2  | 5-4-3-2-1 Grounding practice (2min, interactive checklist)                   | 2h  | swiftui-pro     | P0.8       | done ✅ |
+| P1.3  | STOP Technique practice (60s, guided text cards)                             | 1h  | swiftui-pro     | P0.8       | done ✅ |
+| P1.4  | Self-Compassion Break practice (90s, guided text)                            | 1h  | swiftui-pro     | P0.8       | done ✅ |
+| P1.5  | Weather picker before/after — 3-option tap (clear/cloudy/stormy)             | 2h  | swiftui-pro     | P0.8       | done ✅ |
+| P1.6  | Completion screen — delta badge (before -> after), science snippet           | 1h  | swiftui-pro     | P1.5       | done ✅ |
+| P1.7  | "I'm Fine" learning — log dismissals, feed override history to AI prompt     | 3h  | swift-developer | P0.6, P0.9 | done ✅ |
+| P1.8  | Adaptive screenshot interval — slow down when clear, speed up when stormy    | 2h  | swift-developer | P0.5       | done ✅ |
+| P1.9  | Nudge cooldown — 3 dismissals = 2h silence, daily limits, post-practice rest | 2h  | swift-developer | P0.6, P1.7 | done ✅ |
+| P1.10 | Onboarding — 3 screens (what/how/privacy) + Screen Recording permission      | 3h  | swiftui-pro     | P0.1       | done ✅ |
+| P1.11 | Smart suppression — skip nudge during video calls, presentations, typing     | 2h  | swift-developer | P0.5       | done ✅ |
 
 **P1 deliverable:** AI learns from dismissals. 5 practices with weather before/after. Smart interruption logic.
 
@@ -46,15 +46,15 @@
 
 ## P2 — Polish (Day 5)
 
-| ID   | Task                                                                              | Est | Agent                         | Depends | Status |
-| ---- | --------------------------------------------------------------------------------- | --- | ----------------------------- | ------- | ------ |
-| P2.1 | Three nudge types — encouragement ("Nice focus") + acknowledgment ("Clearing up") | 2h  | swiftui-pro                   | P0.7    | todo   |
-| P2.2 | What Helped feedback — shown after 3rd practice, 2-4 options                      | 2h  | swiftui-pro                   | P1.6    | todo   |
-| P2.3 | End-of-day summary — stress timeline chart + AI reflection (max effort)           | 4h  | swift-developer + swiftui-pro | P0.9    | todo   |
-| P2.4 | Practice preference learning — AI prefers practices user rated high               | 2h  | swift-developer               | P1.7    | todo   |
-| P2.5 | Active hours setting — work hours only, no weekend monitoring                     | 1h  | swiftui-pro                   | P0.1    | todo   |
-| P2.6 | Smooth animations — breathing circle glow, completion checkmark, card transitions | 3h  | swiftui-pro                   | P0.8    | todo   |
-| P2.7 | Extended Exhale + Thought Defusion + Coherent Breathing (3 more practices)        | 2h  | swiftui-pro                   | P0.8    | todo   |
+| ID   | Task                                                                              | Est | Agent                         | Depends | Status  |
+| ---- | --------------------------------------------------------------------------------- | --- | ----------------------------- | ------- | ------- |
+| P2.1 | Three nudge types — encouragement ("Nice focus") + acknowledgment ("Clearing up") | 2h  | swiftui-pro                   | P0.7    | done ✅ |
+| P2.2 | What Helped feedback — shown after 3rd practice, 2-4 options                      | 2h  | swiftui-pro                   | P1.6    | done ✅ |
+| P2.3 | End-of-day summary — stress timeline chart + AI reflection (max effort)           | 4h  | swift-developer + swiftui-pro | P0.9    | done ✅ |
+| P2.4 | Practice preference learning — AI prefers practices user rated high               | 2h  | swift-developer               | P1.7    | done ✅ |
+| P2.5 | Active hours setting — work hours only, no weekend monitoring                     | 1h  | swiftui-pro                   | P0.1    | done ✅ |
+| P2.6 | Smooth animations — breathing circle glow, completion checkmark, card transitions | 3h  | swiftui-pro                   | P0.8    | done ✅ |
+| P2.7 | Extended Exhale + Thought Defusion + Coherent Breathing (3 more practices)        | 2h  | swiftui-pro                   | P0.8    | done ✅ |
 
 **P2 deliverable:** Polished demo with variety, feedback loop, end-of-day reflection.
 
@@ -62,12 +62,12 @@
 
 ## Day 6 — Demo Prep
 
-| ID   | Task                                                       | Est | Agent           | Status |
-| ---- | ---------------------------------------------------------- | --- | --------------- | ------ |
-| D6.1 | Pre-seed demo context — fake "full day" of StressEntries   | 1h  | swift-developer | todo   |
-| D6.2 | Demo mode toggle — cached responses for reliable live demo | 2h  | swift-developer | todo   |
-| D6.3 | Record backup demo video                                   | 1h  | manual          | todo   |
-| D6.4 | Write submission text + README                             | 1h  | manual          | todo   |
+| ID   | Task                                                       | Est | Agent           | Status  |
+| ---- | ---------------------------------------------------------- | --- | --------------- | ------- |
+| D6.1 | Pre-seed demo context — fake "full day" of StressEntries   | 1h  | swift-developer | done ✅ |
+| D6.2 | Demo mode toggle — cached responses for reliable live demo | 2h  | swift-developer | done ✅ |
+| D6.3 | Record backup demo video                                   | 1h  | manual          | todo    |
+| D6.4 | Write submission text + README                             | 1h  | manual          | todo    |
 
 ---
 
