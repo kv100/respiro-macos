@@ -81,18 +81,31 @@
 
 ```
 RespiroDesktop/
-├── RespiroDesktopApp.swift          # @main, MenuBarExtra
+├── RespiroDesktopApp.swift          # @main, MenuBarExtra, service wiring
 ├── Core/
-│   ├── AppState.swift               # @MainActor @Observable, Screen enum
-│   ├── ScreenMonitor.swift          # ScreenCaptureKit, timer (actor)
-│   ├── ClaudeVisionClient.swift     # Opus 4.6 API (Sendable struct)
-│   ├── NudgeEngine.swift            # Cooldowns, suppression (actor)
-│   └── PracticeManager.swift        # Practice flow, timer (@Observable)
-├── Models/                          # SwiftData + enums
-├── Views/                           # MenuBar/, Onboarding/, Nudge/, Practice/, Settings/
-├── Practices/                       # PracticeCatalog.swift
-└── Resources/
-    └── Assets.xcassets
+│   ├── AppState.swift               # @MainActor @Observable, Screen enum, central state
+│   ├── ScreenMonitor.swift          # ScreenCaptureKit (actor)
+│   ├── ClaudeVisionClient.swift     # Opus 4.6 Vision + Tool Use + Streaming (Sendable struct)
+│   ├── MonitoringService.swift      # Adaptive timer, screenshot loop (actor)
+│   ├── NudgeEngine.swift            # Cooldowns, suppression, NudgeDecision (actor)
+│   ├── PracticeManager.swift        # Practice flow, breathing timer (@Observable)
+│   ├── DemoModeService.swift        # 8 pre-scripted scenarios (@Observable)
+│   ├── DaySummaryService.swift      # End-of-day reflection with max thinking (actor)
+│   ├── SecondChanceService.swift    # Alternative practice from different category
+│   ├── SoundService.swift           # System sounds for nudge/practice/completion
+│   └── TipService.swift             # 96 contextual wellness tips
+├── Models/                          # SwiftData (StressEntry, PracticeSession, etc.) + enums
+├── Views/
+│   ├── MainView.swift               # Screen router with keyboard shortcuts
+│   ├── MenuBar/DashboardView.swift  # Graph, silence card, tip card, controls
+│   ├── Nudge/NudgeView.swift        # Nudge cards, thinking panel, tool use display
+│   ├── Practice/                    # 10 practice views + completion + weather picker
+│   ├── Components/                  # EffortIndicatorView, StressGraphView, ThinkingStreamView
+│   ├── Settings/SettingsView.swift  # Preferences, about, demo toggle
+│   ├── Summary/DaySummaryView.swift # Day reflection with thinking panel
+│   └── Onboarding/                  # Welcome + screen recording permission
+├── Practices/PracticeCatalog.swift  # 20 practices (breathing, body, mind)
+└── Resources/Assets.xcassets
 ```
 
 ---
@@ -111,7 +124,6 @@ RespiroDesktop/
 
 - NO TCA — use @Observable + actor Services
 - NO Metal shaders — SwiftUI animations only
-- NO server/backend — local + Claude API
 - NO localization — English only for hackathon
 - NO UIKit — macOS only (NSImage, NSScreen, etc.)
 - Screenshots NEVER written to disk
@@ -120,8 +132,41 @@ RespiroDesktop/
 
 ---
 
+## Project Status
+
+**V1 COMPLETE:** P0 (10/10), P1 (11/11), P2 (7/7), D6.1-D6.2
+**V2 COMPLETE:** P3 (4/4), P4 (4/4), P5 (5/5), P6 (5/5), P7 (3/3)
+**D5.1 DONE:** 19 bugs found and fixed across 3 rounds of verification. All 8 demo scenarios pass.
+**Remaining:** D5.2 (demo video), D5.3 (submission text)
+
+---
+
+## Post-Hackathon Roadmap: Backend Proxy
+
+**Current (hackathon):** BYOK (Bring Your Own Key) — API key via env var. Demo mode works without key.
+
+**Next (post-hackathon):** Backend proxy so users never see an API key.
+
+Architecture:
+
+```
+App → Supabase Edge Function (our API key) → Claude API
+```
+
+Implementation plan:
+
+1. Supabase Edge Function (~50 lines) as proxy to Claude API
+2. Supabase Auth (Apple Sign-In) for user authentication
+3. Rate limiting per user (prevent abuse)
+4. Remove BYOK from app, add auth flow
+5. Monetization: freemium (5 analyses/day free, unlimited = subscription)
+
+This adds no hackathon value (judges evaluate the app, not the business model), but is required for App Store / production distribution.
+
+---
+
 ## Session Start
 
 1. Read this file (auto-loaded)
-2. Read `docs/BACKLOG.md` for current tasks and specs
+2. Read `docs/BACKLOG_V2.md` for current status
 3. Start working

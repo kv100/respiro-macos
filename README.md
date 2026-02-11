@@ -59,11 +59,16 @@ End-of-day summary uses `.max` effort (10K thinking tokens) to reflect on the fu
 - **20 evidence-based practices** — breathing, body, and mind techniques
 - **Smart nudge system** — cooldowns, daily limits, dismissal learning
 - **"The Silence Decision"** — visible AI restraint on dashboard
+- **Tool Use showcase** — AI tool calls displayed in nudge card
+- **Effort level indicator** — brain icon shows AI thinking depth (1-3 dots)
+- **Practice reason** — personalized "why this practice" explanation
+- **96 contextual wellness tips** — condition-based filtering by weather/time
 - **Category-specific science snippets** — 21 research-backed facts
 - **Second Chance** — suggests alternative practice from different category
 - **Adaptive screenshot intervals** — faster when stormy, slower when clear
 - **Sound design** — subtle system sounds for key moments
-- **Demo mode** — pre-scripted scenarios showcasing all Opus features
+- **Keyboard shortcuts** — Return, Escape, Space, 1/2/3 for quick navigation
+- **Demo mode** — 8 pre-scripted scenarios showcasing all Opus features
 - **Active hours** — respects your work schedule
 - **Wake-from-sleep** — immediate check after returning
 
@@ -83,13 +88,14 @@ End-of-day summary uses `.max` effort (10K thinking tokens) to reflect on the fu
 ## Architecture
 
 ```
-AppState (@MainActor @Observable)        — Central state, navigation
-MonitoringService (actor)                — ScreenCaptureKit + adaptive timer
-ClaudeVisionClient (Sendable struct)     — Vision API + Tool Use + Streaming
+AppState (@MainActor @Observable)        — Central state, navigation, SwiftData persistence
+MonitoringService (actor)                — ScreenCaptureKit + adaptive timer + tool context
+ClaudeVisionClient (Sendable struct)     — Vision API + Tool Use + Streaming (SSE)
 NudgeEngine (actor)                      — Cooldowns, suppression, silence decisions
 DaySummaryService (actor)                — End-of-day reflection with max thinking
-DemoModeService (@Observable)            — Pre-scripted demo with all Opus features
-SecondChanceService (Sendable struct)    — Alternative practice suggestions
+DemoModeService (@Observable)            — 8 pre-scripted scenarios, all Opus features
+SecondChanceService (Sendable struct)    — Alternative practice from different category
+TipService (Sendable struct)             — 96 contextual wellness tips
 SoundService (@MainActor)               — Subtle system sound effects
 ```
 
@@ -119,6 +125,14 @@ Or open `RespiroDesktop.xcodeproj` in Xcode and run.
 ## Cross-Platform
 
 Respiro is also available on iOS (App Store). The macOS version is a standalone native app built specifically for the desktop experience.
+
+## Roadmap
+
+- **Backend proxy** — Supabase Edge Function so users don't need their own API key
+- **Apple Sign-In** — authentication for production distribution
+- **iCloud sync** — stress data across Mac and iOS
+- **Calendar integration** — meeting context for smarter nudge timing
+- **Watch companion** — heart rate data for biometric stress signals
 
 ## License
 
