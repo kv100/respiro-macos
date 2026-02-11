@@ -50,6 +50,7 @@ struct WhatHelpedView: View {
             VStack(spacing: 10) {
                 Button(action: {
                     appState.lastWhatHelped = Array(selectedOptions)
+                    appState.completedPracticeCount = 0
                     appState.showDashboard()
                 }) {
                     Text("Done")
@@ -68,6 +69,7 @@ struct WhatHelpedView: View {
 
                 Button(action: {
                     appState.lastWhatHelped = nil
+                    appState.completedPracticeCount = 0
                     appState.showDashboard()
                 }) {
                     Text("Skip")
