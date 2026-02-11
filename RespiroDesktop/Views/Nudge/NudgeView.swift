@@ -40,6 +40,7 @@ struct NudgeView: View {
         .frame(width: 360, height: 480)
         .background(Color(hex: "#142823"))
         .onAppear {
+            SoundService.shared.playNudge()
             withAnimation(.easeOut(duration: 0.3)) {
                 isVisible = true
             }
@@ -86,7 +87,7 @@ struct NudgeView: View {
 
                 // Effort indicator (for practice nudges)
                 if type == .practice {
-                    EffortIndicatorView(level: .high)
+                    EffortIndicatorView(level: appState.lastAnalysis?.effortLevel ?? .high)
                 }
 
                 // AI message or fallback
@@ -96,9 +97,24 @@ struct NudgeView: View {
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
 
+                // Practice reason from AI tool use
+                if type == .practice, let reason = appState.lastAnalysis?.practiceReason, !reason.isEmpty {
+                    Text(reason)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Color(hex: "#10B981").opacity(0.85))
+                        .italic()
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
                 // "Why this?" expandable reasoning panel
                 if type == .practice, let thinking = nudge.thinkingText, !thinking.isEmpty {
                     reasoningPanel(text: thinking)
+                }
+
+                // Tool use showcase
+                if type == .practice, let toolLog = appState.lastAnalysis?.toolUseLog, !toolLog.isEmpty {
+                    toolUseSection(tools: toolLog)
                 }
 
                 // Action buttons based on nudge type
@@ -168,6 +184,33 @@ struct NudgeView: View {
         }
     }
 
+    @ViewBuilder
+    private func toolUseSection(tools: [ToolCall]) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 5) {
+                Image(systemName: "wrench.and.screwdriver")
+                    .font(.system(size: 11))
+                Text("AI Tool Use")
+                    .font(.system(size: 12, weight: .medium))
+            }
+            .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
+
+            ForEach(Array(tools.enumerated()), id: \.offset) { _, tool in
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(Color(hex: "#10B981"))
+                        .frame(width: 5, height: 5)
+                    Text(tool.name.replacingOccurrences(of: "_", with: " "))
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.76))
+                }
+            }
+        }
+        .padding(8)
+        .background(Color(hex: "#C7E8DE").opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+    }
+
     private func startThinkingAnimation(fullText: String) {
         guard displayedCharCount == 0 else { return }
         isThinkingAnimating = true
@@ -219,6 +262,7 @@ struct NudgeView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
+            .keyboardShortcut(.return, modifiers: [])
 
             HStack(spacing: 8) {
                 // I'm Fine
@@ -265,6 +309,7 @@ struct NudgeView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 6))
         }
         .buttonStyle(.plain)
+        .keyboardShortcut(.return, modifiers: [])
     }
 
     // MARK: - Styling Helpers

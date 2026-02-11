@@ -41,6 +41,10 @@ final class AppState {
         set { demoModeService?.isEnabled = newValue }
     }
 
+    // MARK: - Persistence
+
+    var modelContext: ModelContext?
+
     // MARK: - Services
 
     private var monitoringService: MonitoringService?
@@ -132,6 +136,22 @@ final class AppState {
     func updateWeather(_ weather: InnerWeather, analysis: StressAnalysisResponse) {
         currentWeather = weather
         lastAnalysis = analysis
+
+        // Persist StressEntry to SwiftData
+        if let ctx = modelContext {
+            let entry = StressEntry(
+                timestamp: Date(),
+                weather: analysis.weather,
+                confidence: analysis.confidence,
+                signals: analysis.signals,
+                nudgeType: analysis.nudgeType,
+                nudgeMessage: analysis.nudgeMessage,
+                suggestedPracticeID: analysis.suggestedPracticeID,
+                screenshotInterval: 300
+            )
+            ctx.insert(entry)
+            try? ctx.save()
+        }
 
         // Evaluate nudge decision asynchronously
         Task { @MainActor [weak self] in

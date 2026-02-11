@@ -2,7 +2,14 @@ import SwiftUI
 
 struct MainView: View {
     @Environment(AppState.self) private var appState
-    @State private var selectedPracticeType: PracticeType = .physiologicalSigh
+
+    private var practiceType: PracticeType {
+        if let id = appState.selectedPracticeID,
+           let type = PracticeType(rawValue: id) {
+            return type
+        }
+        return .physiologicalSigh
+    }
 
     var body: some View {
         Group {
@@ -15,7 +22,7 @@ struct MainView: View {
                 case .nudge:
                     NudgeView()
                 case .practice:
-                    PracticeRouterView(practiceType: selectedPracticeType)
+                    PracticeRouterView(practiceType: practiceType)
                 case .weatherBefore:
                     WeatherPickerView(isBefore: true)
                 case .weatherAfter:

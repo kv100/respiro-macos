@@ -81,9 +81,24 @@ struct CompletionView: View {
 
             Spacer()
 
+            // Second Chance card (above Done button)
+            if let before = appState.selectedWeatherBefore,
+               let after = appState.selectedWeatherAfter,
+               let alternative = SecondChanceService().suggestAlternative(
+                   completedPracticeID: appState.selectedPracticeID ?? "physiological-sigh",
+                   weatherBefore: before,
+                   weatherAfter: after
+               ) {
+                secondChanceCard(practice: alternative)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
+            }
+
             // Done button
             Button(action: {
                 appState.completedPracticeCount += 1
+                SoundService.shared.playPracticeComplete()
+
                 if appState.completedPracticeCount >= 3 {
                     appState.showWhatHelped()
                 } else {
@@ -208,6 +223,37 @@ struct CompletionView: View {
         case .clear: return Color(hex: "#10B981")
         case .cloudy: return Color(hex: "#8BA4B0")
         case .stormy: return Color(hex: "#7B6B9E")
+        }
+    }
+
+    // MARK: - Second Chance Card
+
+    @ViewBuilder
+    private func secondChanceCard(practice: Practice) -> some View {
+        VStack(spacing: 8) {
+            Text("Try something different?")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.70))
+
+            Button {
+                appState.selectedPracticeID = practice.id
+                appState.selectedWeatherBefore = appState.selectedWeatherAfter
+                appState.selectedWeatherAfter = nil
+                appState.showPractice()
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.system(size: 12))
+                    Text(practice.title)
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundStyle(Color(hex: "#10B981"))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+                .background(Color(hex: "#10B981").opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+            .buttonStyle(.plain)
         }
     }
 }

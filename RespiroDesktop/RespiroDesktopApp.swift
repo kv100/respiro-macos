@@ -41,6 +41,9 @@ struct RespiroDesktopApp: App {
     private func setupMonitoring() async {
         let modelContext = sharedModelContainer.mainContext
 
+        // Provide modelContext to AppState for StressEntry persistence
+        appState.modelContext = modelContext
+
         // Wire up DemoModeService first
         let demoModeService = DemoModeService()
         appState.configureDemoMode(demoModeService)
@@ -50,15 +53,28 @@ struct RespiroDesktopApp: App {
             demoModeService.seedDemoData(modelContext: modelContext)
         }
 
-        let screenMonitor = ScreenMonitor()
+        // Wire NudgeEngine, DismissalLogger, SmartSuppression BEFORE vision client guard
+        // These don't depend on the API key and are needed for demo mode nudge decisions
+        let nudgeEngine = NudgeEngine()
+        appState.configureNudgeEngine(nudgeEngine)
 
-        // Try to create vision client; if no API key, monitoring won't auto-start
+        let dismissalLogger = DismissalLogger(modelContext: modelContext)
+        appState.configureDismissalLogger(dismissalLogger)
+
+        let smartSuppression = SmartSuppression()
+        appState.configureSmartSuppression(smartSuppression)
+
+        let preferenceLearner = PreferenceLearner(modelContext: modelContext)
+        let rankedPractices = preferenceLearner.rankedPracticeIDs()
+
+        // Try to create vision client; if no API key, real monitoring won't be available
+        // but demo mode and nudge engine still work
+        let screenMonitor = ScreenMonitor()
         guard let visionClient = try? ClaudeVisionClient() else {
             return
         }
 
         let service = MonitoringService(screenMonitor: screenMonitor, visionClient: visionClient)
-        let nudgeEngine = NudgeEngine()
 
         // Wire up weather callback — captures appState for @MainActor update
         let state = appState
@@ -68,26 +84,46 @@ struct RespiroDesktopApp: App {
             }
         }
 
-        appState.configureMonitoring(service: service)
-        appState.configureNudgeEngine(nudgeEngine)
+        // Wire silence callback for real monitoring
+        await service.setSilenceCallback { @Sendable silence in
+            Task { @MainActor in
+                state.lastSilenceDecision = silence
+            }
+        }
 
-        // Wire DismissalLogger for "I'm Fine" learning
-        let dismissalLogger = DismissalLogger(modelContext: modelContext)
-        appState.configureDismissalLogger(dismissalLogger)
+        appState.configureMonitoring(service: service)
 
         // Load initial learned patterns into monitoring service
         if let patterns = dismissalLogger.buildLearnedPatterns() {
             await service.updateLearnedPatterns(patterns)
         }
 
-        // Wire SmartSuppression for intelligent nudge gating
-        let smartSuppression = SmartSuppression()
-        appState.configureSmartSuppression(smartSuppression)
-
-        // Wire PreferenceLearner for practice preference learning (P2.4)
-        let preferenceLearner = PreferenceLearner(modelContext: modelContext)
-        let rankedPractices = preferenceLearner.rankedPracticeIDs()
+        // Update preferred practices
         await service.updatePreferredPractices(rankedPractices)
+
+        // Build initial tool context from SwiftData
+        let practiceDescriptor = FetchDescriptor<PracticeSession>(
+            sortBy: [SortDescriptor(\.startedAt, order: .reverse)]
+        )
+        let recentPractices = (try? modelContext.fetch(practiceDescriptor)) ?? []
+        let practiceJSON = recentPractices.prefix(10).map { session in
+            "{\"practiceID\":\"\(session.practiceID)\",\"weatherBefore\":\"\(session.weatherBefore)\",\"weatherAfter\":\"\(session.weatherAfter ?? "unknown")\",\"wasCompleted\":\(session.wasCompleted)}"
+        }.joined(separator: ",")
+
+        let weatherDescriptor = FetchDescriptor<StressEntry>(
+            sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
+        )
+        let recentWeather = (try? modelContext.fetch(weatherDescriptor)) ?? []
+        let weatherJSON = recentWeather.prefix(20).map { entry in
+            "{\"weather\":\"\(entry.weather)\",\"confidence\":\(entry.confidence),\"timestamp\":\"\(entry.timestamp)\"}"
+        }.joined(separator: ",")
+
+        let toolContext = ToolContext(
+            practiceHistory: "[\(practiceJSON)]",
+            weatherHistory: "[\(weatherJSON)]",
+            preferredPractices: rankedPractices
+        )
+        await service.updateToolContext(toolContext)
 
         // P6.5: Wake-from-sleep detection — trigger immediate check after 30s
         NSWorkspace.shared.notificationCenter.addObserver(

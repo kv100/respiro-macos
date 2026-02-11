@@ -72,7 +72,7 @@ P0 (10/10), P1 (11/11), P2 (7/7), D6.1-D6.2 done. See `BACKLOG.md`.
 | ID   | Task                                                          | Est | Agent           | Status |
 | ---- | ------------------------------------------------------------- | --- | --------------- | ------ |
 | P7.1 | Sound design — subtle effects for nudge, practice, completion | 2h  | swift-developer | done   |
-| P7.2 | Personalized tips from iOS (96 tips with conditions)          | 2h  | swift-developer | todo   |
+| P7.2 | Personalized tips from iOS (96 tips with conditions)          | 2h  | swift-developer | done   |
 | P7.3 | Adaptive Thinking in DaySummaryService (max effort)           | 1h  | swift-developer | done   |
 
 ---

@@ -38,6 +38,7 @@ struct GenericBreathingView: View {
         }
         .frame(width: 360, height: 480)
         .onAppear {
+            SoundService.shared.playPracticeStart()
             practiceManager.startPractice(type: practiceType)
         }
         .onDisappear {
@@ -208,7 +209,8 @@ struct GenericBreathingView: View {
                 .keyboardShortcut(.space, modifiers: [])
             } else {
                 Button(action: {
-                    appState.showDashboard()
+                    SoundService.shared.playPracticeComplete()
+                    appState.showWeatherAfter()
                 }) {
                     Text("Done")
                         .font(.system(size: 13, weight: .medium))
