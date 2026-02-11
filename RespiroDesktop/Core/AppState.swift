@@ -34,6 +34,11 @@ final class AppState {
         didSet { UserDefaults.standard.set(isOnboardingComplete, forKey: "isOnboardingComplete") }
     }
 
+    /// Whether user has opted to use their own API key instead of proxy
+    var useOwnKey: Bool {
+        UserDefaults.standard.bool(forKey: "respiro_use_own_key")
+    }
+
     // MARK: - Demo Mode
 
     var isDemoMode: Bool {

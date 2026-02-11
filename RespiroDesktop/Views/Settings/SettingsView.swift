@@ -15,6 +15,7 @@ struct SettingsView: View {
     @State private var isApiKeyVisible: Bool = false
     @State private var hasLoaded: Bool = false
     @State private var showSavedIndicator: Bool = false
+    @State private var useOwnKey: Bool = false
 
     private var currentPreferences: UserPreferences? {
         preferences.first
@@ -41,7 +42,7 @@ struct SettingsView: View {
                     preferencesSection
                     sectionDivider
 
-                    apiKeySection
+                    apiSection
                     sectionDivider
 
                     aboutSection
@@ -233,66 +234,94 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - API Key
+    // MARK: - API Section
 
-    private var apiKeySection: some View {
+    private var apiSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            sectionHeader(title: "API KEY", icon: "key")
+            sectionHeader(title: "CONNECTION", icon: "server.rack")
 
-            HStack(spacing: 8) {
-                Group {
-                    if isApiKeyVisible {
-                        TextField("sk-ant-...", text: $apiKeyText)
-                    } else {
-                        SecureField("sk-ant-...", text: $apiKeyText)
-                    }
-                }
-                .textFieldStyle(.plain)
-                .font(.system(size: 12, design: .monospaced))
-                .foregroundStyle(Color.white.opacity(0.92))
-                .padding(8)
-                .background(Color.white.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-                .onSubmit {
-                    saveAPIKey()
-                }
-
-                // Eye toggle
-                Button {
-                    isApiKeyVisible.toggle()
-                } label: {
-                    Image(systemName: isApiKeyVisible ? "eye.slash" : "eye")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.white.opacity(0.60))
-                        .frame(width: 28, height: 28)
-                        .background(Color.white.opacity(0.08))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                }
-                .buttonStyle(.plain)
-
-                // Save icon button
-                Button {
-                    saveAPIKey()
-                } label: {
-                    Image(systemName: showSavedIndicator ? "checkmark" : "square.and.arrow.down")
-                        .font(.system(size: 12))
-                        .foregroundStyle(showSavedIndicator ? Color(hex: "#10B981") : Color.white.opacity(0.60))
-                        .frame(width: 28, height: 28)
-                        .background(Color.white.opacity(0.08))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                }
-                .buttonStyle(.plain)
-                .disabled(apiKeyText.isEmpty)
+            // Status indicator
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(useOwnKey ? Color(hex: "#8BA4B0") : Color(hex: "#10B981"))
+                    .frame(width: 8, height: 8)
+                Text(useOwnKey ? "Using own API key" : "Connected via Respiro servers")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.white.opacity(0.72))
             }
 
-            if APIKeyManager.hasAPIKey {
-                HStack(spacing: 4) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 10))
-                        .foregroundStyle(Color(hex: "#10B981"))
-                    Text("API key configured")
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color.white.opacity(0.70))
+            // Usage counter (proxy mode)
+            if !useOwnKey {
+                let used = UserDefaults.standard.integer(forKey: "respiro_daily_api_calls")
+                Text("\(used)/20 analyses today")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.white.opacity(0.45))
+            }
+
+            // Toggle for BYOK
+            HStack {
+                Text("Use own API key")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.white.opacity(0.92))
+                Spacer()
+                Toggle("", isOn: $useOwnKey)
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .tint(Color(hex: "#10B981"))
+                    .onChange(of: useOwnKey) { _, _ in
+                        savePreferences()
+                    }
+            }
+
+            // API key input (only when BYOK toggled)
+            if useOwnKey {
+                HStack(spacing: 8) {
+                    Group {
+                        if isApiKeyVisible {
+                            TextField("sk-ant-...", text: $apiKeyText)
+                        } else {
+                            SecureField("sk-ant-...", text: $apiKeyText)
+                        }
+                    }
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundStyle(Color.white.opacity(0.92))
+                    .padding(8)
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .onSubmit { saveAPIKey() }
+
+                    Button { isApiKeyVisible.toggle() } label: {
+                        Image(systemName: isApiKeyVisible ? "eye.slash" : "eye")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color.white.opacity(0.60))
+                            .frame(width: 28, height: 28)
+                            .background(Color.white.opacity(0.08))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button { saveAPIKey() } label: {
+                        Image(systemName: showSavedIndicator ? "checkmark" : "square.and.arrow.down")
+                            .font(.system(size: 12))
+                            .foregroundStyle(showSavedIndicator ? Color(hex: "#10B981") : Color.white.opacity(0.60))
+                            .frame(width: 28, height: 28)
+                            .background(Color.white.opacity(0.08))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(apiKeyText.isEmpty)
+                }
+
+                if APIKeyManager.hasAPIKey {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 10))
+                            .foregroundStyle(Color(hex: "#10B981"))
+                        Text("API key configured")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color.white.opacity(0.70))
+                    }
                 }
             }
         }
@@ -420,6 +449,9 @@ struct SettingsView: View {
             maxPracticeDuration = prefs.maxPracticeDuration
         }
 
+        // Load BYOK toggle state
+        useOwnKey = UserDefaults.standard.bool(forKey: "respiro_use_own_key")
+
         // Load saved API key (show masked placeholder, not actual key)
         if let key = APIKeyManager.getAPIKey(), !key.isEmpty {
             apiKeyText = key
@@ -440,6 +472,9 @@ struct SettingsView: View {
         prefs.soundEnabled = soundEnabled
         prefs.showEncouragementNudges = showEncouragementNudges
         prefs.maxPracticeDuration = maxPracticeDuration
+
+        // Save BYOK toggle state
+        UserDefaults.standard.set(useOwnKey, forKey: "respiro_use_own_key")
 
         try? modelContext.save()
     }
