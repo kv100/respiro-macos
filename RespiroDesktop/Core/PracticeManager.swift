@@ -18,6 +18,21 @@ enum PracticeType: String, Sendable {
     case extendedExhale = "extended-exhale"
     case thoughtDefusion = "thought-defusion"
     case coherentBreathing = "coherent-breathing"
+    // V2: Breathing
+    case fourSevenEight = "4-7-8-breathing"
+    case bellyBreathing = "belly-breathing"
+    case alternateNostril = "alternate-nostril"
+    case resonanceBreathing = "resonance-breathing"
+    // V2: Body
+    case bodyScan = "body-scan"
+    case progressiveRelaxation = "progressive-relaxation"
+    case gentleStretching = "gentle-stretching"
+    case groundingFeet = "grounding-feet"
+    // V2: Mind
+    case lovingKindness = "loving-kindness"
+    case worryTime = "worry-time"
+    case mindfulListening = "mindful-listening"
+    case visualization = "visualization"
 }
 
 // MARK: - Grounding
@@ -192,6 +207,10 @@ final class PracticeManager {
     // Thought Defusion state
     var currentDefusionPhase: DefusionPhase = .nameThought
 
+    // Generic step-based practice state (V2)
+    var currentGenericStep: Int = 0
+    var currentStepInstruction: String = ""
+
     // MARK: - Private
 
     private var practiceTask: Task<Void, Never>?
@@ -246,6 +265,45 @@ final class PracticeManager {
         case .coherentBreathing:
             totalCycles = 12
             totalDuration = 120  // 12 cycles x (5+5)s = 120s
+        // V2: Breathing
+        case .fourSevenEight:
+            totalCycles = 6
+            totalDuration = 120  // 6 cycles x (4+7+8)s = 114s + buffer
+        case .bellyBreathing:
+            totalCycles = 9
+            totalDuration = 90   // 9 cycles x (5+5)s = 90s
+        case .alternateNostril:
+            totalCycles = 6
+            totalDuration = 120  // 6 cycles x (4+2+4+4+2+4)s = 120s
+        case .resonanceBreathing:
+            totalCycles = 10
+            totalDuration = 120  // 10 cycles x (6+6)s = 120s
+        // V2: Body (step-based)
+        case .bodyScan:
+            totalDuration = 120
+            currentGenericStep = 0
+        case .progressiveRelaxation:
+            totalDuration = 120
+            currentGenericStep = 0
+        case .gentleStretching:
+            totalDuration = 90
+            currentGenericStep = 0
+        case .groundingFeet:
+            totalDuration = 60
+            currentGenericStep = 0
+        // V2: Mind (step-based)
+        case .lovingKindness:
+            totalDuration = 120
+            currentGenericStep = 0
+        case .worryTime:
+            totalDuration = 90
+            currentGenericStep = 0
+        case .mindfulListening:
+            totalDuration = 60
+            currentGenericStep = 0
+        case .visualization:
+            totalDuration = 120
+            currentGenericStep = 0
         }
 
         remainingSeconds = totalDuration
@@ -330,6 +388,19 @@ final class PracticeManager {
             await runThoughtDefusion()
         case .coherentBreathing:
             await runCoherentBreathing()
+        // V2: Breathing
+        case .fourSevenEight:
+            await runFourSevenEight()
+        case .bellyBreathing:
+            await runBellyBreathing()
+        case .alternateNostril:
+            await runAlternateNostril()
+        case .resonanceBreathing:
+            await runResonanceBreathing()
+        // V2: Step-based (body + mind)
+        case .bodyScan, .progressiveRelaxation, .gentleStretching, .groundingFeet,
+             .lovingKindness, .worryTime, .mindfulListening, .visualization:
+            await runGenericStepPractice()
         }
     }
 
@@ -520,6 +591,152 @@ final class PracticeManager {
 
             completedCycles = cycle + 1
             remainingSeconds = max(0, totalDuration - (completedCycles * cycleLength))
+        }
+
+        completePractice()
+    }
+
+    // MARK: - 4-7-8 Breathing Pattern
+
+    // inhale(4s) + hold(7s) + exhale(8s) x 6 = 114s
+    private func runFourSevenEight() async {
+        let startCycle = completedCycles
+        let cycleLength = 19 // 4+7+8
+
+        for cycle in startCycle..<totalCycles {
+            guard !Task.isCancelled else { return }
+
+            currentPhase = .inhale
+            phaseDuration = 4.0
+            if await sleepPhase(seconds: 4.0) { return }
+
+            currentPhase = .hold
+            phaseDuration = 7.0
+            if await sleepPhase(seconds: 7.0) { return }
+
+            currentPhase = .exhale
+            phaseDuration = 8.0
+            if await sleepPhase(seconds: 8.0) { return }
+
+            completedCycles = cycle + 1
+            remainingSeconds = max(0, totalDuration - (completedCycles * cycleLength))
+        }
+
+        completePractice()
+    }
+
+    // MARK: - Belly Breathing Pattern
+
+    // inhale(5s) + exhale(5s) x 9 = 90s
+    private func runBellyBreathing() async {
+        let startCycle = completedCycles
+        let cycleLength = 10 // 5+5
+
+        for cycle in startCycle..<totalCycles {
+            guard !Task.isCancelled else { return }
+
+            currentPhase = .inhale
+            phaseDuration = 5.0
+            if await sleepPhase(seconds: 5.0) { return }
+
+            currentPhase = .exhale
+            phaseDuration = 5.0
+            if await sleepPhase(seconds: 5.0) { return }
+
+            completedCycles = cycle + 1
+            remainingSeconds = max(0, totalDuration - (completedCycles * cycleLength))
+        }
+
+        completePractice()
+    }
+
+    // MARK: - Alternate Nostril Pattern
+
+    // left inhale(4s) + hold(2s) + right exhale(4s) + right inhale(4s) + hold(2s) + left exhale(4s) x 6 = 120s
+    private func runAlternateNostril() async {
+        let startCycle = completedCycles
+        let cycleLength = 20 // 4+2+4+4+2+4
+
+        for cycle in startCycle..<totalCycles {
+            guard !Task.isCancelled else { return }
+
+            currentStepInstruction = "Left nostril inhale"
+            currentPhase = .inhale
+            phaseDuration = 4.0
+            if await sleepPhase(seconds: 4.0) { return }
+
+            currentPhase = .hold
+            phaseDuration = 2.0
+            if await sleepPhase(seconds: 2.0) { return }
+
+            currentStepInstruction = "Right nostril exhale"
+            currentPhase = .exhale
+            phaseDuration = 4.0
+            if await sleepPhase(seconds: 4.0) { return }
+
+            currentStepInstruction = "Right nostril inhale"
+            currentPhase = .inhale
+            phaseDuration = 4.0
+            if await sleepPhase(seconds: 4.0) { return }
+
+            currentPhase = .hold
+            phaseDuration = 2.0
+            if await sleepPhase(seconds: 2.0) { return }
+
+            currentStepInstruction = "Left nostril exhale"
+            currentPhase = .exhale
+            phaseDuration = 4.0
+            if await sleepPhase(seconds: 4.0) { return }
+
+            completedCycles = cycle + 1
+            remainingSeconds = max(0, totalDuration - (completedCycles * cycleLength))
+        }
+
+        completePractice()
+    }
+
+    // MARK: - Resonance Breathing Pattern
+
+    // inhale(6s) + exhale(6s) x 10 = 120s
+    private func runResonanceBreathing() async {
+        let startCycle = completedCycles
+        let cycleLength = 12 // 6+6
+
+        for cycle in startCycle..<totalCycles {
+            guard !Task.isCancelled else { return }
+
+            currentPhase = .inhale
+            phaseDuration = 6.0
+            if await sleepPhase(seconds: 6.0) { return }
+
+            currentPhase = .exhale
+            phaseDuration = 6.0
+            if await sleepPhase(seconds: 6.0) { return }
+
+            completedCycles = cycle + 1
+            remainingSeconds = max(0, totalDuration - (completedCycles * cycleLength))
+        }
+
+        completePractice()
+    }
+
+    // MARK: - Generic Step-Based Practice
+
+    private func runGenericStepPractice() async {
+        guard let practice = PracticeCatalog.practice(for: practiceType.rawValue) else {
+            completePractice()
+            return
+        }
+
+        let steps = practice.steps
+        for (index, step) in steps.enumerated() {
+            guard !Task.isCancelled else { return }
+
+            currentGenericStep = index
+            currentStepInstruction = step.instruction
+            let duration = Double(step.duration)
+            if await sleepPhase(seconds: duration) { return }
+            remainingSeconds = max(0, remainingSeconds - step.duration)
         }
 
         completePractice()

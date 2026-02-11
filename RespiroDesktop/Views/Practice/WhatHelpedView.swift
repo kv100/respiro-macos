@@ -80,7 +80,7 @@ struct WhatHelpedView: View {
             .padding(.bottom, 24)
         }
         .frame(width: 360, height: 480)
-        .background(Color(hex: "#0A1F1A"))
+        .background(Color(hex: "#142823"))
     }
 
     // MARK: - Option Chip

@@ -7,6 +7,10 @@ struct DaySummaryView: View {
     @State private var summary: DaySummaryResponse?
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var isThinkingExpanded = false
+    @State private var displayedThinkingCharCount: Int = 0
+    @State private var isThinkingAnimating: Bool = false
+    @State private var thinkingAnimationTask: Task<Void, Never>?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -39,7 +43,7 @@ struct DaySummaryView: View {
                 .frame(height: 56)
         }
         .frame(width: 360, height: 480)
-        .background(Color(hex: "#0A1F1A"))
+        .background(Color(hex: "#142823"))
         .task {
             await loadSummary()
         }
@@ -129,6 +133,11 @@ struct DaySummaryView: View {
             // Stress timeline
             stressTimeline
 
+            // AI Day Reflection thinking panel
+            if let thinking = summary.thinkingText, !thinking.isEmpty {
+                dayReflectionThinkingPanel(text: thinking)
+            }
+
             // AI reflection cards
             reflectionCard(
                 icon: "cloud.sun",
@@ -159,6 +168,70 @@ struct DaySummaryView: View {
             )
         }
         .padding(16)
+    }
+
+    // MARK: - Day Reflection Thinking
+
+    @ViewBuilder
+    private func dayReflectionThinkingPanel(text: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    isThinkingExpanded.toggle()
+                }
+                if isThinkingExpanded && displayedThinkingCharCount == 0 {
+                    startThinkingAnimation(fullText: text)
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "brain.head.profile")
+                        .font(.system(size: 12))
+
+                    Text("AI's Day Reflection")
+                        .font(.system(size: 12, weight: .medium))
+
+                    Spacer()
+
+                    EffortIndicatorView(level: .max)
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 9, weight: .semibold))
+                        .rotationEffect(.degrees(isThinkingExpanded ? 90 : 0))
+                }
+                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
+            }
+            .buttonStyle(.plain)
+
+            if isThinkingExpanded {
+                let visibleText = String(text.prefix(displayedThinkingCharCount))
+                ThinkingStreamView(
+                    text: visibleText,
+                    isStreaming: isThinkingAnimating
+                )
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .padding(12)
+        .background(Color(hex: "#C7E8DE").opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .onDisappear {
+            thinkingAnimationTask?.cancel()
+        }
+    }
+
+    private func startThinkingAnimation(fullText: String) {
+        guard displayedThinkingCharCount == 0 else { return }
+        isThinkingAnimating = true
+
+        thinkingAnimationTask = Task { @MainActor in
+            let totalChars = fullText.count
+            while displayedThinkingCharCount < totalChars {
+                guard !Task.isCancelled else { return }
+                displayedThinkingCharCount = min(displayedThinkingCharCount + 3, totalChars)
+                try? await Task.sleep(nanoseconds: 16_000_000) // ~60fps
+            }
+            isThinkingAnimating = false
+        }
     }
 
     // MARK: - Day Score

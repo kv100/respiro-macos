@@ -6,6 +6,7 @@ struct DaySummaryResponse: Codable, Sendable {
     let effectivePractice: String
     let recommendation: String
     let dayScore: Int
+    var thinkingText: String?
 
     enum CodingKeys: String, CodingKey {
         case overallMood = "overall_mood"
@@ -13,5 +14,6 @@ struct DaySummaryResponse: Codable, Sendable {
         case effectivePractice = "effective_practice"
         case recommendation
         case dayScore = "day_score"
+        // thinkingText is NOT in CodingKeys — set programmatically from thinking blocks
     }
 }

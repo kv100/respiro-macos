@@ -27,7 +27,12 @@ final class AppState {
     var completedPracticeCount: Int = 0
     var lastWhatHelped: [String]?
     var lastPracticeCategory: PracticeCategory?
-    @ObservationIgnored @AppStorage("isOnboardingComplete") var isOnboardingComplete: Bool = false
+    var selectedPracticeID: String?
+    var lastSilenceDecision: SilenceDecision?
+    var secondChancePractice: Practice?
+    var isOnboardingComplete: Bool = UserDefaults.standard.bool(forKey: "isOnboardingComplete") {
+        didSet { UserDefaults.standard.set(isOnboardingComplete, forKey: "isOnboardingComplete") }
+    }
 
     // MARK: - Demo Mode
 
@@ -88,11 +93,18 @@ final class AppState {
         // Use demo mode if enabled
         if isDemoMode, let demoService = demoModeService {
             let state = self
-            demoService.startDemoLoop { @Sendable weather, analysis in
-                Task { @MainActor in
-                    state.updateWeather(weather, analysis: analysis)
+            demoService.startDemoLoop(
+                onUpdate: { @Sendable weather, analysis in
+                    Task { @MainActor in
+                        state.updateWeather(weather, analysis: analysis)
+                    }
+                },
+                onSilenceDecision: { @Sendable silence in
+                    Task { @MainActor in
+                        state.lastSilenceDecision = silence
+                    }
                 }
-            }
+            )
         } else if let service = monitoringService {
             await service.startMonitoring()
         }
@@ -130,6 +142,7 @@ final class AppState {
                 let suppressionResult = suppression.shouldSuppress()
                 if let denied = engine.evaluateSuppression(suppressionResult) {
                     self.pendingNudge = denied
+                    self.captureSilenceDecision(analysis: analysis, reason: denied.reason)
                     return
                 }
             }
@@ -139,8 +152,27 @@ final class AppState {
             if decision.shouldShow, let nudgeType = decision.nudgeType {
                 await engine.recordNudgeShown(type: nudgeType)
                 self.showNudge()
+            } else if !decision.shouldShow {
+                self.captureSilenceDecision(analysis: analysis, reason: decision.reason)
             }
         }
+    }
+
+    /// Capture a silence decision when the AI chose not to interrupt.
+    private func captureSilenceDecision(analysis: StressAnalysisResponse, reason: String) {
+        let weather = InnerWeather(rawValue: analysis.weather) ?? .clear
+        // Only capture for non-trivial situations
+        guard weather != .clear || analysis.nudgeType != nil || analysis.thinkingText != nil else { return }
+
+        let thinking = analysis.thinkingText
+            ?? "Detected \(weather.displayName.lowercased()) conditions but chose to stay quiet. Reason: \(reason.replacingOccurrences(of: "_", with: " "))."
+
+        lastSilenceDecision = SilenceDecision(
+            thinkingText: thinking,
+            effortLevel: analysis.effortLevel ?? .high,
+            detectedWeather: weather,
+            signals: analysis.signals
+        )
     }
 
     func notifyPracticeCompleted() async {
@@ -179,6 +211,9 @@ final class AppState {
     }
 
     func showPractice() {
+        if selectedPracticeID == nil, let suggested = pendingNudge?.suggestedPracticeID {
+            selectedPracticeID = suggested
+        }
         currentScreen = .practice
     }
 

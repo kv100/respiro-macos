@@ -34,6 +34,13 @@ struct MainView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: appState.currentScreen)
+        .onKeyPress(.escape) {
+            if appState.currentScreen != .dashboard {
+                appState.showDashboard()
+                return .handled
+            }
+            return .ignored
+        }
     }
 }
 

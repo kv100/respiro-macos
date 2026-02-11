@@ -9,7 +9,7 @@ struct GroundingView: View {
 
     var body: some View {
         ZStack {
-            Color(hex: "#0A1F1A")
+            Color(hex: "#142823")
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {

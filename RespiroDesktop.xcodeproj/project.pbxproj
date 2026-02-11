@@ -50,6 +50,15 @@
 		APP_082 /* ThoughtDefusionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_082 /* ThoughtDefusionView.swift */; };
 		APP_083 /* WhatHelpedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_083 /* WhatHelpedView.swift */; };
 		APP_090 /* DemoModeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_090 /* DemoModeService.swift */; };
+		APP_100 /* EffortLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_100 /* EffortLevel.swift */; };
+		APP_101 /* EffortIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_101 /* EffortIndicatorView.swift */; };
+		APP_110 /* SilenceDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_110 /* SilenceDecision.swift */; };
+		APP_102 /* ThinkingStreamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_102 /* ThinkingStreamView.swift */; };
+		APP_120 /* StressGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_120 /* StressGraphView.swift */; };
+		APP_130 /* SoundService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_130 /* SoundService.swift */; };
+		APP_140 /* SecondChanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_140 /* SecondChanceService.swift */; };
+		APP_150 /* GenericBreathingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_150 /* GenericBreathingView.swift */; };
+		APP_151 /* GenericStepPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_151 /* GenericStepPracticeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -99,6 +108,15 @@
 		FILE_082 /* ThoughtDefusionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtDefusionView.swift; sourceTree = "<group>"; };
 		FILE_083 /* WhatHelpedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatHelpedView.swift; sourceTree = "<group>"; };
 		FILE_090 /* DemoModeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoModeService.swift; sourceTree = "<group>"; };
+		FILE_100 /* EffortLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffortLevel.swift; sourceTree = "<group>"; };
+		FILE_101 /* EffortIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffortIndicatorView.swift; sourceTree = "<group>"; };
+		FILE_110 /* SilenceDecision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilenceDecision.swift; sourceTree = "<group>"; };
+		FILE_102 /* ThinkingStreamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThinkingStreamView.swift; sourceTree = "<group>"; };
+		FILE_120 /* StressGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StressGraphView.swift; sourceTree = "<group>"; };
+		FILE_130 /* SoundService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundService.swift; sourceTree = "<group>"; };
+		FILE_140 /* SecondChanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondChanceService.swift; sourceTree = "<group>"; };
+		FILE_150 /* GenericBreathingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericBreathingView.swift; sourceTree = "<group>"; };
+		FILE_151 /* GenericStepPracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericStepPracticeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -127,6 +145,8 @@
 				FILE_060 /* DaySummaryService.swift */,
 				FILE_061 /* PreferenceLearner.swift */,
 				FILE_090 /* DemoModeService.swift */,
+				FILE_130 /* SoundService.swift */,
+				FILE_140 /* SecondChanceService.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -152,6 +172,8 @@
 				FILE_019 /* NudgeType.swift */,
 				FILE_020 /* DismissalType.swift */,
 				FILE_062 /* DaySummaryResponse.swift */,
+				FILE_100 /* EffortLevel.swift */,
+			FILE_110 /* SilenceDecision.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -187,6 +209,8 @@
 				FILE_030 /* WeatherPickerView.swift */,
 				FILE_031 /* CompletionView.swift */,
 				FILE_083 /* WhatHelpedView.swift */,
+				FILE_150 /* GenericBreathingView.swift */,
+				FILE_151 /* GenericStepPracticeView.swift */,
 			);
 			path = Practice;
 			sourceTree = "<group>";
@@ -246,6 +270,16 @@
 			path = Summary;
 			sourceTree = "<group>";
 		};
+		GROUP_COMPONENTS /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_101 /* EffortIndicatorView.swift */,
+				FILE_102 /* ThinkingStreamView.swift */,
+				FILE_120 /* StressGraphView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		GROUP_VIEWS /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -254,6 +288,7 @@
 				GROUP_ONBOARDING /* Onboarding */,
 				GROUP_NUDGE /* Nudge */,
 				GROUP_PRACTICE /* Practice */,
+				GROUP_COMPONENTS /* Components */,
 				GROUP_SETTINGS /* Settings */,
 				GROUP_SUMMARY /* Summary */,
 			);
@@ -379,6 +414,15 @@
 				APP_082 /* ThoughtDefusionView.swift in Sources */,
 				APP_083 /* WhatHelpedView.swift in Sources */,
 				APP_090 /* DemoModeService.swift in Sources */,
+				APP_100 /* EffortLevel.swift in Sources */,
+				APP_101 /* EffortIndicatorView.swift in Sources */,
+				APP_110 /* SilenceDecision.swift in Sources */,
+				APP_102 /* ThinkingStreamView.swift in Sources */,
+				APP_120 /* StressGraphView.swift in Sources */,
+				APP_130 /* SoundService.swift in Sources */,
+				APP_140 /* SecondChanceService.swift in Sources */,
+				APP_150 /* GenericBreathingView.swift in Sources */,
+				APP_151 /* GenericStepPracticeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

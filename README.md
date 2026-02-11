@@ -1,68 +1,129 @@
 # Respiro Desktop
 
-> AI-powered macOS stress coach for the "Built with Opus 4.6" Hackathon (Feb 10-16, 2026)
+> **AI-powered macOS stress coach** | Built with Claude Opus 4.6 | Anthropic Hackathon Feb 2026
 
-## What is Respiro?
+<p align="center">
+  <img src="docs/assets/respiro-icon.png" alt="Respiro" width="128" />
+</p>
 
-Respiro is a macOS menu bar app that uses Claude Opus 4.6 Vision API to analyze your desktop stress level through periodic screenshots. It visualizes your inner state as weather (clear/cloudy/stormy) and offers gentle, timely nudges to practice evidence-based stress relief techniques.
+## The Problem
 
-**The hardest AI problem**: knowing when NOT to interrupt. Respiro uses Opus 4.6's adaptive reasoning to decide when to stay quiet.
+Knowledge workers spend 8+ hours staring at screens, unaware of mounting stress until it's too late. Existing wellness apps require manual check-ins — by then, the damage is done.
+
+## The Solution
+
+Respiro lives in your macOS menu bar as a weather icon. It periodically captures screenshots (memory only, never disk), sends them to **Claude Opus 4.6 Vision API** for stress analysis, and represents your inner state as weather: clear, cloudy, or stormy.
+
+**The hardest AI problem is knowing when NOT to help.** Respiro uses Opus 4.6's adaptive reasoning to decide when to stay quiet — and shows you its thinking when it does.
+
+## How Opus 4.6 Powers Respiro
+
+### Vision API — Multimodal Stress Detection
+
+Screenshots are analyzed by Opus 4.6 to detect visual stress cues: tab count, notification volume, app switching frequency, error messages, video call fatigue. The AI never reads message content or names.
+
+### Adaptive Thinking (Extended Thinking)
+
+Every analysis uses effort-scaled thinking budgets:
+
+- **Low** (1K tokens): Routine clear-weather checks
+- **High** (4K tokens): Ambiguous signals, contradictory cues
+- **Max** (10K tokens): End-of-day reflection with full context
+
+### Tool Use — Practice Selection
+
+When stress is detected, Opus 4.6 calls tools to select the best practice:
+
+1. `get_practice_catalog` — reviews 20 available practices
+2. `get_user_history` — checks what worked before
+3. `suggest_practice` — makes a reasoned recommendation
+
+The interleaved thinking between tool calls IS the showcase — the AI reasons about each result before the next call.
+
+### "The Silence Decision" — AI That Stays Quiet
+
+The innovation angle: when Opus detects stress but determines the user is in productive flow, it **chooses not to interrupt** and logs its reasoning. Users see exactly when and why the AI stayed quiet. This is the hardest AI problem — restraint.
+
+### Streaming Thinking
+
+The "Why This?" panel shows Opus 4.6's reasoning in real-time with a typing animation, making the AI's thought process visible and transparent.
+
+### 1M Context — Day Reflection
+
+End-of-day summary uses `.max` effort (10K thinking tokens) to reflect on the full day of stress entries, practices, and dismissals — producing personalized insights.
+
+## Features
+
+- **Weather-based stress visualization** — clear/cloudy/stormy in menu bar
+- **Stress trajectory graph** — smooth bezier curve showing your day
+- **20 evidence-based practices** — breathing, body, and mind techniques
+- **Smart nudge system** — cooldowns, daily limits, dismissal learning
+- **"The Silence Decision"** — visible AI restraint on dashboard
+- **Category-specific science snippets** — 21 research-backed facts
+- **Second Chance** — suggests alternative practice from different category
+- **Adaptive screenshot intervals** — faster when stormy, slower when clear
+- **Sound design** — subtle system sounds for key moments
+- **Demo mode** — pre-scripted scenarios showcasing all Opus features
+- **Active hours** — respects your work schedule
+- **Wake-from-sleep** — immediate check after returning
 
 ## Tech Stack
 
-- **Language:** Swift 6 (strict concurrency)
-- **UI:** SwiftUI (MenuBarExtra with `.window` style)
-- **Architecture:** @Observable + actor Services
-- **AI:** Claude Opus 4.6 Vision API
-- **Screenshots:** ScreenCaptureKit (memory only, never disk)
-- **Persistence:** SwiftData (local only)
-- **Target:** macOS 14+ (Sonoma)
-- **Dependencies:** Zero - Apple frameworks only
-
-## Project Status
-
-### P0 - Foundation (COMPLETED)
-
-- ✅ P0.1: Xcode project, MenuBarExtra, AppState, folder structure
-
-### Next Steps
-
-- P0.2: SF Symbol weather icons with transitions
-- P0.3: ScreenCaptureKit screenshot capture
-- P0.4: Claude Vision API client
-- P0.5: Monitoring service with adaptive intervals
-- P0.6: Nudge engine with cooldowns
-- P0.7: Nudge popup UI
-- P0.8: Physiological Sigh practice
-- P0.9: SwiftData models
-
-## Building
-
-```bash
-xcodebuild -scheme RespiroDesktop -destination 'platform=macOS' build
-```
-
-## Privacy
-
-- Screenshots captured in memory only, never written to disk
-- No server storage - all data stays local
-- Claude API analyzes visual stress cues, never reads message content
-- LSUIElement = true (no dock icon, menu bar only)
+| Layer        | Technology                             |
+| ------------ | -------------------------------------- |
+| Language     | Swift 6 (strict concurrency)           |
+| UI           | SwiftUI (MenuBarExtra `.window` style) |
+| Architecture | @Observable + actor Services           |
+| AI           | Claude Opus 4.6 Vision + Text + Tools  |
+| Screenshots  | ScreenCaptureKit (memory only)         |
+| Persistence  | SwiftData (local only)                 |
+| Target       | macOS 14+ (Sonoma)                     |
+| Dependencies | Zero — Apple frameworks only           |
 
 ## Architecture
 
 ```
-AppState (@MainActor @Observable)     — Central state, navigation
-MonitoringService (actor)             — ScreenCaptureKit + timer
-ClaudeVisionClient (Sendable struct)  — Opus 4.6 Vision API
-NudgeEngine (actor)                   — Cooldowns, learning
-PracticeManager (@MainActor @Observable) — Practice flow, timer
+AppState (@MainActor @Observable)        — Central state, navigation
+MonitoringService (actor)                — ScreenCaptureKit + adaptive timer
+ClaudeVisionClient (Sendable struct)     — Vision API + Tool Use + Streaming
+NudgeEngine (actor)                      — Cooldowns, suppression, silence decisions
+DaySummaryService (actor)                — End-of-day reflection with max thinking
+DemoModeService (@Observable)            — Pre-scripted demo with all Opus features
+SecondChanceService (Sendable struct)    — Alternative practice suggestions
+SoundService (@MainActor)               — Subtle system sound effects
 ```
+
+## Building
+
+```bash
+# Build
+xcodebuild -scheme RespiroDesktop -destination 'platform=macOS' build
+
+# Run (set API key)
+export ANTHROPIC_API_KEY="sk-ant-..."
+open build/Release/RespiroDesktop.app
+```
+
+Or open `RespiroDesktop.xcodeproj` in Xcode and run.
+
+**Demo mode** works without an API key — toggle in Settings.
+
+## Privacy
+
+- Screenshots captured in memory only — **never written to disk**
+- All data stays local (SwiftData, no cloud sync)
+- Claude API analyzes visual stress cues, never reads message content or names
+- API key stored locally, never transmitted to third parties
+- Menu bar only (LSUIElement) — no dock icon
+
+## Cross-Platform
+
+Respiro is also available on iOS (App Store). The macOS version is a standalone native app built specifically for the desktop experience.
 
 ## License
 
-MIT (hackathon submission)
+MIT
 
 ---
 
-Built with Claude Code for the Anthropic "Built with Opus 4.6" Hackathon
+Built with [Claude Code](https://claude.ai/claude-code) for the Anthropic **"Built with Opus 4.6"** Hackathon (Feb 10-16, 2026)

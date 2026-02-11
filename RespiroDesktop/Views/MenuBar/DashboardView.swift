@@ -1,8 +1,17 @@
 import SwiftUI
+import SwiftData
 
 struct DashboardView: View {
     @Environment(AppState.self) private var appState
+    @Query(sort: \StressEntry.timestamp) private var allEntries: [StressEntry]
     @State private var iconScale: CGFloat = 1.0
+    @State private var silenceCardExpanded: Bool = false
+    @State private var silenceCardVisible: Bool = false
+
+    private var todayEntries: [StressEntry] {
+        let start = Calendar.current.startOfDay(for: Date())
+        return allEntries.filter { $0.timestamp >= start }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -16,8 +25,23 @@ struct DashboardView: View {
             // ZONE B: Content (flexible)
             ScrollView {
                 VStack(spacing: 12) {
-                    weatherStatusCard
+                    StressGraphView(entries: todayEntries)
                     monitoringCard
+                    if let silence = appState.lastSilenceDecision {
+                        silenceDecisionCard(silence)
+                            .opacity(silenceCardVisible ? 1 : 0)
+                            .animation(.easeIn(duration: 0.4), value: silenceCardVisible)
+                            .onChange(of: appState.lastSilenceDecision?.id) { _, _ in
+                                silenceCardVisible = false
+                                silenceCardExpanded = false
+                                withAnimation(.easeIn(duration: 0.4)) {
+                                    silenceCardVisible = true
+                                }
+                            }
+                            .onAppear {
+                                silenceCardVisible = true
+                            }
+                    }
                     daySummaryButton
                 }
                 .padding(16)
@@ -32,7 +56,7 @@ struct DashboardView: View {
                 .frame(height: 56)
         }
         .frame(width: 360, height: 480)
-        .background(Color(hex: "#0A1F1A"))
+        .background(Color(hex: "#142823"))
     }
 
     // MARK: - Zone A: Status Header
@@ -71,29 +95,8 @@ struct DashboardView: View {
             }
             .padding(.horizontal, 16)
 
-            // Mini timeline: 12 hourly dots
-            miniTimeline
-                .padding(.horizontal, 16)
         }
         .padding(.top, 12)
-    }
-
-    private var miniTimeline: some View {
-        HStack(spacing: 6) {
-            ForEach(0..<12, id: \.self) { index in
-                Circle()
-                    .fill(timelineDotColor(for: index))
-                    .frame(width: 6, height: 6)
-            }
-        }
-    }
-
-    private func timelineDotColor(for index: Int) -> Color {
-        // Placeholder: last 3 dots show current weather color, rest are dim
-        if index >= 9 && appState.isMonitoring {
-            return weatherAccentColor(appState.currentWeather)
-        }
-        return Color(hex: "#C7E8DE").opacity(0.15)
     }
 
     private func weatherAccentColor(_ weather: InnerWeather) -> Color {
@@ -105,42 +108,6 @@ struct DashboardView: View {
     }
 
     // MARK: - Zone B: Content Cards
-
-    private var weatherStatusCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "chart.line.uptrend.xyaxis")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Color(hex: "#10B981"))
-                Text("Inner Weather")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
-            }
-
-            Text(weatherDescription)
-                .font(.system(size: 13))
-                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
-                .lineLimit(2)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(Color(hex: "#C7E8DE").opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-    }
-
-    private var weatherDescription: String {
-        guard appState.isMonitoring else {
-            return "Start monitoring to track your inner weather throughout the day."
-        }
-        switch appState.currentWeather {
-        case .clear:
-            return "Skies are clear. You seem focused and calm."
-        case .cloudy:
-            return "Some clouds gathering. A small break might help."
-        case .stormy:
-            return "Stormy conditions detected. Consider a breathing practice."
-        }
-    }
 
     private var monitoringCard: some View {
         HStack(spacing: 12) {
@@ -157,6 +124,69 @@ struct DashboardView: View {
         .padding(12)
         .background(Color(hex: "#C7E8DE").opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    // MARK: - Silence Decision Card
+
+    private func silenceDecisionCard(_ decision: SilenceDecision) -> some View {
+        Button(action: {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                silenceCardExpanded.toggle()
+            }
+        }) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "brain.head.profile")
+                        .font(.system(size: 16))
+                        .foregroundStyle(Color(hex: "#10B981"))
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Chose not to interrupt")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
+
+                        Text(silenceCardExpanded ? decision.thinkingText : truncatedThinking(decision.thinkingText))
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
+                            .lineLimit(silenceCardExpanded ? nil : 2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Spacer()
+                }
+
+                HStack {
+                    EffortIndicatorView(level: decision.effortLevel)
+
+                    Spacer()
+
+                    Text(timeAgo(decision.timestamp))
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
+                }
+            }
+            .padding(12)
+            .background(Color(hex: "#C7E8DE").opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func truncatedThinking(_ text: String) -> String {
+        if text.count <= 80 { return text }
+        let index = text.index(text.startIndex, offsetBy: 80)
+        return String(text[..<index]) + "..."
+    }
+
+    private func timeAgo(_ date: Date) -> String {
+        let seconds = Int(Date().timeIntervalSince(date))
+        if seconds < 60 { return "Just now" }
+        let minutes = seconds / 60
+        if minutes == 1 { return "1 min ago" }
+        if minutes < 60 { return "\(minutes) min ago" }
+        let hours = minutes / 60
+        if hours == 1 { return "1 hr ago" }
+        return "\(hours) hr ago"
     }
 
     // MARK: - Day Summary Button

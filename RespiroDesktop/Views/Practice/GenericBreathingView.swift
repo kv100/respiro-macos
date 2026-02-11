@@ -1,8 +1,11 @@
 import SwiftUI
 
-struct ExtendedExhaleView: View {
+struct GenericBreathingView: View {
     @Environment(AppState.self) private var appState
     @State private var practiceManager = PracticeManager()
+
+    let practiceType: PracticeType
+    let title: String
 
     var body: some View {
         ZStack {
@@ -35,7 +38,7 @@ struct ExtendedExhaleView: View {
         }
         .frame(width: 360, height: 480)
         .onAppear {
-            practiceManager.startPractice(type: .extendedExhale)
+            practiceManager.startPractice(type: practiceType)
         }
         .onDisappear {
             practiceManager.stopPractice()
@@ -62,7 +65,7 @@ struct ExtendedExhaleView: View {
 
             Spacer()
 
-            Text("Extended Exhale")
+            Text(title)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
 
@@ -129,20 +132,28 @@ struct ExtendedExhaleView: View {
     private var animationForPhase: Animation {
         switch practiceManager.currentPhase {
         case .idle: return .easeInOut(duration: 0.3)
-        case .inhale: return .easeInOut(duration: practiceManager.phaseDuration)
-        case .hold: return .easeInOut(duration: practiceManager.phaseDuration)
-        case .exhale: return .easeOut(duration: practiceManager.phaseDuration)
+        default: return .easeInOut(duration: practiceManager.phaseDuration)
         }
     }
 
     // MARK: - Phase Label
 
     private var phaseLabel: some View {
-        Text(practiceManager.currentPhase == .idle ? "" : practiceManager.currentPhase.label)
-            .font(.system(size: 16, weight: .medium))
-            .tracking(4)
-            .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
-            .animation(.easeInOut(duration: 0.2), value: practiceManager.currentPhase)
+        VStack(spacing: 6) {
+            Text(practiceManager.currentPhase == .idle ? "" : practiceManager.currentPhase.label)
+                .font(.system(size: 16, weight: .medium))
+                .tracking(4)
+                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
+                .animation(.easeInOut(duration: 0.2), value: practiceManager.currentPhase)
+
+            if !practiceManager.currentStepInstruction.isEmpty
+                && practiceType == .alternateNostril {
+                Text(practiceManager.currentStepInstruction)
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
+                    .animation(.easeInOut(duration: 0.2), value: practiceManager.currentStepInstruction)
+            }
+        }
     }
 
     // MARK: - Progress Dots
@@ -214,6 +225,6 @@ struct ExtendedExhaleView: View {
 }
 
 #Preview {
-    ExtendedExhaleView()
+    GenericBreathingView(practiceType: .fourSevenEight, title: "4-7-8 Breathing")
         .environment(AppState())
 }

@@ -8,6 +8,17 @@ struct NudgeDecision: Sendable {
     let message: String?
     let suggestedPracticeID: String?
     let reason: String
+    let thinkingText: String?
+
+    init(shouldShow: Bool, nudgeType: NudgeType?, message: String?,
+         suggestedPracticeID: String?, reason: String, thinkingText: String? = nil) {
+        self.shouldShow = shouldShow
+        self.nudgeType = nudgeType
+        self.message = message
+        self.suggestedPracticeID = suggestedPracticeID
+        self.reason = reason
+        self.thinkingText = thinkingText
+    }
 }
 
 // MARK: - NudgeEngine
@@ -127,7 +138,8 @@ actor NudgeEngine {
             nudgeType: nudgeType,
             message: analysis.nudgeMessage,
             suggestedPracticeID: analysis.suggestedPracticeID,
-            reason: "approved"
+            reason: "approved",
+            thinkingText: analysis.thinkingText
         )
     }
 

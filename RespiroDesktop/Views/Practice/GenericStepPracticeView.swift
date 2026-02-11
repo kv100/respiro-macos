@@ -1,10 +1,11 @@
 import SwiftUI
 
-struct ThoughtDefusionView: View {
+struct GenericStepPracticeView: View {
     @Environment(AppState.self) private var appState
     @State private var practiceManager = PracticeManager()
 
-    private let accentColor = Color(hex: "#7B6B9E")
+    let practiceType: PracticeType
+    let practice: Practice
 
     var body: some View {
         ZStack {
@@ -17,11 +18,14 @@ struct ThoughtDefusionView: View {
 
                 Spacer()
 
-                defusionCard
+                stepIndicator
+
+                instructionText
+                    .padding(.top, 24)
 
                 Spacer()
 
-                phaseIndicator
+                stepDots
                     .padding(.bottom, 16)
 
                 timerLabel
@@ -34,7 +38,7 @@ struct ThoughtDefusionView: View {
         }
         .frame(width: 360, height: 480)
         .onAppear {
-            practiceManager.startPractice(type: .thoughtDefusion)
+            practiceManager.startPractice(type: practiceType)
         }
         .onDisappear {
             practiceManager.stopPractice()
@@ -61,7 +65,7 @@ struct ThoughtDefusionView: View {
 
             Spacer()
 
-            Text("Thought Defusion")
+            Text(practice.title)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
 
@@ -71,81 +75,57 @@ struct ThoughtDefusionView: View {
         }
     }
 
-    // MARK: - Defusion Card
+    // MARK: - Step Indicator
 
-    private var defusionCard: some View {
-        VStack(spacing: 20) {
-            Image(systemName: iconForPhase)
-                .font(.system(size: 40))
-                .foregroundStyle(accentColor)
-                .contentTransition(.symbolEffect(.replace))
+    private var stepIndicator: some View {
+        let stepIndex = practiceManager.currentGenericStep
+        let totalSteps = practice.steps.count
 
-            Text(practiceManager.currentDefusionPhase.title)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
+        return ZStack {
+            Circle()
+                .fill(Color(hex: "#10B981").opacity(0.15))
+                .frame(width: 120, height: 120)
 
-            Text(practiceManager.currentDefusionPhase.instruction)
-                .font(.system(size: 15))
-                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
-                .multilineTextAlignment(.center)
-                .lineSpacing(4)
+            Circle()
+                .fill(Color(hex: "#10B981").opacity(0.25))
+                .frame(width: 90, height: 90)
+
+            Text("\(stepIndex + 1)/\(totalSteps)")
+                .font(.system(size: 28, weight: .semibold))
+                .foregroundStyle(Color(hex: "#10B981"))
+                .monospacedDigit()
         }
-        .padding(24)
-        .frame(maxWidth: .infinity)
-        .background(Color(hex: "#C7E8DE").opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(accentColor.opacity(0.2), lineWidth: 1)
-        )
-        .animation(.easeInOut(duration: 0.6), value: practiceManager.currentDefusionPhase.rawValue)
+        .shadow(color: Color(hex: "#10B981").opacity(0.2), radius: 12)
+        .animation(.easeInOut(duration: 0.3), value: stepIndex)
     }
 
-    private var iconForPhase: String {
-        switch practiceManager.currentDefusionPhase {
-        case .nameThought: return "text.bubble"
-        case .noticeThought: return "eye"
-        case .watchItPass: return "cloud"
-        }
+    // MARK: - Instruction Text
+
+    private var instructionText: some View {
+        Text(practiceManager.currentStepInstruction.isEmpty
+            ? (practice.steps.first?.instruction ?? "")
+            : practiceManager.currentStepInstruction)
+            .font(.system(size: 18, weight: .medium))
+            .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
+            .multilineTextAlignment(.center)
+            .lineLimit(3)
+            .frame(minHeight: 60)
+            .padding(.horizontal, 16)
+            .animation(.easeInOut(duration: 0.3), value: practiceManager.currentGenericStep)
     }
 
-    // MARK: - Phase Indicator
+    // MARK: - Step Dots
 
-    private var phaseIndicator: some View {
-        let phases: [DefusionPhase] = [.nameThought, .noticeThought, .watchItPass]
-
-        return HStack(spacing: 16) {
-            ForEach(phases, id: \.rawValue) { phase in
-                let isCurrent = practiceManager.currentDefusionPhase == phase
-                let isPast = phaseIndex(phase) < phaseIndex(practiceManager.currentDefusionPhase)
-
-                VStack(spacing: 4) {
-                    Circle()
-                        .fill(
-                            isCurrent ? accentColor :
-                            isPast ? accentColor.opacity(0.5) :
-                            Color(hex: "#C7E8DE").opacity(0.15)
-                        )
-                        .frame(width: 10, height: 10)
-
-                    Text(phase.shortLabel)
-                        .font(.system(size: 10))
-                        .foregroundStyle(
-                            isCurrent ? accentColor :
-                            isPast ? accentColor.opacity(0.5) :
-                            Color(hex: "#E0F4EE").opacity(0.30)
-                        )
-                }
-                .animation(.easeInOut(duration: 0.3), value: practiceManager.currentDefusionPhase.rawValue)
+    private var stepDots: some View {
+        HStack(spacing: 8) {
+            ForEach(0..<practice.steps.count, id: \.self) { index in
+                Circle()
+                    .fill(index <= practiceManager.currentGenericStep
+                        ? Color(hex: "#10B981")
+                        : Color(hex: "#C7E8DE").opacity(0.15))
+                    .frame(width: 8, height: 8)
+                    .animation(.easeInOut(duration: 0.3), value: practiceManager.currentGenericStep)
             }
-        }
-    }
-
-    private func phaseIndex(_ phase: DefusionPhase) -> Int {
-        switch phase {
-        case .nameThought: return 0
-        case .noticeThought: return 1
-        case .watchItPass: return 2
         }
     }
 
@@ -179,7 +159,7 @@ struct ThoughtDefusionView: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(accentColor)
+                    .background(Color(hex: "#10B981"))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
@@ -193,7 +173,7 @@ struct ThoughtDefusionView: View {
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
-                        .background(accentColor)
+                        .background(Color(hex: "#10B981"))
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
@@ -203,6 +183,9 @@ struct ThoughtDefusionView: View {
 }
 
 #Preview {
-    ThoughtDefusionView()
-        .environment(AppState())
+    GenericStepPracticeView(
+        practiceType: .bodyScan,
+        practice: PracticeCatalog.bodyScan
+    )
+    .environment(AppState())
 }

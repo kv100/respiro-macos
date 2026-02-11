@@ -147,6 +147,16 @@ Menu bar icon visible. Weather widget shows "Partly Cloudy" (moderate baseline s
 
 **Close:** "Respiro: AI that cares enough to stay quiet."
 
+### V2 Demo Enhancements
+
+The V2 features enhance the demo script above:
+
+- **Minute 0:30 "Why This?" panel:** When the nudge appears, expand the reasoning section to show Opus 4.6's thinking tokens: "I noticed 47 unread messages... user's completion rate for body scan is 90%..." Thinking appears in real-time if streaming is implemented.
+- **Minute 0:30 Effort indicator:** Show the brain icon with effort dots (●●○ HIGH) — the model escalated effort because signals were ambiguous.
+- **Minute 0:30 Tool Use:** "The AI called `get_user_history()` to check your practice preferences, then `suggest_practice('body-scan', reason: '...')` — reasoning between each tool call."
+- **Minute 1:45 "The Silence Decision":** The dashboard shows a card: "Chose not to interrupt. You've been in focused flow for 23 min. Effort: ●●○ HIGH." This is the most memorable demo moment.
+- **Minute 2:30 End-of-day summary:** Uses `effort: "max"` — the brain icon shows ●●● FULL ANALYSIS. Synthesizes entire day with deepest reasoning.
+
 ## 1.6 Special Prizes Targeting
 
 ### "The Keep Thinking Prize" ($5,000)
@@ -192,31 +202,52 @@ Menu bar icon visible. Weather widget shows "Partly Cloudy" (moderate baseline s
 
 ### Scope Lock (What We Ship vs. What We Fake)
 
-**Real (built and working):**
+**V1 (built and working — all P0/P1/P2 done):**
 
-- macOS menu bar app (SwiftUI)
-- Screenshot capture and Opus 4.6 Vision analysis
-- Adaptive Thinking intervention decisions
-- Tool Use for practice selection
-- 3 guided practices (breathing, body scan, grounding)
-- Before/after stress self-report
-- Weather metaphor UI
-- End-of-day reflection (single API call with accumulated context)
+- macOS menu bar app (SwiftUI, MenuBarExtra .window style)
+- Screenshot capture via ScreenCaptureKit (memory only, never disk)
+- Opus 4.6 Vision analysis with structured JSON response
+- 8 guided practices (Physiological Sigh, Box Breathing, Extended Exhale, Coherent Breathing, 5-4-3-2-1 Grounding, STOP Technique, Self-Compassion Break, Thought Defusion)
+- Weather before/after with delta badge + science snippet
+- "I'm Fine" dismissal learning — patterns fed to AI prompt
+- Adaptive screenshot interval (clear=slow, stormy=fast, post-practice=rest)
+- Smart suppression (video calls, fullscreen, typing, screen lock)
+- Three nudge types (practice/encouragement/acknowledgment)
+- End-of-day summary with AI reflection
+- Practice preference learning
+- Demo mode with 6 pre-scripted scenarios
+- SwiftData persistence (StressEntry, PracticeSession, DismissalEvent, UserPreferences)
+
+**V2 (in progress — see BACKLOG_V2.md):**
+
+- Adaptive Thinking with effort levels (low/high/max) — THE key Opus 4.6 showcase
+- Tool Use for practice selection (interleaved thinking between tool calls)
+- "Why This?" expandable AI reasoning panel
+- "The Silence Decision" — visible log when AI decides NOT to interrupt
+- Effort level visualization (brain icon + dots)
+- Streaming AI response with live thinking tokens
+- Keyboard shortcuts (Cmd+Shift+R, Escape, Return, 1/2/3, Space)
+- 20 total practices (12 ported from iOS)
+- Science snippets on completion (8 JSON files from iOS)
+- Second Chance logic (alternative practice suggestion)
+- Stress trajectory mini-graph
+- Enhanced demo mode (showcases all V2 features)
+- Cross-platform ecosystem mention
 
 **Simulated (pre-seeded for demo):**
 
-- "Full day" of context (pre-generated ContextSnapshots)
-- Calendar integration (hardcoded schedule)
+- "Full day" of context (pre-generated ContextSnapshots + sessions + dismissals)
+- Calendar integration (not real — mentioned in AI prompts only)
 - Weekly trends (static data for visualization)
-- Learning from feedback (shown but not yet loop-closed in 1 week)
 
 **Explicitly out of scope:**
 
-- iOS companion app (mention Respiro iOS exists, don't demo)
+- iOS sync / data sharing (mention iOS app exists, don't demo sync)
 - Cloud sync / user accounts
 - Real calendar API integration
 - Multiple users / team features
 - App Store distribution
+- Gamification (streaks, badges — violates core philosophy)
 
 ## 1.8 Competitive Differentiation in Hackathon Context
 
@@ -466,7 +497,45 @@ Settings panel:
 
 **Total P2: ~15h**
 
-### P3 — Post-Hackathon [SKIP]
+### P3 — Opus 4.6 Showcase (V2, Day 1)
+
+| Feature                          | Description                                             | Effort | Demo Impact             |
+| -------------------------------- | ------------------------------------------------------- | ------ | ----------------------- |
+| Adaptive Thinking                | Effort levels (low/high/max) in ClaudeVisionClient      | 2h     | 25% of judging score    |
+| Tool Use                         | Practice selection via tool calls, interleaved thinking | 3h     | Opus 4.6 differentiator |
+| "Why This?" reasoning            | Expandable panel showing AI's thinking blocks           | 2h     | Judges see the model    |
+| Wire nudge -> suggested practice | AI-selected practice starts directly                    | 1h     | Flow completeness       |
+
+### P4 — Demo Impact (V2, Day 2)
+
+| Feature                    | Description                                    | Effort | Demo Impact                 |
+| -------------------------- | ---------------------------------------------- | ------ | --------------------------- |
+| "The Silence Decision"     | Dashboard shows when AI chose NOT to interrupt | 3h     | Innovation angle, $5K prize |
+| Streaming thinking         | Live thinking tokens in real-time              | 4h     | WOW factor                  |
+| Keyboard shortcuts         | Cmd+Shift+R, Escape, Return, 1/2/3, Space      | 2h     | Smooth demo                 |
+| Effort level visualization | Brain icon + dots showing low/high/max         | 2h     | Makes thinking visible      |
+
+### P5 — Visual + Content (V2, Day 3)
+
+| Feature                 | Description                                             | Effort |
+| ----------------------- | ------------------------------------------------------- | ------ |
+| Stress trajectory graph | Mini line chart replacing placeholder timeline dots     | 3h     |
+| Real timeline data      | SwiftData StressEntry queries for hourly weather        | 1.5h   |
+| Port 12 iOS practices   | 20 total practices from MockPracticeData                | 2h     |
+| Science snippets        | 8 JSON knowledge base files on completion screen        | 1.5h   |
+| Second Chance logic     | Alternative practice suggestion when first doesn't help | 2h     |
+
+### P6 — Polish (V2, Day 4)
+
+| Feature                              | Effort |
+| ------------------------------------ | ------ |
+| Enhanced demo mode (all V2 features) | 3h     |
+| Cross-platform ecosystem mention     | 1h     |
+| Onboarding permission trigger        | 1h     |
+| Active hours enforcement             | 1h     |
+| Wake-from-sleep detection            | 1h     |
+
+### P8 — Post-Hackathon [SKIP]
 
 Calendar integration, multi-monitor, export, iOS sync, payments.
 
@@ -497,7 +566,26 @@ Short practices only — all under 3 minutes, desktop-optimized (no body movemen
 | `thought-defusion`   | Thought Defusion       | 2min     | mind      |
 | `coherent-breathing` | Coherent Breathing 5-5 | 2min     | breathing |
 
-**Total: 8 practices (1 in P0, 4 in P1, 3 in P2)**
+**V1 Total: 8 practices (1 in P0, 4 in P1, 3 in P2)**
+
+### Tier 4: V2 (Ported from iOS — 12 practices)
+
+| ID                   | Practice                      | Duration | Category | Evidence                      |
+| -------------------- | ----------------------------- | -------- | -------- | ----------------------------- |
+| `progressive-muscle` | Progressive Muscle Relaxation | 3min     | body     | Jacobson 1938, 300+ RCTs      |
+| `body-scan`          | Body Scan                     | 3min     | body     | MBSR standard, Kabat-Zinn     |
+| `yoga-nidra-short`   | Yoga Nidra (Short)            | 3min     | body     | NSF sleep research            |
+| `butterfly-hug`      | Butterfly Hug                 | 90s      | body     | EMDR-derived, trauma-informed |
+| `gentle-stretching`  | Gentle Stretching             | 2min     | body     | Desk ergonomics research      |
+| `seated-cat-cow`     | Seated Cat-Cow                | 90s      | body     | Yoga therapy, spine mobility  |
+| `wrist-neck-release` | Wrist & Neck Release          | 90s      | body     | RSI prevention                |
+| `gratitude`          | Gratitude Reflection          | 2min     | mind     | Emmons & McCullough 2003      |
+| `loving-kindness`    | Loving-Kindness               | 3min     | mind     | Fredrickson 2008, 50+ RCTs    |
+| `visualization`      | Safe Place Visualization      | 3min     | mind     | CBT imagery, sports psych     |
+| `journaling`         | Micro-Journaling              | 2min     | mind     | Pennebaker 1997               |
+| `mindful-tea`        | Mindful Tea/Coffee            | 2min     | mind     | Informal mindfulness practice |
+
+**V2 Total: 20 practices (8 original + 12 from iOS)**
 
 ## 2.4 AI Prompt Strategy
 
@@ -1113,14 +1201,16 @@ App always uses dark appearance (enforced via `.preferredColorScheme(.dark)`).
 
 # Appendix: Opus 4.6 Showcase Summary
 
-| Capability              | Product Feature                   | Demo Moment                                              |
-| ----------------------- | --------------------------------- | -------------------------------------------------------- |
-| **Vision API**          | Screenshot stress analysis        | Icon changes in real-time                                |
-| **Adaptive Thinking**   | When to interrupt vs. stay silent | "AI chose not to interrupt during flow state"            |
-| **Tool Use**            | Practice selection from history   | "Selected body scan because your completion rate is 90%" |
-| **Context Window (1M)** | End-of-day reflection             | Full day synthesized into personalized insights          |
-| **Structured Output**   | Reliable JSON parsing             | Every analysis returns valid, parseable data             |
-| **Safety/Alignment**    | Never reads private content       | Privacy-first design judges appreciate                   |
+| Capability              | Product Feature                    | Demo Moment                                              | V1/V2 |
+| ----------------------- | ---------------------------------- | -------------------------------------------------------- | ----- |
+| **Vision API**          | Screenshot stress analysis         | Icon changes in real-time                                | V1    |
+| **Adaptive Thinking**   | Effort levels (low/high/max)       | Effort indicator shows ●●○ HIGH, reasoning panel visible | V2    |
+| **Adaptive Thinking**   | "The Silence Decision"             | "AI chose NOT to interrupt — flow state more valuable"   | V2    |
+| **Tool Use**            | Practice selection via tool calls  | "Called get_user_history(), then suggest_practice()"     | V2    |
+| **Streaming**           | Live thinking visualization        | Thinking tokens appear in real-time                      | V2    |
+| **Context Window (1M)** | End-of-day reflection (max effort) | Full day synthesized with deepest reasoning              | V1+V2 |
+| **Structured Output**   | Reliable JSON + tool_use parsing   | Every analysis returns valid, parseable data             | V1    |
+| **Safety/Alignment**    | Never reads private content        | Privacy-first design judges appreciate                   | V1    |
 
 ---
 

@@ -8,15 +8,42 @@ struct CompletionView: View {
     @State private var deltaBadgeOffset: CGFloat = 10
     @State private var deltaBadgeOpacity: Double = 0
 
-    private let scienceSnippets = [
-        "Slow breathing activates your parasympathetic nervous system, lowering cortisol within minutes.",
-        "Studies show that even 60 seconds of controlled breathing can reduce heart rate by 5-10 BPM.",
-        "The vagus nerve responds to extended exhales, signaling your body to relax.",
-        "Research from Stanford found that cyclic sighing is more effective than meditation for reducing anxiety.",
-        "Breathing exercises can lower blood pressure for up to 24 hours after practice.",
-        "Controlled breathing increases heart rate variability, a key marker of stress resilience.",
-        "Just 5 minutes of breath work can shift your brain from beta waves to calming alpha waves.",
-    ]
+    private func scienceSnippet(for category: PracticeCategory) -> String {
+        let snippets: [String]
+        switch category {
+        case .breathing:
+            snippets = [
+                "Slow breathing activates your parasympathetic nervous system, lowering cortisol within minutes.",
+                "Studies show that even 60 seconds of controlled breathing can reduce heart rate by 5-10 BPM.",
+                "The vagus nerve responds to extended exhales, signaling your body to relax.",
+                "Research from Stanford found that cyclic sighing is more effective than meditation for reducing anxiety.",
+                "Controlled breathing increases heart rate variability, a key marker of stress resilience.",
+                "Just 5 minutes of breath work can shift your brain from beta waves to calming alpha waves.",
+                "Breathing at 6 breaths per minute optimizes heart-lung coupling for maximum calm.",
+                "4-7-8 breathing was designed by Dr. Andrew Weil as a 'natural tranquilizer' for the nervous system.",
+            ]
+        case .body:
+            snippets = [
+                "Progressive muscle relaxation reduces tension headaches by up to 50% in clinical studies.",
+                "Body scan meditation activates the insula cortex, improving awareness of physical stress signals.",
+                "Gentle stretching releases fascia tension and increases blood flow to tight muscles.",
+                "Grounding techniques engage the somatosensory cortex, pulling focus from anxious thoughts to physical sensation.",
+                "Physical micro-breaks every 30 minutes reduce musculoskeletal strain by 40%.",
+                "Standing and stretching for just 60 seconds can reduce cortisol and boost alertness.",
+            ]
+        case .mind:
+            snippets = [
+                "Cognitive defusion techniques reduce the believability of negative thoughts by 30-40%.",
+                "Self-compassion practices lower inflammation markers (IL-6) after just 3 weeks of regular use.",
+                "The STOP technique interrupts the stress-response loop before it escalates to fight-or-flight.",
+                "Loving-kindness meditation increases positive emotions and social connectedness within 7 days.",
+                "Naming emotions ('affect labeling') reduces amygdala reactivity by up to 43%.",
+                "Visualization activates similar neural pathways as the real experience, priming calm responses.",
+                "Worry containment ('worry time') reduces generalized anxiety symptoms by limiting rumination.",
+            ]
+        }
+        return snippets.randomElement() ?? snippets[0]
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -45,7 +72,7 @@ struct CompletionView: View {
             }
 
             // Science snippet
-            Text(scienceSnippets.randomElement() ?? scienceSnippets[0])
+            Text(scienceSnippet(for: appState.lastPracticeCategory ?? .breathing))
                 .font(.system(size: 13))
                 .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.70))
                 .multilineTextAlignment(.center)
@@ -79,7 +106,7 @@ struct CompletionView: View {
             .keyboardShortcut(.return, modifiers: [])
         }
         .frame(width: 360, height: 480)
-        .background(Color(hex: "#0A1F1A"))
+        .background(Color(hex: "#142823"))
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.2)) {
                 checkmarkScale = 1.0

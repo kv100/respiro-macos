@@ -44,8 +44,16 @@ struct WeatherPickerView: View {
         }
         .padding(.horizontal, 16)
         .frame(width: 360, height: 480)
-        .background(Color(hex: "#0A1F1A"))
-        .keyboardShortcut(.escape, modifiers: [])
+        .background(Color(hex: "#142823"))
+        .onKeyPress(characters: .init(charactersIn: "123")) { press in
+            let cases = InnerWeather.allCases
+            guard let index = Int(String(press.characters.first ?? "0")),
+                  index >= 1, index <= cases.count else {
+                return .ignored
+            }
+            selectWeather(cases[index - 1])
+            return .handled
+        }
     }
 
     private var selectedWeather: InnerWeather? {

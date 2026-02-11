@@ -116,6 +116,7 @@ RespiroDesktop/
 - NO UIKit — macOS only (NSImage, NSScreen, etc.)
 - Screenshots NEVER written to disk
 - Claude API key: `ProcessInfo.processInfo.environment["ANTHROPIC_API_KEY"]`
+- Don't misattribute internal CLAUDE.md rules as external hackathon rules — always cite the actual source accurately
 
 ---
 

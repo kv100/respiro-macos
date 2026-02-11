@@ -3,7 +3,11 @@ import SwiftUI
 struct NudgeView: View {
     @Environment(AppState.self) private var appState
     @State private var isVisible = false
+    @State private var isReasoningExpanded = false
     @State private var autoDismissTask: Task<Void, Never>?
+    @State private var displayedCharCount: Int = 0
+    @State private var thinkingAnimationTask: Task<Void, Never>?
+    @State private var isThinkingAnimating: Bool = false
 
     // MARK: - Fallback Messages
 
@@ -34,7 +38,7 @@ struct NudgeView: View {
             Spacer()
         }
         .frame(width: 360, height: 480)
-        .background(Color(hex: "#0A1F1A"))
+        .background(Color(hex: "#142823"))
         .onAppear {
             withAnimation(.easeOut(duration: 0.3)) {
                 isVisible = true
@@ -80,12 +84,22 @@ struct NudgeView: View {
                     .buttonStyle(.plain)
                 }
 
+                // Effort indicator (for practice nudges)
+                if type == .practice {
+                    EffortIndicatorView(level: .high)
+                }
+
                 // AI message or fallback
                 Text(displayMessage(for: nudge, type: type))
                     .font(.system(size: 13))
                     .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
+
+                // "Why this?" expandable reasoning panel
+                if type == .practice, let thinking = nudge.thinkingText, !thinking.isEmpty {
+                    reasoningPanel(text: thinking)
+                }
 
                 // Action buttons based on nudge type
                 actionButtons(for: type)
@@ -113,6 +127,63 @@ struct NudgeView: View {
         }
     }
 
+    // MARK: - Reasoning Panel
+
+    @ViewBuilder
+    private func reasoningPanel(text: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    isReasoningExpanded.toggle()
+                }
+                if isReasoningExpanded && displayedCharCount == 0 {
+                    startThinkingAnimation(fullText: text)
+                }
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "brain.head.profile")
+                        .font(.system(size: 11))
+                    Text("Why this?")
+                        .font(.system(size: 12, weight: .medium))
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 9, weight: .semibold))
+                        .rotationEffect(.degrees(isReasoningExpanded ? 90 : 0))
+                }
+                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
+            }
+            .buttonStyle(.plain)
+
+            if isReasoningExpanded {
+                let visibleText = String(text.prefix(displayedCharCount))
+                ThinkingStreamView(
+                    text: visibleText,
+                    isStreaming: isThinkingAnimating
+                )
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .padding(.vertical, 2)
+        .onDisappear {
+            thinkingAnimationTask?.cancel()
+        }
+    }
+
+    private func startThinkingAnimation(fullText: String) {
+        guard displayedCharCount == 0 else { return }
+        isThinkingAnimating = true
+
+        thinkingAnimationTask = Task { @MainActor in
+            let totalChars = fullText.count
+            while displayedCharCount < totalChars {
+                guard !Task.isCancelled else { return }
+                // Reveal ~3 characters per tick for typing effect
+                displayedCharCount = min(displayedCharCount + 3, totalChars)
+                try? await Task.sleep(nanoseconds: 16_000_000) // ~60fps
+            }
+            isThinkingAnimating = false
+        }
+    }
+
     // MARK: - Action Buttons
 
     @ViewBuilder
@@ -132,6 +203,7 @@ struct NudgeView: View {
             // Start Practice -- primary action
             Button {
                 autoDismissTask?.cancel()
+                appState.selectedPracticeID = appState.pendingNudge?.suggestedPracticeID
                 appState.showPractice()
             } label: {
                 HStack(spacing: 6) {
@@ -278,7 +350,8 @@ struct NudgeView: View {
         nudgeType: .practice,
         message: "You seem to have a lot going on. A quick breathing exercise might help you refocus.",
         suggestedPracticeID: "physiological-sigh",
-        reason: "approved"
+        reason: "approved",
+        thinkingText: "I noticed 12 open browser tabs, rapid switching between apps every few seconds, and the inbox shows 47 unread messages. The user's screen context suggests elevated cognitive load."
     )
     return NudgeView()
         .environment(state)

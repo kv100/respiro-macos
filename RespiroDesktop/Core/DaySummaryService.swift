@@ -6,7 +6,7 @@ actor DaySummaryService {
     private static let endpoint = URL(string: "https://api.anthropic.com/v1/messages")!
     private static let model = "claude-opus-4-6-20250219"
     private static let apiVersion = "2023-06-01"
-    private static let maxTokens = 4096
+    private static let maxTokens = EffortLevel.max.budgetTokens + EffortLevel.max.maxResponseTokens
 
     private static let systemPrompt = """
         You are Respiro's end-of-day reflection assistant. Analyze the user's full day \
@@ -100,7 +100,7 @@ actor DaySummaryService {
     }
 
     private func sendTextMessage(userMessage: String) async throws -> DaySummaryResponse {
-        let body: [String: Any] = [
+        var body: [String: Any] = [
             "model": Self.model,
             "max_tokens": Self.maxTokens,
             "system": Self.systemPrompt,
@@ -108,6 +108,12 @@ actor DaySummaryService {
                 "role": "user",
                 "content": userMessage
             ]]
+        ]
+
+        // Enable adaptive thinking with max effort for day reflection
+        body["thinking"] = [
+            "type": "enabled",
+            "budget_tokens": EffortLevel.max.budgetTokens
         ]
 
         var request = URLRequest(url: Self.endpoint)
@@ -146,9 +152,32 @@ actor DaySummaryService {
 
     private func parseResponse(_ data: Data) throws -> DaySummaryResponse {
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let content = json["content"] as? [[String: Any]],
-              let firstBlock = content.first,
-              let text = firstBlock["text"] as? String else {
+              let content = json["content"] as? [[String: Any]] else {
+            let body = String(data: data, encoding: .utf8) ?? "unreadable"
+            throw ClaudeAPIError.invalidResponse(statusCode: 200, body: "Missing content: \(body)")
+        }
+
+        // Iterate content blocks: collect thinking and find text with JSON
+        var thinkingParts: [String] = []
+        var textContent: String?
+
+        for block in content {
+            guard let blockType = block["type"] as? String else { continue }
+            switch blockType {
+            case "thinking":
+                if let thinking = block["thinking"] as? String, !thinking.isEmpty {
+                    thinkingParts.append(thinking)
+                }
+            case "text":
+                if let text = block["text"] as? String {
+                    textContent = text
+                }
+            default:
+                break
+            }
+        }
+
+        guard let text = textContent else {
             let body = String(data: data, encoding: .utf8) ?? "unreadable"
             throw ClaudeAPIError.invalidResponse(statusCode: 200, body: "Missing text content: \(body)")
         }
@@ -157,7 +186,11 @@ actor DaySummaryService {
 
         do {
             let jsonData = Data(jsonString.utf8)
-            return try JSONDecoder().decode(DaySummaryResponse.self, from: jsonData)
+            var response = try JSONDecoder().decode(DaySummaryResponse.self, from: jsonData)
+            if !thinkingParts.isEmpty {
+                response.thinkingText = thinkingParts.joined(separator: "\n\n")
+            }
+            return response
         } catch {
             throw ClaudeAPIError.decodingError(underlying: error)
         }

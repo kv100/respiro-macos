@@ -1,56 +1,65 @@
 import SwiftUI
+import ScreenCaptureKit
 
 struct OnboardingView: View {
     @Environment(AppState.self) private var appState
     @State private var currentPage = 0
+    @State private var permissionGranted = false
+    @State private var permissionRequested = false
 
     private let totalPages = 3
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Skip button
-            HStack {
-                Spacer()
-                if currentPage < totalPages - 1 {
-                    Button("Skip") {
-                        completeOnboarding()
+        ZStack {
+            Color(hex: "#142823")
+                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                // Skip button
+                HStack {
+                    Spacer()
+                    if currentPage < totalPages - 1 {
+                        Button("Skip") {
+                            completeOnboarding()
+                        }
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color.white.opacity(0.60))
+                        .buttonStyle(.plain)
                     }
-                    .font(.system(size: 13))
-                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
-                    .buttonStyle(.plain)
                 }
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .frame(height: 36)
-
-            // Page content
-            TabView(selection: $currentPage) {
-                pageOne.tag(0)
-                pageTwo.tag(1)
-                pageThree.tag(2)
-            }
-            .tabViewStyle(.automatic)
-            .frame(maxHeight: .infinity)
-
-            // Page dots
-            HStack(spacing: 8) {
-                ForEach(0..<totalPages, id: \.self) { index in
-                    Circle()
-                        .fill(index == currentPage ? Color(hex: "#10B981") : Color(hex: "#C7E8DE").opacity(0.20))
-                        .frame(width: 8, height: 8)
-                        .animation(.easeInOut(duration: 0.2), value: currentPage)
-                }
-            }
-            .padding(.bottom, 16)
-
-            // Navigation buttons
-            navigationButtons
                 .padding(.horizontal, 16)
-                .padding(.bottom, 24)
+                .padding(.top, 12)
+                .frame(height: 36)
+
+                // Page content (no TabView — manual switching)
+                Group {
+                    switch currentPage {
+                    case 0: pageOne
+                    case 1: pageTwo
+                    default: pageThree
+                    }
+                }
+                .frame(maxHeight: .infinity)
+                .transition(.opacity)
+                .animation(.easeInOut(duration: 0.3), value: currentPage)
+
+                // Page dots
+                HStack(spacing: 8) {
+                    ForEach(0..<totalPages, id: \.self) { index in
+                        Circle()
+                            .fill(index == currentPage ? Color(hex: "#10B981") : Color.white.opacity(0.20))
+                            .frame(width: 8, height: 8)
+                    }
+                }
+                .padding(.bottom, 16)
+
+                // Navigation buttons
+                navigationButtons
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 24)
+            }
         }
         .frame(width: 360, height: 480)
-        .background(Color(hex: "#0A1F1A"))
     }
 
     // MARK: - Page 1: What is Respiro?
@@ -59,17 +68,16 @@ struct OnboardingView: View {
         VStack(spacing: 20) {
             Spacer()
 
-            // Weather icon trio
             HStack(spacing: 20) {
-                weatherIcon("sun.max", color: "#10B981")
-                weatherIcon("cloud", color: "#8BA4B0")
-                weatherIcon("cloud.bolt.rain", color: "#7B6B9E")
+                weatherIcon("sun.max", color: Color(hex: "#10B981"))
+                weatherIcon("cloud", color: Color(hex: "#8BA4B0"))
+                weatherIcon("cloud.bolt.rain", color: Color(hex: "#7B6B9E"))
             }
             .padding(.bottom, 8)
 
             Text("What is Respiro?")
                 .font(.system(size: 22, weight: .bold))
-                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
+                .foregroundStyle(Color.white)
 
             VStack(spacing: 10) {
                 onboardingText("Your AI stress companion that lives in the menu bar")
@@ -89,13 +97,12 @@ struct OnboardingView: View {
 
             Image(systemName: "camera.viewfinder")
                 .font(.system(size: 48))
-                .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(Color(hex: "#10B981"))
                 .padding(.bottom, 8)
 
             Text("How it works")
                 .font(.system(size: 22, weight: .bold))
-                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
+                .foregroundStyle(Color.white)
 
             VStack(spacing: 10) {
                 onboardingText("Periodic screenshots analyzed by AI (never stored)")
@@ -116,13 +123,12 @@ struct OnboardingView: View {
 
             Image(systemName: "lock.shield.fill")
                 .font(.system(size: 48))
-                .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(Color(hex: "#10B981"))
                 .padding(.bottom, 8)
 
             Text("Privacy first")
                 .font(.system(size: 22, weight: .bold))
-                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
+                .foregroundStyle(Color.white)
 
             VStack(spacing: 10) {
                 onboardingText("Screenshots analyzed in memory, immediately deleted")
@@ -130,9 +136,47 @@ struct OnboardingView: View {
                 onboardingText("You control everything")
             }
 
+            // Screen Recording Permission Button
+            Button(action: {
+                requestScreenRecordingPermission()
+            }) {
+                HStack(spacing: 8) {
+                    if permissionGranted {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(Color(hex: "#10B981"))
+                    } else {
+                        Image(systemName: "rectangle.dashed.badge.record")
+                            .foregroundStyle(Color.white.opacity(0.80))
+                    }
+                    Text(permissionGranted ? "Permission Granted" : "Enable Screen Recording")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(permissionGranted ? Color(hex: "#10B981") : Color.white.opacity(0.80))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(permissionGranted ? Color(hex: "#10B981") : Color.white.opacity(0.30), lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
+            .disabled(permissionGranted)
+
             Spacer()
         }
         .padding(.horizontal, 24)
+    }
+
+    private func requestScreenRecordingPermission() {
+        permissionRequested = true
+        Task.detached {
+            do {
+                _ = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
+                await MainActor.run { permissionGranted = true }
+            } catch {
+                // Permission denied or not yet granted — expected
+            }
+        }
     }
 
     // MARK: - Navigation
@@ -141,9 +185,7 @@ struct OnboardingView: View {
         Group {
             if currentPage < totalPages - 1 {
                 Button(action: {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        currentPage += 1
-                    }
+                    withAnimation { currentPage += 1 }
                 }) {
                     Text("Next")
                         .font(.system(size: 14, weight: .medium))
@@ -174,17 +216,16 @@ struct OnboardingView: View {
 
     // MARK: - Helpers
 
-    private func weatherIcon(_ symbol: String, color: String) -> some View {
+    private func weatherIcon(_ symbol: String, color: Color) -> some View {
         Image(systemName: symbol)
             .font(.system(size: 32))
-            .symbolRenderingMode(.hierarchical)
-            .foregroundStyle(Color(hex: color))
+            .foregroundStyle(color)
     }
 
     private func onboardingText(_ text: String) -> some View {
         Text(text)
             .font(.system(size: 14))
-            .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
+            .foregroundStyle(Color.white.opacity(0.80))
             .multilineTextAlignment(.center)
     }
 

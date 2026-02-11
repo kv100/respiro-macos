@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AppKit
 
 @main
 struct RespiroDesktopApp: App {
@@ -87,5 +88,17 @@ struct RespiroDesktopApp: App {
         let preferenceLearner = PreferenceLearner(modelContext: modelContext)
         let rankedPractices = preferenceLearner.rankedPracticeIDs()
         await service.updatePreferredPractices(rankedPractices)
+
+        // P6.5: Wake-from-sleep detection — trigger immediate check after 30s
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 30_000_000_000)
+                await service.triggerImmediateCheck()
+            }
+        }
     }
 }

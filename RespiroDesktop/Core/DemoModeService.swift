@@ -29,87 +29,147 @@ final class DemoModeService {
     private struct DemoScenarioEntry {
         let response: StressAnalysisResponse
         let delay: TimeInterval
+        /// If non-nil, this entry fires a silence decision instead of a normal update.
+        let silenceDecision: SilenceDecision?
+
+        init(response: StressAnalysisResponse, delay: TimeInterval, silenceDecision: SilenceDecision? = nil) {
+            self.response = response
+            self.delay = delay
+            self.silenceDecision = silenceDecision
+        }
     }
 
-    private let demoScenario: [DemoScenarioEntry] = [
-        // 1. Start clear — user just opened app
-        DemoScenarioEntry(
-            response: StressAnalysisResponse(
-                weather: "clear",
-                confidence: 0.85,
-                signals: ["single app focused", "clean desktop"],
-                nudgeType: nil,
-                nudgeMessage: nil,
-                suggestedPracticeID: nil
-            ),
-            delay: 10
-        ),
+    // MARK: - Enhanced Demo Scenario (8 entries, showcasing all Opus features)
 
-        // 2. Getting cloudy — more tabs, emails
-        DemoScenarioEntry(
-            response: StressAnalysisResponse(
-                weather: "cloudy",
-                confidence: 0.72,
-                signals: ["multiple apps open", "email client active", "15+ browser tabs"],
-                nudgeType: "encouragement",
-                nudgeMessage: "Looks like things are picking up. You're handling it well.",
-                suggestedPracticeID: nil
-            ),
-            delay: 12
-        ),
+    private let demoScenario: [DemoScenarioEntry] = {
+        // --- 1. Clear (low effort) — clean desktop, focused work ---
+        var r1 = StressAnalysisResponse(
+            weather: "clear",
+            confidence: 0.88,
+            signals: ["single app focused", "clean desktop", "organized workspace"],
+            nudgeType: nil,
+            nudgeMessage: nil,
+            suggestedPracticeID: nil
+        )
+        r1.thinkingText = "The user's desktop is clean and focused — a single code editor is open with no visible notifications. No signs of stress or overload. This is a good baseline reading."
+        r1.effortLevel = .low
 
-        // 3. Still cloudy — context switching
-        DemoScenarioEntry(
-            response: StressAnalysisResponse(
-                weather: "cloudy",
-                confidence: 0.78,
-                signals: ["rapid app switching", "Slack notifications", "calendar showing meetings"],
-                nudgeType: nil,
-                nudgeMessage: nil,
-                suggestedPracticeID: nil
-            ),
-            delay: 10
-        ),
+        // --- 2. Clear (low effort) — SILENCE DECISION: user in flow ---
+        var r2 = StressAnalysisResponse(
+            weather: "clear",
+            confidence: 0.82,
+            signals: ["code editor active", "terminal running", "steady typing cadence"],
+            nudgeType: nil,
+            nudgeMessage: nil,
+            suggestedPracticeID: nil
+        )
+        r2.thinkingText = "Desktop shows a code editor and terminal side by side. The user has been in this configuration for over 15 minutes with consistent typing. This is a deep focus state — any interruption, even a positive one, would break flow. Staying silent."
+        r2.effortLevel = .low
 
-        // 4. Stormy! — stress detected
-        DemoScenarioEntry(
-            response: StressAnalysisResponse(
-                weather: "stormy",
-                confidence: 0.88,
-                signals: ["error messages visible", "many notifications", "video call fatigue", "cluttered desktop"],
-                nudgeType: "practice",
-                nudgeMessage: "I notice things are getting intense. A quick breathing exercise might help reset.",
-                suggestedPracticeID: "physiological-sigh"
-            ),
-            delay: 15
-        ),
+        let silence2 = SilenceDecision(
+            thinkingText: "I'm detecting a deep focus state — code editor and terminal side by side, steady typing cadence for 15+ minutes. Even though I could offer encouragement, interrupting flow would do more harm than good. The best thing I can do right now is stay quiet and let the user work.",
+            effortLevel: .low,
+            detectedWeather: .clear,
+            signals: ["code editor active", "terminal running", "steady typing cadence"],
+            flowDuration: 960 // 16 minutes
+        )
 
-        // 5. After practice — clearing up
-        DemoScenarioEntry(
-            response: StressAnalysisResponse(
-                weather: "cloudy",
-                confidence: 0.70,
-                signals: ["fewer apps open", "calmer desktop"],
-                nudgeType: "acknowledgment",
-                nudgeMessage: "Weather's clearing up — nice recovery.",
-                suggestedPracticeID: nil
-            ),
-            delay: 12
-        ),
+        // --- 3. Cloudy (high effort) — emails piling up, encouragement nudge ---
+        var r3 = StressAnalysisResponse(
+            weather: "cloudy",
+            confidence: 0.74,
+            signals: ["multiple apps open", "email client with 8 unread", "15+ browser tabs", "Slack notifications visible"],
+            nudgeType: "encouragement",
+            nudgeMessage: "Looks like things are picking up. You're handling the multitasking well — take it one thing at a time.",
+            suggestedPracticeID: nil
+        )
+        r3.thinkingText = "Context shift detected: the user moved from focused coding to a multi-app environment. Email client shows 8 unread messages, browser has 15+ tabs across 2 windows, and Slack is showing notification badges. This is a common post-meeting pattern — the user is processing accumulated messages. Stress isn't high yet, but the cognitive load is increasing. An encouragement nudge feels right here — not a practice suggestion, just acknowledgment."
+        r3.effortLevel = .high
 
-        // 6. Clear again — recovered
-        DemoScenarioEntry(
-            response: StressAnalysisResponse(
-                weather: "clear",
-                confidence: 0.90,
-                signals: ["focused on single task", "clean workspace"],
-                nudgeType: nil,
-                nudgeMessage: nil,
-                suggestedPracticeID: nil
-            ),
-            delay: 10
-        ),
-    ]
+        // --- 4. Cloudy (high effort) — SILENCE DECISION: stress rising but user actively engaged ---
+        var r4 = StressAnalysisResponse(
+            weather: "cloudy",
+            confidence: 0.78,
+            signals: ["rapid app switching", "Slack thread open", "calendar showing back-to-back meetings", "email compose window"],
+            nudgeType: nil,
+            nudgeMessage: nil,
+            suggestedPracticeID: nil
+        )
+        r4.thinkingText = "Signals are intensifying — rapid app switching between Slack, email, and calendar. The user has back-to-back meetings visible and is composing an email. However, the typing is purposeful and the app switches follow a logical pattern (check calendar → compose reply → check Slack). This is controlled multitasking, not panic. Interrupting now would add to the cognitive load rather than reduce it. I'll hold off and check again soon."
+        r4.effortLevel = .high
+
+        let silence4 = SilenceDecision(
+            thinkingText: "Stress signals are clearly rising — rapid app switching, back-to-back meetings on calendar, email and Slack competing for attention. My instinct is to intervene, but looking more carefully at the pattern: the user is composing a thoughtful reply, checking calendar for context, then updating Slack. This is purposeful task management, not overwhelm. Interrupting would add another demand for attention at exactly the wrong moment. I'll monitor and step in only if the pattern becomes erratic.",
+            effortLevel: .high,
+            detectedWeather: .cloudy,
+            signals: ["rapid app switching", "Slack thread open", "calendar showing back-to-back meetings", "email compose window"]
+        )
+
+        // --- 5. Stormy (high effort) — practice nudge with full tool use chain ---
+        var r5 = StressAnalysisResponse(
+            weather: "stormy",
+            confidence: 0.91,
+            signals: ["23 open browser tabs across 4 windows", "3 error dialogs visible", "Slack 12 unread channels", "video call just ended", "cluttered desktop"],
+            nudgeType: "practice",
+            nudgeMessage: "I notice things have gotten pretty intense. A quick breathing exercise might help you reset before diving back in.",
+            suggestedPracticeID: "box-breathing"
+        )
+        r5.thinkingText = "The user's desktop shows 23 open browser tabs across 4 windows, Slack has 12 unread channels, and there are 3 error dialogs visible. This pattern has been escalating over the past 30 minutes. I notice they just finished a video call — post-meeting stress is typically responsive to breathing exercises. Let me check what practices are available and what has worked for this user before."
+        r5.effortLevel = .high
+        r5.toolUseLog = [
+            ToolCall(name: "get_practice_catalog", input: "{\"category\": \"breathing\"}"),
+            ToolCall(name: "get_user_history", input: "{\"days\": 7, \"include_ratings\": true}"),
+            ToolCall(name: "suggest_practice", input: "{\"practice_id\": \"box-breathing\", \"reason\": \"Post-meeting stress responds well to structured breathing. User completed box breathing twice this week with positive ratings.\"}")
+        ]
+        r5.practiceReason = "Post-meeting stress responds well to structured breathing. You've done box breathing twice this week and rated it helpful both times."
+
+        // --- 6. Cloudy (low effort) — things calming down, acknowledgment ---
+        var r6 = StressAnalysisResponse(
+            weather: "cloudy",
+            confidence: 0.70,
+            signals: ["fewer apps open", "calmer desktop", "browser tabs reduced to 8"],
+            nudgeType: "acknowledgment",
+            nudgeMessage: "The storm is passing — nice recovery. Your focus is coming back.",
+            suggestedPracticeID: nil
+        )
+        r6.thinkingText = "Marked improvement since the practice session. Browser tabs are down from 23 to 8, error dialogs cleared, Slack notifications addressed. The user's workspace is noticeably more organized. This recovery pattern is consistent with their history — breathing practices tend to help them reset and prioritize. A brief acknowledgment will reinforce the positive behavior without being intrusive."
+        r6.effortLevel = .low
+
+        // --- 7. Clear (low effort) — back to focused work ---
+        var r7 = StressAnalysisResponse(
+            weather: "clear",
+            confidence: 0.85,
+            signals: ["single app focused", "notifications cleared", "clean workspace"],
+            nudgeType: nil,
+            nudgeMessage: nil,
+            suggestedPracticeID: nil
+        )
+        r7.thinkingText = "Full recovery — the user is back to a single-app focus state with a clean desktop. The storm-to-clear arc completed in about 20 minutes. No intervention needed."
+        r7.effortLevel = .low
+
+        // --- 8. Clear (low effort) — sustained calm, final check ---
+        var r8 = StressAnalysisResponse(
+            weather: "clear",
+            confidence: 0.92,
+            signals: ["focused work session", "minimal browser tabs", "no notifications visible"],
+            nudgeType: nil,
+            nudgeMessage: nil,
+            suggestedPracticeID: nil
+        )
+        r8.thinkingText = "Sustained calm. The user has maintained focus for the past two check-ins. Workspace is clean, tabs minimal. Today's pattern — clear to stormy to clear — shows effective stress management. This is exactly the kind of day where the coaching model proves its value."
+        r8.effortLevel = .low
+
+        return [
+            DemoScenarioEntry(response: r1, delay: 10),
+            DemoScenarioEntry(response: r2, delay: 10, silenceDecision: silence2),
+            DemoScenarioEntry(response: r3, delay: 12),
+            DemoScenarioEntry(response: r4, delay: 10, silenceDecision: silence4),
+            DemoScenarioEntry(response: r5, delay: 15),
+            DemoScenarioEntry(response: r6, delay: 12),
+            DemoScenarioEntry(response: r7, delay: 10),
+            DemoScenarioEntry(response: r8, delay: 10),
+        ]
+    }()
 
     // MARK: - Public API
 
@@ -121,14 +181,17 @@ final class DemoModeService {
     }
 
     /// Start demo monitoring loop with shorter intervals
-    func startDemoLoop(onUpdate: @escaping @Sendable (InnerWeather, StressAnalysisResponse) -> Void) {
+    func startDemoLoop(
+        onUpdate: @escaping @Sendable (InnerWeather, StressAnalysisResponse) -> Void,
+        onSilenceDecision: (@Sendable (SilenceDecision) -> Void)? = nil
+    ) {
         guard !isRunning else { return }
         isRunning = true
         scenarioIndex = 0
 
         demoTask?.cancel()
         demoTask = Task { [weak self] in
-            await self?.demoLoop(onUpdate: onUpdate)
+            await self?.demoLoop(onUpdate: onUpdate, onSilenceDecision: onSilenceDecision)
         }
     }
 
@@ -225,15 +288,31 @@ final class DemoModeService {
 
     // MARK: - Private
 
-    private func demoLoop(onUpdate: @escaping @Sendable (InnerWeather, StressAnalysisResponse) -> Void) async {
+    private func demoLoop(
+        onUpdate: @escaping @Sendable (InnerWeather, StressAnalysisResponse) -> Void,
+        onSilenceDecision: (@Sendable (SilenceDecision) -> Void)?
+    ) async {
         while !Task.isCancelled && isRunning {
             let entry = demoScenario[scenarioIndex]
             let response = entry.response
             let weather = InnerWeather(rawValue: response.weather) ?? .clear
 
-            // Call update on MainActor
-            Task { @MainActor in
-                onUpdate(weather, response)
+            if let silence = entry.silenceDecision {
+                // Fire silence decision callback — AI chose NOT to interrupt
+                if let callback = onSilenceDecision {
+                    Task { @MainActor in
+                        callback(silence)
+                    }
+                }
+                // Also fire normal update so weather icon updates
+                Task { @MainActor in
+                    onUpdate(weather, response)
+                }
+            } else {
+                // Normal analysis update
+                Task { @MainActor in
+                    onUpdate(weather, response)
+                }
             }
 
             scenarioIndex = (scenarioIndex + 1) % demoScenario.count

@@ -14,6 +14,7 @@ struct SettingsView: View {
     @State private var apiKeyText: String = ""
     @State private var isApiKeyVisible: Bool = false
     @State private var hasLoaded: Bool = false
+    @State private var showSavedIndicator: Bool = false
 
     private var currentPreferences: UserPreferences? {
         preferences.first
@@ -26,23 +27,34 @@ struct SettingsView: View {
                 .frame(height: 52)
 
             Divider()
-                .background(Color(hex: "#C0E0D6").opacity(0.10))
+                .background(Color.white.opacity(0.06))
 
-            // Scrollable settings content
+            // Scrollable settings content - INVISIBLE scroll
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(spacing: 0) {
                     demoModeSection
+                    sectionDivider
+
                     activeHoursSection
+                    sectionDivider
+
                     preferencesSection
+                    sectionDivider
+
                     apiKeySection
+                    sectionDivider
+
                     aboutSection
                 }
-                .padding(16)
+                .padding(.vertical, 20)
+                .padding(.horizontal, 20)
             }
+            .scrollIndicators(.never) // INVISIBLE
             .frame(maxHeight: .infinity)
         }
         .frame(width: 360, height: 480)
-        .background(Color(hex: "#0A1F1A"))
+        .background(Color(hex: "#142823"))
+        .preferredColorScheme(.dark)
         .onAppear {
             loadPreferences()
         }
@@ -62,7 +74,7 @@ struct SettingsView: View {
                     Text("Back")
                         .font(.system(size: 13))
                 }
-                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
+                .foregroundStyle(Color.white.opacity(0.60))
             }
             .buttonStyle(.plain)
 
@@ -70,7 +82,7 @@ struct SettingsView: View {
 
             Text("Settings")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
+                .foregroundStyle(Color.white.opacity(0.92))
 
             Spacer()
 
@@ -79,137 +91,153 @@ struct SettingsView: View {
         .padding(.horizontal, 16)
     }
 
+    // MARK: - Section Divider
+
+    private var sectionDivider: some View {
+        Divider()
+            .background(Color.white.opacity(0.06))
+            .padding(.vertical, 20)
+    }
+
     // MARK: - Demo Mode
 
     private var demoModeSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader(title: "Demo Mode", icon: "theatermasks")
+        VStack(alignment: .leading, spacing: 14) {
+            sectionHeader(title: "DEMO MODE", icon: "theatermasks")
 
-            VStack(alignment: .leading, spacing: 8) {
-                Toggle(isOn: Binding(
+            HStack {
+                Text("Demo Mode")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.white.opacity(0.92))
+
+                Spacer()
+
+                Toggle("", isOn: Binding(
                     get: { appState.isDemoMode },
                     set: { newValue in
                         Task {
                             await appState.setDemoMode(newValue, modelContext: modelContext)
                         }
                     }
-                )) {
-                    Text("Enable Demo Mode")
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
-                }
+                ))
+                .labelsHidden()
                 .toggleStyle(.switch)
                 .tint(Color(hex: "#10B981"))
-                .padding(.horizontal, 4)
+            }
 
-                Text("Simulates stress detection without API key. Uses pre-recorded scenarios for testing and demos.")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
-                    .padding(.horizontal, 4)
+            Text("Simulates stress detection without API key. Uses pre-recorded scenarios for testing and demos.")
+                .font(.system(size: 11))
+                .foregroundStyle(Color.white.opacity(0.45))
 
-                if appState.isDemoMode {
-                    HStack(spacing: 4) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 10))
-                            .foregroundStyle(Color(hex: "#10B981"))
-                        Text("Using simulated responses")
-                            .font(.system(size: 11))
-                            .foregroundStyle(Color(hex: "#10B981"))
-                    }
-                    .padding(.horizontal, 4)
+            if appState.isDemoMode {
+                HStack(spacing: 4) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 10))
+                        .foregroundStyle(Color(hex: "#10B981"))
+                    Text("Using simulated responses")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color(hex: "#10B981"))
                 }
             }
         }
-        .padding(12)
-        .background(Color(hex: "#C7E8DE").opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     // MARK: - Active Hours
 
     private var activeHoursSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader(title: "Active Hours", icon: "clock")
+        VStack(alignment: .leading, spacing: 14) {
+            sectionHeader(title: "ACTIVE HOURS", icon: "clock")
 
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Start")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
-
-                    Picker("", selection: $activeHoursStart) {
-                        ForEach(0..<24, id: \.self) { hour in
-                            Text(formatHour(hour)).tag(hour)
-                        }
-                    }
-                    .labelsHidden()
-                    .frame(width: 90)
-                    .tint(Color(hex: "#10B981"))
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("End")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
-
-                    Picker("", selection: $activeHoursEnd) {
-                        ForEach(0..<24, id: \.self) { hour in
-                            Text(formatHour(hour)).tag(hour)
-                        }
-                    }
-                    .labelsHidden()
-                    .frame(width: 90)
-                    .tint(Color(hex: "#10B981"))
-                }
+            HStack {
+                Text("Start")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.white.opacity(0.92))
 
                 Spacer()
+
+                hourPickerButton(hour: $activeHoursStart)
             }
-            .padding(.horizontal, 4)
+
+            HStack {
+                Text("End")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.white.opacity(0.92))
+
+                Spacer()
+
+                hourPickerButton(hour: $activeHoursEnd)
+            }
         }
-        .padding(12)
-        .background(Color(hex: "#C7E8DE").opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     // MARK: - Preferences
 
     private var preferencesSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader(title: "Preferences", icon: "slider.horizontal.3")
+        VStack(alignment: .leading, spacing: 14) {
+            sectionHeader(title: "PREFERENCES", icon: "slider.horizontal.3")
 
-            VStack(spacing: 8) {
-                settingsToggle(title: "Sound", isOn: $soundEnabled)
-                settingsToggle(title: "Show encouragement nudges", isOn: $showEncouragementNudges)
+            // Sound
+            HStack {
+                Text("Sound")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.white.opacity(0.92))
 
-                HStack {
-                    Text("Max practice duration")
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
+                Spacer()
 
-                    Spacer()
-
-                    Picker("", selection: $maxPracticeDuration) {
-                        Text("60s").tag(60)
-                        Text("90s").tag(90)
-                        Text("180s").tag(180)
-                    }
+                Toggle("", isOn: Binding(
+                    get: { SoundService.shared.isEnabled },
+                    set: { SoundService.shared.isEnabled = $0 }
+                ))
                     .labelsHidden()
-                    .frame(width: 80)
+                    .toggleStyle(.switch)
                     .tint(Color(hex: "#10B981"))
+            }
+
+            // Show encouragement nudges
+            HStack {
+                Text("Show encouragement nudges")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.white.opacity(0.92))
+
+                Spacer()
+
+                Toggle("", isOn: $showEncouragementNudges)
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .tint(Color(hex: "#10B981"))
+            }
+
+            // Max practice duration - RIGHT-aligned pills
+            HStack {
+                Text("Max practice duration")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.white.opacity(0.92))
+
+                Spacer()
+
+                HStack(spacing: 6) {
+                    ForEach([60, 90, 180], id: \.self) { duration in
+                        Button(action: { maxPracticeDuration = duration }) {
+                            Text(duration == 180 ? "3m" : "\(duration)s")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(maxPracticeDuration == duration ? .white : Color.white.opacity(0.50))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(maxPracticeDuration == duration ? Color(hex: "#10B981") : Color.clear)
+                                .clipShape(RoundedRectangle(cornerRadius: 4))
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
-                .padding(.horizontal, 4)
             }
         }
-        .padding(12)
-        .background(Color(hex: "#C7E8DE").opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     // MARK: - API Key
 
     private var apiKeySection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader(title: "API Key", icon: "key")
+        VStack(alignment: .leading, spacing: 14) {
+            sectionHeader(title: "API KEY", icon: "key")
 
             HStack(spacing: 8) {
                 Group {
@@ -221,39 +249,41 @@ struct SettingsView: View {
                 }
                 .textFieldStyle(.plain)
                 .font(.system(size: 12, design: .monospaced))
-                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
+                .foregroundStyle(Color.white.opacity(0.92))
                 .padding(8)
-                .background(Color(hex: "#C7E8DE").opacity(0.06))
+                .background(Color.white.opacity(0.08))
                 .clipShape(RoundedRectangle(cornerRadius: 6))
+                .onSubmit {
+                    saveAPIKey()
+                }
 
+                // Eye toggle
                 Button {
                     isApiKeyVisible.toggle()
                 } label: {
                     Image(systemName: isApiKeyVisible ? "eye.slash" : "eye")
                         .font(.system(size: 12))
-                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
+                        .foregroundStyle(Color.white.opacity(0.60))
                         .frame(width: 28, height: 28)
-                        .background(Color(hex: "#C7E8DE").opacity(0.08))
+                        .background(Color.white.opacity(0.08))
                         .clipShape(RoundedRectangle(cornerRadius: 6))
                 }
                 .buttonStyle(.plain)
-            }
 
-            Button(action: {
-                if !apiKeyText.isEmpty {
-                    APIKeyManager.saveAPIKey(apiKeyText)
+                // Save icon button
+                Button {
+                    saveAPIKey()
+                } label: {
+                    Image(systemName: showSavedIndicator ? "checkmark" : "square.and.arrow.down")
+                        .font(.system(size: 12))
+                        .foregroundStyle(showSavedIndicator ? Color(hex: "#10B981") : Color.white.opacity(0.60))
+                        .frame(width: 28, height: 28)
+                        .background(Color.white.opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                 }
-            }) {
-                Text("Save Key")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(apiKeyText.isEmpty ? Color(hex: "#E0F4EE").opacity(0.30) : .white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(apiKeyText.isEmpty ? Color(hex: "#C7E8DE").opacity(0.05) : Color(hex: "#10B981"))
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                .buttonStyle(.plain)
+                .disabled(apiKeyText.isEmpty)
             }
-            .buttonStyle(.plain)
-            .disabled(apiKeyText.isEmpty)
 
             if APIKeyManager.hasAPIKey {
                 HStack(spacing: 4) {
@@ -262,47 +292,75 @@ struct SettingsView: View {
                         .foregroundStyle(Color(hex: "#10B981"))
                     Text("API key configured")
                         .font(.system(size: 11))
-                        .foregroundStyle(Color(hex: "#10B981"))
+                        .foregroundStyle(Color.white.opacity(0.70))
                 }
             }
         }
-        .padding(12)
-        .background(Color(hex: "#C7E8DE").opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     // MARK: - About
 
     private var aboutSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            sectionHeader(title: "About Respiro", icon: "info.circle")
+        VStack(alignment: .leading, spacing: 14) {
+            sectionHeader(title: "ABOUT RESPIRO", icon: "info.circle")
 
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text("Version")
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
-                    Spacer()
-                    Text("1.0")
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
-                }
+            Text("Your AI-powered stress coach, living quietly in the menu bar.")
+                .font(.system(size: 12))
+                .foregroundStyle(Color.white.opacity(0.60))
+                .fixedSize(horizontal: false, vertical: true)
 
-                HStack {
-                    Text("AI Engine")
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
-                    Spacer()
-                    Text("Claude Opus 4.6")
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
-                }
+            aboutRow(label: "Version", value: "1.0")
+            aboutRow(label: "AI Engine", value: "Claude Opus 4.6")
+
+            HStack(spacing: 6) {
+                Image(systemName: "apple.logo")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.white.opacity(0.45))
+                Text("Also available on iOS")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.white.opacity(0.60))
             }
-            .padding(.horizontal, 4)
+
+            HStack(spacing: 6) {
+                Image(systemName: "hammer")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.white.opacity(0.45))
+                Text("Built with Opus 4.6 Hackathon \u{2014} Feb 2026")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.white.opacity(0.60))
+            }
+
+            HStack(spacing: 6) {
+                Image(systemName: "lock.shield")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color(hex: "#10B981").opacity(0.70))
+                Text("Screenshots analyzed in memory only. Never stored to disk.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.white.opacity(0.60))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            HStack(spacing: 6) {
+                Image(systemName: "chevron.left.forwardslash.chevron.right")
+                    .font(.system(size: 10))
+                    .foregroundStyle(Color.white.opacity(0.35))
+                Text("Open Source on GitHub")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.white.opacity(0.35))
+            }
         }
-        .padding(12)
-        .background(Color(hex: "#C7E8DE").opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func aboutRow(label: String, value: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 13))
+                .foregroundStyle(Color.white.opacity(0.70))
+            Spacer()
+            Text(value)
+                .font(.system(size: 13))
+                .foregroundStyle(Color.white.opacity(0.45))
+        }
     }
 
     // MARK: - Helpers
@@ -310,23 +368,33 @@ struct SettingsView: View {
     private func sectionHeader(title: String, icon: String) -> some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
-                .font(.system(size: 12))
+                .font(.system(size: 11))
                 .foregroundStyle(Color(hex: "#10B981"))
             Text(title)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
+                .font(.system(size: 12, weight: .semibold))
+                .tracking(0.5)
+                .foregroundStyle(Color.white.opacity(0.92))
         }
     }
 
-    private func settingsToggle(title: String, isOn: Binding<Bool>) -> some View {
-        Toggle(isOn: isOn) {
-            Text(title)
+    private func hourPickerButton(hour: Binding<Int>) -> some View {
+        Menu {
+            ForEach(0..<24, id: \.self) { h in
+                Button(formatHour(h)) {
+                    hour.wrappedValue = h
+                }
+            }
+        } label: {
+            Text(formatHour(hour.wrappedValue))
                 .font(.system(size: 13))
-                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
+                .foregroundStyle(Color.white.opacity(0.92))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color.white.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
         }
-        .toggleStyle(.switch)
-        .tint(Color(hex: "#10B981"))
-        .padding(.horizontal, 4)
+        .menuStyle(.borderlessButton)
+        .buttonStyle(.plain)
     }
 
     private func formatHour(_ hour: Int) -> String {
@@ -374,6 +442,22 @@ struct SettingsView: View {
         prefs.maxPracticeDuration = maxPracticeDuration
 
         try? modelContext.save()
+    }
+
+    private func saveAPIKey() {
+        guard !apiKeyText.isEmpty else { return }
+        APIKeyManager.saveAPIKey(apiKeyText)
+
+        // Show brief "saved" indicator
+        withAnimation {
+            showSavedIndicator = true
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            withAnimation {
+                showSavedIndicator = false
+            }
+        }
     }
 }
 
