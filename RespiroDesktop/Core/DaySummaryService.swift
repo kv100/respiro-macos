@@ -1,9 +1,17 @@
 import Foundation
 
 actor DaySummaryService {
-    private let apiKey: String
+    private let mode: ClaudeVisionClient.Mode
 
-    private static let endpoint = URL(string: "https://api.anthropic.com/v1/messages")!
+    private var endpoint: URL {
+        switch mode {
+        case .direct:
+            return URL(string: "https://api.anthropic.com/v1/messages")!
+        case .proxy(let url, _, _):
+            return URL(string: "\(url)/functions/v1/claude-proxy")!
+        }
+    }
+
     private static let model = "claude-opus-4-6-20250219"
     private static let apiVersion = "2023-06-01"
     private static let maxTokens = EffortLevel.max.budgetTokens + EffortLevel.max.maxResponseTokens
@@ -30,15 +38,42 @@ actor DaySummaryService {
         Keep each field to 1-2 sentences.
         """
 
-    init() throws {
-        guard let key = APIKeyManager.getAPIKey() else {
-            throw ClaudeAPIError.noAPIKey
-        }
-        self.apiKey = key
+    /// Auto-detect mode: proxy first (always available)
+    init() {
+        let deviceID = DeviceID.current
+        self.mode = .proxy(
+            supabaseURL: RespiroConfig.supabaseURL,
+            anonKey: RespiroConfig.supabaseAnonKey,
+            deviceID: deviceID
+        )
     }
 
+    /// Direct mode (BYOK)
     init(apiKey: String) {
-        self.apiKey = apiKey
+        self.mode = .direct(apiKey: apiKey)
+    }
+
+    /// Explicit proxy mode
+    init(supabaseURL: String, anonKey: String, deviceID: String) {
+        self.mode = .proxy(supabaseURL: supabaseURL, anonKey: anonKey, deviceID: deviceID)
+    }
+
+    // MARK: - Mode Helpers
+
+    private func authHeaders() -> [String: String] {
+        switch mode {
+        case .direct(let apiKey):
+            return [
+                "x-api-key": apiKey,
+                "anthropic-version": Self.apiVersion,
+            ]
+        case .proxy(_, let anonKey, let deviceID):
+            return [
+                "Authorization": "Bearer \(anonKey)",
+                "apikey": anonKey,
+                "x-device-id": deviceID,
+            ]
+        }
     }
 
     func generateDaySummary(
@@ -116,10 +151,11 @@ actor DaySummaryService {
             "budget_tokens": EffortLevel.max.budgetTokens
         ]
 
-        var request = URLRequest(url: Self.endpoint)
+        var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
-        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-        request.setValue(Self.apiVersion, forHTTPHeaderField: "anthropic-version")
+        for (key, value) in authHeaders() {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
         request.setValue("application/json", forHTTPHeaderField: "content-type")
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 

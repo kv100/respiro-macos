@@ -60,6 +60,8 @@
 		APP_150 /* GenericBreathingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_150 /* GenericBreathingView.swift */; };
 		APP_151 /* GenericStepPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_151 /* GenericStepPracticeView.swift */; };
 		APP_160 /* TipService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_160 /* TipService.swift */; };
+		APP_170 /* RespiroConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_170 /* RespiroConfig.swift */; };
+		APP_171 /* DeviceID.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_171 /* DeviceID.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -119,6 +121,8 @@
 		FILE_150 /* GenericBreathingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericBreathingView.swift; sourceTree = "<group>"; };
 		FILE_151 /* GenericStepPracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericStepPracticeView.swift; sourceTree = "<group>"; };
 		FILE_160 /* TipService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipService.swift; sourceTree = "<group>"; };
+		FILE_170 /* RespiroConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RespiroConfig.swift; sourceTree = "<group>"; };
+		FILE_171 /* DeviceID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceID.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,6 +154,8 @@
 				FILE_130 /* SoundService.swift */,
 				FILE_140 /* SecondChanceService.swift */,
 				FILE_160 /* TipService.swift */,
+				FILE_170 /* RespiroConfig.swift */,
+				FILE_171 /* DeviceID.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -427,6 +433,8 @@
 				APP_150 /* GenericBreathingView.swift in Sources */,
 				APP_151 /* GenericStepPracticeView.swift in Sources */,
 				APP_160 /* TipService.swift in Sources */,
+				APP_170 /* RespiroConfig.swift in Sources */,
+				APP_171 /* DeviceID.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

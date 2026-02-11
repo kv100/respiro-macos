@@ -67,12 +67,9 @@ struct RespiroDesktopApp: App {
         let preferenceLearner = PreferenceLearner(modelContext: modelContext)
         let rankedPractices = preferenceLearner.rankedPracticeIDs()
 
-        // Try to create vision client; if no API key, real monitoring won't be available
-        // but demo mode and nudge engine still work
+        // Create vision client — proxy mode always works (no API key required)
         let screenMonitor = ScreenMonitor()
-        guard let visionClient = try? ClaudeVisionClient() else {
-            return
-        }
+        let visionClient = ClaudeVisionClient()
 
         let service = MonitoringService(screenMonitor: screenMonitor, visionClient: visionClient)
 

@@ -47,9 +47,22 @@ enum ClaudeAPIError: Error, LocalizedError {
 // MARK: - Claude Vision Client
 
 struct ClaudeVisionClient: Sendable {
-    let apiKey: String
+    enum Mode: Sendable {
+        case direct(apiKey: String)
+        case proxy(supabaseURL: String, anonKey: String, deviceID: String)
+    }
 
-    private static let endpoint = URL(string: "https://api.anthropic.com/v1/messages")!
+    let mode: Mode
+
+    private var endpoint: URL {
+        switch mode {
+        case .direct:
+            return URL(string: "https://api.anthropic.com/v1/messages")!
+        case .proxy(let url, _, _):
+            return URL(string: "\(url)/functions/v1/claude-proxy")!
+        }
+    }
+
     private static let model = "claude-opus-4-6-20250219"
     private static let apiVersion = "2023-06-01"
     // maxTokens now scales with effort level — see EffortLevel.maxResponseTokens
@@ -175,15 +188,47 @@ struct ClaudeVisionClient: Sendable {
 
     // MARK: - Init
 
-    init() throws {
-        guard let key = APIKeyManager.getAPIKey() else {
-            throw ClaudeAPIError.noAPIKey
-        }
-        self.apiKey = key
+    /// Auto-detect mode: proxy first (always available)
+    init() {
+        let deviceID = DeviceID.current
+        self.mode = .proxy(
+            supabaseURL: RespiroConfig.supabaseURL,
+            anonKey: RespiroConfig.supabaseAnonKey,
+            deviceID: deviceID
+        )
     }
 
+    /// Direct mode (BYOK)
     init(apiKey: String) {
-        self.apiKey = apiKey
+        self.mode = .direct(apiKey: apiKey)
+    }
+
+    /// Explicit proxy mode
+    init(supabaseURL: String, anonKey: String, deviceID: String) {
+        self.mode = .proxy(supabaseURL: supabaseURL, anonKey: anonKey, deviceID: deviceID)
+    }
+
+    // MARK: - Mode Helpers
+
+    var isProxyMode: Bool {
+        if case .proxy = mode { return true }
+        return false
+    }
+
+    private func authHeaders() -> [String: String] {
+        switch mode {
+        case .direct(let apiKey):
+            return [
+                "x-api-key": apiKey,
+                "anthropic-version": Self.apiVersion,
+            ]
+        case .proxy(_, let anonKey, let deviceID):
+            return [
+                "Authorization": "Bearer \(anonKey)",
+                "apikey": anonKey,
+                "x-device-id": deviceID,
+            ]
+        }
     }
 
     // MARK: - Public API
@@ -613,10 +658,11 @@ struct ClaudeVisionClient: Sendable {
     }
 
     private func buildURLRequest(body: [String: Any]) throws -> URLRequest {
-        var request = URLRequest(url: Self.endpoint)
+        var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
-        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-        request.setValue(Self.apiVersion, forHTTPHeaderField: "anthropic-version")
+        for (key, value) in authHeaders() {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
         request.setValue("application/json", forHTTPHeaderField: "content-type")
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         return request
