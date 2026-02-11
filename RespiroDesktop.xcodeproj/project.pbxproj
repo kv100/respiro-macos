@@ -59,6 +59,7 @@
 		APP_140 /* SecondChanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_140 /* SecondChanceService.swift */; };
 		APP_150 /* GenericBreathingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_150 /* GenericBreathingView.swift */; };
 		APP_151 /* GenericStepPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_151 /* GenericStepPracticeView.swift */; };
+		APP_160 /* TipService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_160 /* TipService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -117,6 +118,7 @@
 		FILE_140 /* SecondChanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondChanceService.swift; sourceTree = "<group>"; };
 		FILE_150 /* GenericBreathingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericBreathingView.swift; sourceTree = "<group>"; };
 		FILE_151 /* GenericStepPracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericStepPracticeView.swift; sourceTree = "<group>"; };
+		FILE_160 /* TipService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -147,6 +149,7 @@
 				FILE_090 /* DemoModeService.swift */,
 				FILE_130 /* SoundService.swift */,
 				FILE_140 /* SecondChanceService.swift */,
+				FILE_160 /* TipService.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -423,6 +426,7 @@
 				APP_140 /* SecondChanceService.swift in Sources */,
 				APP_150 /* GenericBreathingView.swift in Sources */,
 				APP_151 /* GenericStepPracticeView.swift in Sources */,
+				APP_160 /* TipService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

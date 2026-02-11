@@ -7,6 +7,7 @@ struct DashboardView: View {
     @State private var iconScale: CGFloat = 1.0
     @State private var silenceCardExpanded: Bool = false
     @State private var silenceCardVisible: Bool = false
+    @State private var currentTip: WellnessTip?
 
     private var todayEntries: [StressEntry] {
         let start = Calendar.current.startOfDay(for: Date())
@@ -42,11 +43,22 @@ struct DashboardView: View {
                                 silenceCardVisible = true
                             }
                     }
+                    if let tip = currentTip {
+                        wellnessTipCard(tip)
+                    }
                     daySummaryButton
                 }
                 .padding(16)
             }
             .frame(maxHeight: .infinity)
+            .task {
+                refreshTip()
+            }
+            .onChange(of: appState.currentScreen) { _, newScreen in
+                if newScreen == .dashboard {
+                    refreshTip()
+                }
+            }
 
             Divider()
                 .background(Color(hex: "#C0E0D6").opacity(0.10))
@@ -187,6 +199,41 @@ struct DashboardView: View {
         let hours = minutes / 60
         if hours == 1 { return "1 hr ago" }
         return "\(hours) hr ago"
+    }
+
+    // MARK: - Wellness Tip Card
+
+    private func wellnessTipCard(_ tip: WellnessTip) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Image(systemName: "lightbulb.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color(hex: "#D4AF37"))
+
+                Text(tip.category.displayName)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(Color(hex: "#D4AF37"))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Color(hex: "#D4AF37").opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+
+                Spacer()
+            }
+
+            Text(tip.text)
+                .font(.system(size: 13))
+                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .background(Color(hex: "#C7E8DE").opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func refreshTip() {
+        currentTip = TipService().tipFor(weather: appState.currentWeather)
     }
 
     // MARK: - Day Summary Button
