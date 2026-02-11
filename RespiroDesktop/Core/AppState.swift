@@ -153,7 +153,32 @@ final class AppState {
             try? ctx.save()
         }
 
-        // Evaluate nudge decision asynchronously
+        // Demo mode: bypass NudgeEngine cooldowns — create decisions directly from analysis
+        if isDemoMode {
+            if let nudgeTypeRaw = analysis.nudgeType,
+               let nudgeType = NudgeType(rawValue: nudgeTypeRaw) {
+                let decision = NudgeDecision(
+                    shouldShow: true,
+                    nudgeType: nudgeType,
+                    message: analysis.nudgeMessage,
+                    suggestedPracticeID: analysis.suggestedPracticeID,
+                    reason: "demo",
+                    thinkingText: analysis.thinkingText,
+                    effortLevel: analysis.effortLevel
+                )
+                pendingNudge = decision
+                showNudge()
+            } else {
+                pendingNudge = NudgeDecision(
+                    shouldShow: false, nudgeType: nil, message: nil,
+                    suggestedPracticeID: nil, reason: "demo_no_nudge"
+                )
+                // Don't call captureSilenceDecision — demo service handles silence via its own callback
+            }
+            return
+        }
+
+        // Real mode: evaluate nudge decision asynchronously via NudgeEngine
         Task { @MainActor [weak self] in
             guard let self, let engine = self.nudgeEngine else { return }
 
@@ -233,6 +258,10 @@ final class AppState {
     func showPractice() {
         if selectedPracticeID == nil, let suggested = pendingNudge?.suggestedPracticeID {
             selectedPracticeID = suggested
+        }
+        // Auto-set weatherBefore from current weather (for delta badge on completion)
+        if selectedWeatherBefore == nil {
+            selectedWeatherBefore = currentWeather
         }
         currentScreen = .practice
     }

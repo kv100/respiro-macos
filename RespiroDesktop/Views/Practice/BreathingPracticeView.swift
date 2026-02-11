@@ -239,7 +239,6 @@ struct BreathingPracticeView: View {
             } else {
                 // Practice completed
                 Button(action: {
-                    SoundService.shared.playPracticeComplete()
                     appState.showWeatherAfter()
                 }) {
                     Text("Done")

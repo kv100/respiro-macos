@@ -179,7 +179,6 @@ struct STOPTechniqueView: View {
                 .keyboardShortcut(.space, modifiers: [])
             } else {
                 Button(action: {
-                    SoundService.shared.playPracticeComplete()
                     appState.showWeatherAfter()
                 }) {
                     Text("Done")
