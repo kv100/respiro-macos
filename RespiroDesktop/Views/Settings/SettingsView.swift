@@ -4,6 +4,7 @@ import SwiftData
 struct SettingsView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.openWindow) private var openWindow
     @Query private var preferences: [UserPreferences]
 
     @State private var activeHoursStart: Int = 9
@@ -341,7 +342,7 @@ struct SettingsView: View {
                 .foregroundStyle(Color.white.opacity(0.45))
 
             Button(action: {
-                appState.showPlaytest()
+                openWindow(id: "playtest")
             }) {
                 HStack(spacing: 6) {
                     Image(systemName: "testtube.2")

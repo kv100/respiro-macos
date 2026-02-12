@@ -281,6 +281,49 @@ final class DemoModeService {
         UserDefaults.standard.set(true, forKey: Self.demoDataSeededKey)
     }
 
+    /// Clear all demo data when disabling demo mode
+    func clearDemoData(modelContext: ModelContext) {
+        let calendar = Calendar.current
+        let now = Date()
+        let todayStart = calendar.startOfDay(for: now)
+
+        // Delete all StressEntry from today
+        let stressDescriptor = FetchDescriptor<StressEntry>(
+            predicate: #Predicate { $0.timestamp >= todayStart }
+        )
+        if let entries = try? modelContext.fetch(stressDescriptor) {
+            for entry in entries {
+                modelContext.delete(entry)
+            }
+        }
+
+        // Delete all PracticeSession from today
+        let practiceDescriptor = FetchDescriptor<PracticeSession>(
+            predicate: #Predicate { $0.startedAt >= todayStart }
+        )
+        if let sessions = try? modelContext.fetch(practiceDescriptor) {
+            for session in sessions {
+                modelContext.delete(session)
+            }
+        }
+
+        // Delete all DismissalEvent from today
+        let dismissalDescriptor = FetchDescriptor<DismissalEvent>(
+            predicate: #Predicate { $0.timestamp >= todayStart }
+        )
+        if let dismissals = try? modelContext.fetch(dismissalDescriptor) {
+            for dismissal in dismissals {
+                modelContext.delete(dismissal)
+            }
+        }
+
+        // Save changes
+        try? modelContext.save()
+
+        // Reset seeded flag
+        UserDefaults.standard.removeObject(forKey: Self.demoDataSeededKey)
+    }
+
     /// Reset demo data seeded flag (for testing)
     func resetDemoDataSeed() {
         UserDefaults.standard.set(false, forKey: Self.demoDataSeededKey)

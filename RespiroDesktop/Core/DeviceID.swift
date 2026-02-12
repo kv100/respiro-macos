@@ -28,13 +28,23 @@ enum DeviceID: Sendable {
 
     private static func saveToKeychain(_ value: String) {
         let data = Data(value.utf8)
-        let query: [String: Any] = [
+
+        // First delete any existing item
+        let deleteQuery: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: "com.respiro.desktop",
+            kSecAttrAccount as String: keychainKey
+        ]
+        SecItemDelete(deleteQuery as CFDictionary)
+
+        // Add new item with accessibility flag to avoid password prompts
+        let addQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: "com.respiro.desktop",
             kSecAttrAccount as String: keychainKey,
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
             kSecValueData as String: data
         ]
-        SecItemDelete(query as CFDictionary)
-        SecItemAdd(query as CFDictionary, nil)
+        SecItemAdd(addQuery as CFDictionary, nil)
     }
 }

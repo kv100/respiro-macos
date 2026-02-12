@@ -109,6 +109,9 @@ final class AppState {
         // If enabling, seed demo data
         if enabled {
             service.seedDemoData(modelContext: modelContext)
+        } else {
+            // If disabling, clear demo data
+            service.clearDemoData(modelContext: modelContext)
         }
 
         // If monitoring is active, restart it with new mode

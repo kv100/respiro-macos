@@ -81,15 +81,17 @@
 
 ```
 RespiroDesktop/
-├── RespiroDesktopApp.swift          # @main, MenuBarExtra, service wiring
+├── RespiroDesktopApp.swift          # @main, AppDelegate wiring
 ├── Core/
+│   ├── AppDelegate.swift            # NSApplicationDelegate, MenuBarController init, monitoring setup
+│   ├── MenuBarController.swift      # NSStatusItem, left/right click handling, popover management
 │   ├── AppState.swift               # @MainActor @Observable, Screen enum, central state
-│   ├── ScreenMonitor.swift          # ScreenCaptureKit (actor)
+│   ├── ScreenMonitor.swift          # ScreenCaptureKit, multi-display capture + montage (actor)
 │   ├── ClaudeVisionClient.swift     # Opus 4.6 Vision + Tool Use + Streaming (Sendable struct)
 │   ├── MonitoringService.swift      # Adaptive timer, screenshot loop (actor)
 │   ├── NudgeEngine.swift            # Cooldowns, suppression, NudgeDecision (actor)
 │   ├── PracticeManager.swift        # Practice flow, breathing timer (@Observable)
-│   ├── DemoModeService.swift        # 8 pre-scripted scenarios (@Observable)
+│   ├── DemoModeService.swift        # 8 pre-scripted scenarios + clearDemoData (@Observable)
 │   ├── DaySummaryService.swift      # End-of-day reflection with max thinking (actor)
 │   ├── SecondChanceService.swift    # Alternative practice from different category
 │   ├── SoundService.swift           # System sounds for nudge/practice/completion
@@ -97,7 +99,7 @@ RespiroDesktop/
 ├── Models/                          # SwiftData (StressEntry, PracticeSession, etc.) + enums
 ├── Views/
 │   ├── MainView.swift               # Screen router with keyboard shortcuts
-│   ├── MenuBar/DashboardView.swift  # Graph, silence card, tip card, controls
+│   ├── MenuBar/DashboardView.swift  # Graph, silence card, tip card, controls (hidden scrollbar)
 │   ├── Nudge/NudgeView.swift        # Nudge cards, thinking panel, tool use display
 │   ├── Practice/                    # 10 practice views + completion + weather picker
 │   ├── Components/                  # EffortIndicatorView, StressGraphView, ThinkingStreamView
@@ -137,7 +139,15 @@ RespiroDesktop/
 **V1 COMPLETE:** P0 (10/10), P1 (11/11), P2 (7/7), D6.1-D6.2
 **V2 COMPLETE:** P3 (4/4), P4 (4/4), P5 (5/5), P6 (5/5), P7 (3/3)
 **D5.1 DONE:** 19 bugs found and fixed across 3 rounds of verification. All 8 demo scenarios pass.
-**Remaining:** D5.2 (demo video), D5.3 (submission text)
+**POST-V2 POLISH (Feb 12-13):**
+
+- ✅ Multi-monitor support (capture all displays, side-by-side montage)
+- ✅ Menu bar context menu (right-click: Start/Pause/Quit via NSStatusItem)
+- ✅ Demo mode cleanup (clearDemoData when disabled)
+- ✅ UI polish (hidden scrollbars on Dashboard)
+- ✅ Keychain optimization (reduced password prompts)
+  **See:** `docs/POST_V2_UPDATES.md` for full details
+  **Remaining:** D5.2 (demo video), D5.3 (submission text)
 
 ---
 

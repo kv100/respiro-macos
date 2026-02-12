@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		APP_001 /* RespiroDesktopApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_001 /* RespiroDesktopApp.swift */; };
+		APP_209 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_209 /* AppDelegate.swift */; };
+		APP_210 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_210 /* MenuBarController.swift */; };
 		APP_002 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_002 /* AppState.swift */; };
 		APP_003 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_003 /* DashboardView.swift */; };
 		APP_004 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_004 /* MainView.swift */; };
@@ -70,12 +72,15 @@
 		APP_205 /* PlaytestService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_205 /* PlaytestService.swift */; };
 		APP_206 /* PlaytestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_206 /* PlaytestView.swift */; };
 		APP_207 /* ScenarioDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_207 /* ScenarioDetailView.swift */; };
+		APP_208 /* PlaytestWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_208 /* PlaytestWindowView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		APP_PRODUCT /* RespiroDesktop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RespiroDesktop.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BBC1F2650C26A54BCF77961F /* BreathingPracticeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BreathingPracticeView.swift; sourceTree = "<group>"; };
 		FILE_001 /* RespiroDesktopApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RespiroDesktopApp.swift; sourceTree = "<group>"; };
+		FILE_209 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		FILE_210 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
 		FILE_002 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		FILE_003 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		FILE_004 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
@@ -139,6 +144,7 @@
 		FILE_205 /* PlaytestService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestService.swift; sourceTree = "<group>"; };
 		FILE_206 /* PlaytestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestView.swift; sourceTree = "<group>"; };
 		FILE_207 /* ScenarioDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioDetailView.swift; sourceTree = "<group>"; };
+		FILE_208 /* PlaytestWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestWindowView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,6 +163,8 @@
 			children = (
 				FILE_002 /* AppState.swift */,
 				FILE_021 /* APIKeyManager.swift */,
+				FILE_209 /* AppDelegate.swift */,
+				FILE_210 /* MenuBarController.swift */,
 				FILE_005 /* ScreenMonitor.swift */,
 				FILE_006 /* ClaudeVisionClient.swift */,
 				FILE_007 /* NudgeEngine.swift */,
@@ -316,6 +324,7 @@
 			children = (
 				FILE_206 /* PlaytestView.swift */,
 				FILE_207 /* ScenarioDetailView.swift */,
+				FILE_208 /* PlaytestWindowView.swift */,
 			);
 			path = Playtest;
 			sourceTree = "<group>";
@@ -414,6 +423,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				APP_001 /* RespiroDesktopApp.swift in Sources */,
+				APP_209 /* AppDelegate.swift in Sources */,
+				APP_210 /* MenuBarController.swift in Sources */,
 				APP_002 /* AppState.swift in Sources */,
 				APP_003 /* DashboardView.swift in Sources */,
 				APP_004 /* MainView.swift in Sources */,
@@ -475,6 +486,7 @@
 				APP_205 /* PlaytestService.swift in Sources */,
 				APP_206 /* PlaytestView.swift in Sources */,
 				APP_207 /* ScenarioDetailView.swift in Sources */,
+				APP_208 /* PlaytestWindowView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

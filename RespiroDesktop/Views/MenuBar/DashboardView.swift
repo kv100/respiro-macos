@@ -50,6 +50,7 @@ struct DashboardView: View {
                 }
                 .padding(16)
             }
+            .scrollIndicators(.never)
             .frame(maxHeight: .infinity)
             .task {
                 refreshTip()
