@@ -22,6 +22,8 @@ Respiro lives in your macOS menu bar as a weather icon. It periodically captures
 
 Screenshots are analyzed by Opus 4.6 to detect visual stress cues: tab count, notification volume, app switching frequency, error messages, video call fatigue. The AI never reads message content or names.
 
+**Multi-Monitor Support:** For users with 2+ displays, Respiro captures ALL screens and creates a side-by-side montage (`[Screen1|Screen2|Screen3]`), giving Opus 4.6 complete workspace context. This prevents "blind spots" — the AI sees Slack overload on Display 2 while you're working in a browser on Display 1, enabling accurate stress detection in real-world multi-tasking scenarios.
+
 ### Adaptive Thinking (Extended Thinking)
 
 Every analysis uses effort-scaled thinking budgets:
@@ -54,7 +56,9 @@ End-of-day summary uses `.max` effort (10K thinking tokens) to reflect on the fu
 
 ## Features
 
+- **Multi-monitor support** — captures ALL displays, side-by-side montage for full context
 - **Weather-based stress visualization** — clear/cloudy/stormy in menu bar
+- **Menu bar context menu** — right-click for quick Start/Pause/Quit actions
 - **Stress trajectory graph** — smooth bezier curve showing your day
 - **20 evidence-based practices** — breathing, body, and mind techniques
 - **Smart nudge system** — cooldowns, daily limits, dismissal learning
@@ -74,26 +78,29 @@ End-of-day summary uses `.max` effort (10K thinking tokens) to reflect on the fu
 
 ## Tech Stack
 
-| Layer        | Technology                             |
-| ------------ | -------------------------------------- |
-| Language     | Swift 6 (strict concurrency)           |
-| UI           | SwiftUI (MenuBarExtra `.window` style) |
-| Architecture | @Observable + actor Services           |
-| AI           | Claude Opus 4.6 Vision + Text + Tools  |
-| Screenshots  | ScreenCaptureKit (memory only)         |
-| Persistence  | SwiftData (local only)                 |
-| Target       | macOS 14+ (Sonoma)                     |
-| Dependencies | Zero — Apple frameworks only           |
+| Layer        | Technology                            |
+| ------------ | ------------------------------------- |
+| Language     | Swift 6 (strict concurrency)          |
+| UI           | SwiftUI + NSStatusItem (menu bar)     |
+| Architecture | @Observable + actor Services          |
+| AI           | Claude Opus 4.6 Vision + Text + Tools |
+| Screenshots  | ScreenCaptureKit (multi-display)      |
+| Persistence  | SwiftData (local only)                |
+| Target       | macOS 14+ (Sonoma)                    |
+| Dependencies | Zero — Apple frameworks only          |
 
 ## Architecture
 
 ```
+AppDelegate (@MainActor)                 — NSApplicationDelegate, MenuBarController init
+MenuBarController (@MainActor)           — NSStatusItem, left/right click, popover management
 AppState (@MainActor @Observable)        — Central state, navigation, SwiftData persistence
-MonitoringService (actor)                — ScreenCaptureKit + adaptive timer + tool context
+ScreenMonitor (actor)                    — Multi-display capture + side-by-side montage
+MonitoringService (actor)                — Adaptive timer + tool context orchestration
 ClaudeVisionClient (Sendable struct)     — Vision API + Tool Use + Streaming (SSE)
 NudgeEngine (actor)                      — Cooldowns, suppression, silence decisions
 DaySummaryService (actor)                — End-of-day reflection with max thinking
-DemoModeService (@Observable)            — 8 pre-scripted scenarios, all Opus features
+DemoModeService (@Observable)            — 8 pre-scripted scenarios + demo data cleanup
 SecondChanceService (Sendable struct)    — Alternative practice from different category
 TipService (Sendable struct)             — 96 contextual wellness tips
 SoundService (@MainActor)               — Subtle system sound effects
