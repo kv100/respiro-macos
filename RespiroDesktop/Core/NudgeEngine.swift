@@ -52,6 +52,10 @@ actor NudgeEngine {
     private var dailyResetDate: Date = Calendar.current.startOfDay(for: Date())
     private var clockOffset: TimeInterval = 0
 
+    // MARK: - False Positive Tracking
+
+    private var dismissalContexts: [(context: String, confidence: Double, timestamp: Date)] = []
+
     private var now: Date { Date().addingTimeInterval(clockOffset) }
 
     func advanceTime(by interval: TimeInterval) {
@@ -221,6 +225,54 @@ actor NudgeEngine {
             isInCooldown: isInCooldown,
             cooldownReason: cooldownReason
         )
+    }
+
+    // MARK: - False Positive Analysis
+
+    /// Record dismissal context for false positive pattern detection
+    func recordDismissalContext(analysis: StressAnalysisResponse, behaviorMetrics: BehaviorMetrics?) {
+        let context = buildContextString(analysis: analysis, metrics: behaviorMetrics)
+        dismissalContexts.append((context, analysis.confidence, now))
+
+        // Keep last 30 days
+        let thirtyDaysAgo = now.addingTimeInterval(-30 * 86400)
+        dismissalContexts = dismissalContexts.filter { $0.timestamp > thirtyDaysAgo }
+    }
+
+    /// Build a context string from analysis and metrics for pattern matching
+    private func buildContextString(analysis: StressAnalysisResponse, metrics: BehaviorMetrics?) -> String {
+        var parts: [String] = []
+
+        // Add primary signal if available
+        if let signals = analysis.signals.first {
+            parts.append(signals)
+        }
+
+        // Add behavioral signals
+        if let metrics = metrics {
+            if metrics.contextSwitchesPerMinute > 4.0 {
+                parts.append("high_context_switching")
+            }
+            if let topApp = metrics.applicationFocus.max(by: { $0.value < $1.value })?.key {
+                parts.append("focus_\(topApp)")
+            }
+        }
+
+        return parts.joined(separator: ", ")
+    }
+
+    /// Get false positive patterns (contexts that were dismissed 3+ times)
+    func getFalsePositivePatterns() -> [String] {
+        // Count pattern occurrences
+        var patternCounts: [String: Int] = [:]
+        for dismissal in dismissalContexts {
+            patternCounts[dismissal.context, default: 0] += 1
+        }
+
+        // Filter patterns with 3+ dismissals
+        return patternCounts
+            .filter { $0.value >= 3 }
+            .map { "\($0.key) (\($0.value) dismissals)" }
     }
 
     // MARK: - Private

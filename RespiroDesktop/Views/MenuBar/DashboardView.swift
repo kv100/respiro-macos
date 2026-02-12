@@ -28,6 +28,18 @@ struct DashboardView: View {
                 VStack(spacing: 12) {
                     StressGraphView(entries: todayEntries)
                     monitoringCard
+
+                    // Behavioral metrics card (shows when behavioral data is available)
+                    if appState.isMonitoring,
+                       let metrics = appState.currentBehaviorMetrics,
+                       let system = appState.currentSystemContext {
+                        BehaviorMetricsCard(
+                            behaviorMetrics: metrics,
+                            systemContext: system,
+                            baselineDeviation: appState.currentBaselineDeviation
+                        )
+                    }
+
                     if let silence = appState.lastSilenceDecision {
                         silenceDecisionCard(silence)
                             .opacity(silenceCardVisible ? 1 : 0)

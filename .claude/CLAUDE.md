@@ -94,9 +94,17 @@ RespiroDesktop/
 │   ├── DemoModeService.swift        # 8 pre-scripted scenarios + clearDemoData (@Observable)
 │   ├── DaySummaryService.swift      # End-of-day reflection with max thinking (actor)
 │   ├── SecondChanceService.swift    # Alternative practice from different category
+│   ├── BaselineService.swift        # Personal baseline learning (7-day progressive)
 │   ├── SoundService.swift           # System sounds for nudge/practice/completion
 │   └── TipService.swift             # 96 contextual wellness tips
-├── Models/                          # SwiftData (StressEntry, PracticeSession, etc.) + enums
+├── Models/                          # SwiftData + enums
+│   ├── StressEntry.swift            # Main stress data model
+│   ├── PracticeSession.swift        # Practice completion records
+│   ├── BehaviorMetrics.swift        # Context switches, app focus, session duration
+│   ├── SystemContext.swift          # Active app, window count, video call detection
+│   ├── UserBaseline.swift           # Personal baseline patterns (7-day learning)
+│   ├── FalsePositivePattern.swift   # Dismissal pattern tracking
+│   └── [other models...]
 ├── Views/
 │   ├── MainView.swift               # Screen router with keyboard shortcuts
 │   ├── MenuBar/DashboardView.swift  # Graph, silence card, tip card, controls (hidden scrollbar)

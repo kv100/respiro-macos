@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 
 // MARK: - MonitoringService
 
@@ -18,6 +19,12 @@ actor MonitoringService {
     private var dismissalCount: Int = 0
     private var monitorTask: Task<Void, Never>?
 
+    // MARK: - Behavior Tracking State
+
+    private var appSwitchHistory: [(app: String, timestamp: Date)] = []
+    private var sessionStartTime: Date?
+    private var lastContextUpdate: Date = Date()
+
     // MARK: - Callbacks (Sendable, @MainActor-safe)
 
     var onWeatherUpdate: (@Sendable (InnerWeather, StressAnalysisResponse) -> Void)?
@@ -32,6 +39,10 @@ actor MonitoringService {
 
     private var learnedPatterns: String?
     private var preferredPracticeIDs: [String] = ["physiological-sigh", "box-breathing"]
+
+    // MARK: - False Positive Patterns (from NudgeEngine)
+
+    private var falsePositivePatterns: [String] = []
 
     // MARK: - Tool Context (pre-fetched for tool use)
 
@@ -80,9 +91,24 @@ actor MonitoringService {
     /// Perform a single capture + analyze cycle, returns the analysis result.
     /// When effort is .high or .max and tool context is available, uses tool use for practice selection.
     func performSingleCheck() async throws -> StressAnalysisResponse {
+        // Track current app before taking screenshot
+        trackCurrentApp()
+
         let imageData = try await screenMonitor.captureScreenshot()
 
-        let context = buildContext()
+        // Collect behavioral metrics and system context
+        let behaviorMetrics = buildBehaviorMetrics()
+        let systemContext = collectSystemContext()
+
+        // Calculate baseline deviation (if BaselineService available)
+        let baselineDeviation: Double? = nil  // TODO: integrate BaselineService
+
+        let context = buildContext(
+            behaviorMetrics: behaviorMetrics,
+            systemContext: systemContext,
+            baselineDeviation: baselineDeviation
+        )
+
         let effort = EffortLevel.determine(
             recentWeathers: recentEntries.map(\.weather),
             dismissalCount: dismissalCount
@@ -157,6 +183,10 @@ actor MonitoringService {
         if !practiceIDs.isEmpty {
             preferredPracticeIDs = practiceIDs
         }
+    }
+
+    func updateFalsePositivePatterns(_ patterns: [String]) {
+        falsePositivePatterns = patterns
     }
 
     /// Update the tool context with pre-fetched user history data.
@@ -257,7 +287,96 @@ actor MonitoringService {
         }
     }
 
-    private func buildContext() -> ScreenshotContext {
+    // MARK: - Behavior Tracking Methods
+
+    /// Track the currently active app (called periodically)
+    private func trackCurrentApp() {
+        let app = NSWorkspace.shared.frontmostApplication?.localizedName ?? "Unknown"
+        appSwitchHistory.append((app, Date()))
+
+        // Keep only last hour
+        let oneHourAgo = Date().addingTimeInterval(-3600)
+        appSwitchHistory = appSwitchHistory.filter { $0.timestamp > oneHourAgo }
+    }
+
+    /// Calculate context switches per minute over the last 5 minutes
+    private func calculateContextSwitchRate() -> Double {
+        let fiveMinutesAgo = Date().addingTimeInterval(-300)
+        let recentSwitches = appSwitchHistory.filter { $0.timestamp > fiveMinutesAgo }
+
+        guard recentSwitches.count > 1 else { return 0 }
+
+        let uniqueApps = Set(recentSwitches.map { $0.app })
+        let switches = uniqueApps.count - 1
+        return Double(switches) / 5.0
+    }
+
+    /// Collect system context at the time of screenshot
+    private func collectSystemContext() -> SystemContext {
+        let activeApp = NSWorkspace.shared.frontmostApplication?.localizedName ?? "Unknown"
+        let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]]
+        let windowCount = windowList?.count ?? 0
+
+        let recentApps = appSwitchHistory.suffix(10).map { $0.app }
+
+        // Check for video call apps
+        let runningApps = NSWorkspace.shared.runningApplications.map { $0.localizedName ?? "" }
+        let videoCallApps = ["Zoom", "Microsoft Teams", "Google Meet", "FaceTime", "Skype"]
+        let isOnVideoCall = runningApps.contains(where: { videoCallApps.contains($0) })
+
+        return SystemContext(
+            activeApp: activeApp,
+            activeWindowTitle: nil,  // TODO: AXUIElement API for window title
+            openWindowCount: windowCount,
+            recentAppSwitches: Array(recentApps),
+            pendingNotificationCount: 0,  // TODO: UNUserNotificationCenter
+            isOnVideoCall: isOnVideoCall,
+            systemUptime: ProcessInfo.processInfo.systemUptime,
+            idleTime: 0  // TODO: CGEventSource for idle time
+        )
+    }
+
+    /// Build behavior metrics from tracked data
+    private func buildBehaviorMetrics() -> BehaviorMetrics {
+        let contextSwitchRate = calculateContextSwitchRate()
+
+        let sessionDuration: TimeInterval
+        if let start = sessionStartTime {
+            sessionDuration = Date().timeIntervalSince(start)
+        } else {
+            sessionStartTime = Date()
+            sessionDuration = 0
+        }
+
+        // Calculate app focus percentages
+        let fiveMinutesAgo = Date().addingTimeInterval(-300)
+        let recentSwitches = appSwitchHistory.filter { $0.timestamp > fiveMinutesAgo }
+
+        var appDurations: [String: TimeInterval] = [:]
+        for i in 0..<recentSwitches.count {
+            let current = recentSwitches[i]
+            let nextTime = i + 1 < recentSwitches.count ? recentSwitches[i + 1].timestamp : Date()
+            let duration = nextTime.timeIntervalSince(current.timestamp)
+            appDurations[current.app, default: 0] += duration
+        }
+
+        let totalTime = appDurations.values.reduce(0, +)
+        let appFocus = appDurations.mapValues { totalTime > 0 ? $0 / totalTime : 0 }
+
+        return BehaviorMetrics(
+            contextSwitchesPerMinute: contextSwitchRate,
+            sessionDuration: sessionDuration,
+            applicationFocus: appFocus,
+            notificationAccumulation: 0,  // TODO: track notifications
+            recentAppSequence: recentSwitches.suffix(5).map { $0.app }
+        )
+    }
+
+    private func buildContext(
+        behaviorMetrics: BehaviorMetrics?,
+        systemContext: SystemContext?,
+        baselineDeviation: Double?
+    ) -> ScreenshotContext {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         let time = formatter.string(from: Date())
@@ -285,7 +404,11 @@ actor MonitoringService {
             lastNudgeType: nil,
             dismissalCount2h: dismissalCount,
             preferredPractices: preferredPracticeIDs,
-            learnedPatterns: learnedPatterns
+            learnedPatterns: learnedPatterns,
+            behaviorMetrics: behaviorMetrics,
+            systemContext: systemContext,
+            baselineDeviation: baselineDeviation,
+            falsePositivePatterns: falsePositivePatterns.isEmpty ? nil : falsePositivePatterns
         )
     }
 }

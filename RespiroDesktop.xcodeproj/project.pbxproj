@@ -7,9 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		11FE8B69FA27180E636935D3 /* BehaviorMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71A08A2A9A41F4DBA611637 /* BehaviorMetrics.swift */; };
+		1EAB28003E65340170CDB8AC /* UserBaseline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19D1B7DD1D97F84B04DBFA37 /* UserBaseline.swift */; };
+		9554FE557331413887E4B05B /* BaselineService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 556118D7EB98B2705B4FA6DF /* BaselineService.swift */; };
 		APP_001 /* RespiroDesktopApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_001 /* RespiroDesktopApp.swift */; };
-		APP_209 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_209 /* AppDelegate.swift */; };
-		APP_210 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_210 /* MenuBarController.swift */; };
 		APP_002 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_002 /* AppState.swift */; };
 		APP_003 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_003 /* DashboardView.swift */; };
 		APP_004 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_004 /* MainView.swift */; };
@@ -27,7 +28,6 @@
 		APP_016 /* Practice.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_018 /* Practice.swift */; };
 		APP_017 /* NudgeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_019 /* NudgeType.swift */; };
 		APP_018 /* DismissalType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_020 /* DismissalType.swift */; };
-		EDA8F7E436AF8ECC0A4755CB /* BreathingPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC1F2650C26A54BCF77961F /* BreathingPracticeView.swift */; };
 		APP_019 /* APIKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_021 /* APIKeyManager.swift */; };
 		APP_020 /* MonitoringService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_022 /* MonitoringService.swift */; };
 		APP_021 /* NudgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_023 /* NudgeView.swift */; };
@@ -54,8 +54,8 @@
 		APP_090 /* DemoModeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_090 /* DemoModeService.swift */; };
 		APP_100 /* EffortLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_100 /* EffortLevel.swift */; };
 		APP_101 /* EffortIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_101 /* EffortIndicatorView.swift */; };
-		APP_110 /* SilenceDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_110 /* SilenceDecision.swift */; };
 		APP_102 /* ThinkingStreamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_102 /* ThinkingStreamView.swift */; };
+		APP_110 /* SilenceDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_110 /* SilenceDecision.swift */; };
 		APP_120 /* StressGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_120 /* StressGraphView.swift */; };
 		APP_130 /* SoundService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_130 /* SoundService.swift */; };
 		APP_140 /* SecondChanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_140 /* SecondChanceService.swift */; };
@@ -73,14 +73,23 @@
 		APP_206 /* PlaytestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_206 /* PlaytestView.swift */; };
 		APP_207 /* ScenarioDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_207 /* ScenarioDetailView.swift */; };
 		APP_208 /* PlaytestWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_208 /* PlaytestWindowView.swift */; };
+		APP_209 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_209 /* AppDelegate.swift */; };
+		APP_210 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_210 /* MenuBarController.swift */; };
+		B8B46176CB15520707A3E097 /* FalsePositivePattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D410A75A6C1B0EA4D578C6 /* FalsePositivePattern.swift */; };
+		BC80F08121FC2CBA888A3C22 /* SystemContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D249B96740EFD06EF7A23531 /* SystemContext.swift */; };
+		EDA8F7E436AF8ECC0A4755CB /* BreathingPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC1F2650C26A54BCF77961F /* BreathingPracticeView.swift */; };
+		APP_73F /* BehaviorMetricsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_B3F /* BehaviorMetricsCard.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		19D1B7DD1D97F84B04DBFA37 /* UserBaseline.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UserBaseline.swift; path = UserBaseline.swift; sourceTree = "<group>"; };
+		556118D7EB98B2705B4FA6DF /* BaselineService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BaselineService.swift; path = BaselineService.swift; sourceTree = "<group>"; };
 		APP_PRODUCT /* RespiroDesktop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RespiroDesktop.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B6D410A75A6C1B0EA4D578C6 /* FalsePositivePattern.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FalsePositivePattern.swift; path = FalsePositivePattern.swift; sourceTree = "<group>"; };
 		BBC1F2650C26A54BCF77961F /* BreathingPracticeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BreathingPracticeView.swift; sourceTree = "<group>"; };
+		D249B96740EFD06EF7A23531 /* SystemContext.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SystemContext.swift; path = SystemContext.swift; sourceTree = "<group>"; };
+		D71A08A2A9A41F4DBA611637 /* BehaviorMetrics.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BehaviorMetrics.swift; path = BehaviorMetrics.swift; sourceTree = "<group>"; };
 		FILE_001 /* RespiroDesktopApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RespiroDesktopApp.swift; sourceTree = "<group>"; };
-		FILE_209 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		FILE_210 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
 		FILE_002 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		FILE_003 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		FILE_004 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
@@ -126,8 +135,8 @@
 		FILE_090 /* DemoModeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoModeService.swift; sourceTree = "<group>"; };
 		FILE_100 /* EffortLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffortLevel.swift; sourceTree = "<group>"; };
 		FILE_101 /* EffortIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffortIndicatorView.swift; sourceTree = "<group>"; };
-		FILE_110 /* SilenceDecision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilenceDecision.swift; sourceTree = "<group>"; };
 		FILE_102 /* ThinkingStreamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThinkingStreamView.swift; sourceTree = "<group>"; };
+		FILE_110 /* SilenceDecision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilenceDecision.swift; sourceTree = "<group>"; };
 		FILE_120 /* StressGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StressGraphView.swift; sourceTree = "<group>"; };
 		FILE_130 /* SoundService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundService.swift; sourceTree = "<group>"; };
 		FILE_140 /* SecondChanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondChanceService.swift; sourceTree = "<group>"; };
@@ -145,6 +154,9 @@
 		FILE_206 /* PlaytestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestView.swift; sourceTree = "<group>"; };
 		FILE_207 /* ScenarioDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioDetailView.swift; sourceTree = "<group>"; };
 		FILE_208 /* PlaytestWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestWindowView.swift; sourceTree = "<group>"; };
+		FILE_209 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		FILE_210 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
+		FILE_B3F /* BehaviorMetricsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BehaviorMetricsCard.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -158,6 +170,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		GROUP_COMPONENTS /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_101 /* EffortIndicatorView.swift */,
+				FILE_B3F /* BehaviorMetricsCard.swift */,
+				FILE_102 /* ThinkingStreamView.swift */,
+				FILE_120 /* StressGraphView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		GROUP_CORE /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -184,6 +207,7 @@
 				FILE_203 /* ScenarioRunner.swift */,
 				FILE_204 /* ScenarioGenerator.swift */,
 				FILE_205 /* PlaytestService.swift */,
+				556118D7EB98B2705B4FA6DF /* BaselineService.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -210,9 +234,13 @@
 				FILE_020 /* DismissalType.swift */,
 				FILE_062 /* DaySummaryResponse.swift */,
 				FILE_100 /* EffortLevel.swift */,
-			FILE_110 /* SilenceDecision.swift */,
+				FILE_110 /* SilenceDecision.swift */,
 				FILE_200 /* PlaytestModels.swift */,
 				FILE_201 /* PlaytestCatalog.swift */,
+				D71A08A2A9A41F4DBA611637 /* BehaviorMetrics.swift */,
+				D249B96740EFD06EF7A23531 /* SystemContext.swift */,
+				19D1B7DD1D97F84B04DBFA37 /* UserBaseline.swift */,
+				B6D410A75A6C1B0EA4D578C6 /* FalsePositivePattern.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -231,6 +259,16 @@
 				FILE_032 /* OnboardingView.swift */,
 			);
 			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		GROUP_PLAYTEST /* Playtest */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_206 /* PlaytestView.swift */,
+				FILE_207 /* ScenarioDetailView.swift */,
+				FILE_208 /* PlaytestWindowView.swift */,
+			);
+			path = Playtest;
 			sourceTree = "<group>";
 		};
 		GROUP_PRACTICE /* Practice */ = {
@@ -307,26 +345,6 @@
 				FILE_063 /* DaySummaryView.swift */,
 			);
 			path = Summary;
-			sourceTree = "<group>";
-		};
-		GROUP_COMPONENTS /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				FILE_101 /* EffortIndicatorView.swift */,
-				FILE_102 /* ThinkingStreamView.swift */,
-				FILE_120 /* StressGraphView.swift */,
-			);
-			path = Components;
-			sourceTree = "<group>";
-		};
-		GROUP_PLAYTEST /* Playtest */ = {
-			isa = PBXGroup;
-			children = (
-				FILE_206 /* PlaytestView.swift */,
-				FILE_207 /* ScenarioDetailView.swift */,
-				FILE_208 /* PlaytestWindowView.swift */,
-			);
-			path = Playtest;
 			sourceTree = "<group>";
 		};
 		GROUP_VIEWS /* Views */ = {
@@ -468,6 +486,7 @@
 				APP_090 /* DemoModeService.swift in Sources */,
 				APP_100 /* EffortLevel.swift in Sources */,
 				APP_101 /* EffortIndicatorView.swift in Sources */,
+				APP_73F /* BehaviorMetricsCard.swift in Sources */,
 				APP_110 /* SilenceDecision.swift in Sources */,
 				APP_102 /* ThinkingStreamView.swift in Sources */,
 				APP_120 /* StressGraphView.swift in Sources */,
@@ -487,6 +506,11 @@
 				APP_206 /* PlaytestView.swift in Sources */,
 				APP_207 /* ScenarioDetailView.swift in Sources */,
 				APP_208 /* PlaytestWindowView.swift in Sources */,
+				11FE8B69FA27180E636935D3 /* BehaviorMetrics.swift in Sources */,
+				BC80F08121FC2CBA888A3C22 /* SystemContext.swift in Sources */,
+				1EAB28003E65340170CDB8AC /* UserBaseline.swift in Sources */,
+				B8B46176CB15520707A3E097 /* FalsePositivePattern.swift in Sources */,
+				9554FE557331413887E4B05B /* BaselineService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

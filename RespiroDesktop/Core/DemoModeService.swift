@@ -31,13 +31,30 @@ final class DemoModeService {
         let delay: TimeInterval
         /// If non-nil, this entry fires a silence decision instead of a normal update.
         let silenceDecision: SilenceDecision?
+        /// Behavioral metrics for this scenario (showcases behavioral tracking)
+        let behaviorMetrics: BehaviorMetrics?
+        /// System context for this scenario
+        let systemContext: SystemContext?
+        /// Baseline deviation (0.0 = normal, 1.0 = 100% above baseline)
+        let baselineDeviation: Double?
 
-        init(response: StressAnalysisResponse, delay: TimeInterval, silenceDecision: SilenceDecision? = nil) {
+        init(
+            response: StressAnalysisResponse,
+            delay: TimeInterval,
+            silenceDecision: SilenceDecision? = nil,
+            behaviorMetrics: BehaviorMetrics? = nil,
+            systemContext: SystemContext? = nil,
+            baselineDeviation: Double? = nil
+        ) {
             self.response = response
             self.delay = delay
             self.silenceDecision = silenceDecision
+            self.behaviorMetrics = behaviorMetrics
+            self.systemContext = systemContext
+            self.baselineDeviation = baselineDeviation
         }
     }
+
 
     // MARK: - Enhanced Demo Scenario (8 entries, showcasing all Opus features)
 
@@ -159,15 +176,160 @@ final class DemoModeService {
         r8.thinkingText = "Sustained calm. The user has maintained focus for the past two check-ins. Workspace is clean, tabs minimal. Today's pattern — clear to stormy to clear — shows effective stress management. This is exactly the kind of day where the coaching model proves its value."
         r8.effortLevel = .low
 
+        // Behavioral metrics for scenarios
+        let metrics1 = BehaviorMetrics(
+            contextSwitchesPerMinute: 0.8,
+            sessionDuration: 600,
+            applicationFocus: ["Xcode": 0.85, "Terminal": 0.15],
+            notificationAccumulation: 1,
+            recentAppSequence: ["Xcode", "Xcode", "Terminal", "Xcode", "Xcode"]
+        )
+        let system1 = SystemContext(
+            activeApp: "Xcode",
+            activeWindowTitle: "RespiroDesktop - main.swift",
+            openWindowCount: 8,
+            recentAppSwitches: ["Xcode", "Terminal"],
+            pendingNotificationCount: 0,
+            isOnVideoCall: false,
+            systemUptime: 3600,
+            idleTime: 0
+        )
+
+        let metrics2 = BehaviorMetrics(
+            contextSwitchesPerMinute: 0.4,
+            sessionDuration: 960,
+            applicationFocus: ["Xcode": 0.90, "Terminal": 0.10],
+            notificationAccumulation: 0,
+            recentAppSequence: ["Xcode", "Xcode", "Xcode", "Terminal", "Xcode"]
+        )
+        let system2 = SystemContext(
+            activeApp: "Xcode",
+            activeWindowTitle: "RespiroDesktop - ClaudeVisionClient.swift",
+            openWindowCount: 8,
+            recentAppSwitches: ["Xcode"],
+            pendingNotificationCount: 0,
+            isOnVideoCall: false,
+            systemUptime: 4560,
+            idleTime: 0
+        )
+
+        let metrics3 = BehaviorMetrics(
+            contextSwitchesPerMinute: 3.2,
+            sessionDuration: 1800,
+            applicationFocus: ["Safari": 0.40, "Xcode": 0.35, "Mail": 0.15, "Slack": 0.10],
+            notificationAccumulation: 8,
+            recentAppSequence: ["Xcode", "Safari", "Mail", "Slack", "Safari", "Xcode"]
+        )
+        let system3 = SystemContext(
+            activeApp: "Safari",
+            activeWindowTitle: "Swift Documentation - Apple Developer",
+            openWindowCount: 18,
+            recentAppSwitches: ["Xcode", "Safari", "Mail", "Slack"],
+            pendingNotificationCount: 3,
+            isOnVideoCall: false,
+            systemUptime: 5400,
+            idleTime: 0
+        )
+
+        let metrics4 = BehaviorMetrics(
+            contextSwitchesPerMinute: 4.8,
+            sessionDuration: 2400,
+            applicationFocus: ["Slack": 0.35, "Mail": 0.30, "Calendar": 0.20, "Xcode": 0.15],
+            notificationAccumulation: 12,
+            recentAppSequence: ["Slack", "Mail", "Calendar", "Slack", "Mail", "Slack"]
+        )
+        let system4 = SystemContext(
+            activeApp: "Slack",
+            activeWindowTitle: "# engineering",
+            openWindowCount: 15,
+            recentAppSwitches: ["Slack", "Mail", "Calendar", "Xcode"],
+            pendingNotificationCount: 5,
+            isOnVideoCall: false,
+            systemUptime: 6000,
+            idleTime: 0
+        )
+
+        let metrics5 = BehaviorMetrics(
+            contextSwitchesPerMinute: 6.5,
+            sessionDuration: 3600,
+            applicationFocus: ["Safari": 0.40, "Slack": 0.25, "Xcode": 0.20, "Mail": 0.15],
+            notificationAccumulation: 18,
+            recentAppSequence: ["Safari", "Slack", "Xcode", "Safari", "Slack", "Safari"]
+        )
+        let system5 = SystemContext(
+            activeApp: "Safari",
+            activeWindowTitle: "Stack Overflow - SwiftData error",
+            openWindowCount: 27,
+            recentAppSwitches: ["Safari", "Slack", "Xcode", "Mail", "Safari", "Slack"],
+            pendingNotificationCount: 12,
+            isOnVideoCall: false,
+            systemUptime: 7200,
+            idleTime: 0
+        )
+
+        let metrics6 = BehaviorMetrics(
+            contextSwitchesPerMinute: 2.1,
+            sessionDuration: 4200,
+            applicationFocus: ["Xcode": 0.60, "Safari": 0.25, "Terminal": 0.15],
+            notificationAccumulation: 3,
+            recentAppSequence: ["Xcode", "Safari", "Xcode", "Terminal", "Xcode"]
+        )
+        let system6 = SystemContext(
+            activeApp: "Xcode",
+            activeWindowTitle: "RespiroDesktop - main.swift",
+            openWindowCount: 12,
+            recentAppSwitches: ["Xcode", "Safari", "Terminal"],
+            pendingNotificationCount: 1,
+            isOnVideoCall: false,
+            systemUptime: 8400,
+            idleTime: 0
+        )
+
+        let metrics7 = BehaviorMetrics(
+            contextSwitchesPerMinute: 0.9,
+            sessionDuration: 4800,
+            applicationFocus: ["Xcode": 0.85, "Terminal": 0.15],
+            notificationAccumulation: 1,
+            recentAppSequence: ["Xcode", "Xcode", "Terminal", "Xcode", "Xcode"]
+        )
+        let system7 = SystemContext(
+            activeApp: "Xcode",
+            activeWindowTitle: "RespiroDesktop - DashboardView.swift",
+            openWindowCount: 9,
+            recentAppSwitches: ["Xcode", "Terminal"],
+            pendingNotificationCount: 0,
+            isOnVideoCall: false,
+            systemUptime: 9000,
+            idleTime: 0
+        )
+
+        let metrics8 = BehaviorMetrics(
+            contextSwitchesPerMinute: 0.6,
+            sessionDuration: 5400,
+            applicationFocus: ["Xcode": 0.90, "Safari": 0.10],
+            notificationAccumulation: 0,
+            recentAppSequence: ["Xcode", "Xcode", "Xcode", "Safari", "Xcode"]
+        )
+        let system8 = SystemContext(
+            activeApp: "Xcode",
+            activeWindowTitle: "RespiroDesktop - PracticeView.swift",
+            openWindowCount: 8,
+            recentAppSwitches: ["Xcode"],
+            pendingNotificationCount: 0,
+            isOnVideoCall: false,
+            systemUptime: 9600,
+            idleTime: 0
+        )
+
         return [
-            DemoScenarioEntry(response: r1, delay: 10),
-            DemoScenarioEntry(response: r2, delay: 10, silenceDecision: silence2),
-            DemoScenarioEntry(response: r3, delay: 12),
-            DemoScenarioEntry(response: r4, delay: 10, silenceDecision: silence4),
-            DemoScenarioEntry(response: r5, delay: 15),
-            DemoScenarioEntry(response: r6, delay: 12),
-            DemoScenarioEntry(response: r7, delay: 10),
-            DemoScenarioEntry(response: r8, delay: 10),
+            DemoScenarioEntry(response: r1, delay: 10, behaviorMetrics: metrics1, systemContext: system1, baselineDeviation: 0.15),
+            DemoScenarioEntry(response: r2, delay: 10, silenceDecision: silence2, behaviorMetrics: metrics2, systemContext: system2, baselineDeviation: 0.08),
+            DemoScenarioEntry(response: r3, delay: 12, behaviorMetrics: metrics3, systemContext: system3, baselineDeviation: 0.65),
+            DemoScenarioEntry(response: r4, delay: 10, silenceDecision: silence4, behaviorMetrics: metrics4, systemContext: system4, baselineDeviation: 0.95),
+            DemoScenarioEntry(response: r5, delay: 15, behaviorMetrics: metrics5, systemContext: system5, baselineDeviation: 1.8),
+            DemoScenarioEntry(response: r6, delay: 12, behaviorMetrics: metrics6, systemContext: system6, baselineDeviation: 0.42),
+            DemoScenarioEntry(response: r7, delay: 10, behaviorMetrics: metrics7, systemContext: system7, baselineDeviation: 0.18),
+            DemoScenarioEntry(response: r8, delay: 10, behaviorMetrics: metrics8, systemContext: system8, baselineDeviation: 0.10),
         ]
     }()
 
@@ -182,6 +344,7 @@ final class DemoModeService {
 
     /// Start demo monitoring loop with shorter intervals
     func startDemoLoop(
+        appState: AppState,
         onUpdate: @escaping @Sendable (InnerWeather, StressAnalysisResponse) -> Void,
         onSilenceDecision: (@Sendable (SilenceDecision) -> Void)? = nil
     ) {
@@ -191,7 +354,7 @@ final class DemoModeService {
 
         demoTask?.cancel()
         demoTask = Task { [weak self] in
-            await self?.demoLoop(onUpdate: onUpdate, onSilenceDecision: onSilenceDecision)
+            await self?.demoLoop(appState: appState, onUpdate: onUpdate, onSilenceDecision: onSilenceDecision)
         }
     }
 
@@ -332,6 +495,7 @@ final class DemoModeService {
     // MARK: - Private
 
     private func demoLoop(
+        appState: AppState,
         onUpdate: @escaping @Sendable (InnerWeather, StressAnalysisResponse) -> Void,
         onSilenceDecision: (@Sendable (SilenceDecision) -> Void)?
     ) async {
@@ -339,6 +503,13 @@ final class DemoModeService {
             let entry = demoScenario[scenarioIndex]
             let response = entry.response
             let weather = InnerWeather(rawValue: response.weather) ?? .clear
+
+            // Update behavioral context in AppState
+            Task { @MainActor in
+                appState.currentBehaviorMetrics = entry.behaviorMetrics
+                appState.currentSystemContext = entry.systemContext
+                appState.currentBaselineDeviation = entry.baselineDeviation
+            }
 
             if let silence = entry.silenceDecision {
                 // Fire silence decision callback — AI chose NOT to interrupt

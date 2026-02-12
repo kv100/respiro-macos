@@ -47,6 +47,11 @@ final class AppState {
     var selectedPracticeID: String?
     var lastSilenceDecision: SilenceDecision?
     var secondChancePractice: Practice?
+
+    // Behavioral context (populated by MonitoringService or DemoModeService)
+    var currentBehaviorMetrics: BehaviorMetrics?
+    var currentSystemContext: SystemContext?
+    var currentBaselineDeviation: Double?
     var isOnboardingComplete: Bool = UserDefaults.standard.bool(forKey: "isOnboardingComplete") {
         didSet { UserDefaults.standard.set(isOnboardingComplete, forKey: "isOnboardingComplete") }
     }
@@ -128,6 +133,7 @@ final class AppState {
         if isDemoMode, let demoService = demoModeService {
             let state = self
             demoService.startDemoLoop(
+                appState: self,
                 onUpdate: { @Sendable weather, analysis in
                     Task { @MainActor in
                         state.updateWeather(weather, analysis: analysis)
