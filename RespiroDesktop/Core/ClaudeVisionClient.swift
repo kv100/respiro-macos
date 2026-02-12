@@ -63,7 +63,7 @@ struct ClaudeVisionClient: Sendable {
         }
     }
 
-    private static let model = "claude-opus-4-6-20250219"
+    private static let model = "claude-opus-4-6"
     private static let apiVersion = "2023-06-01"
     // maxTokens now scales with effort level — see EffortLevel.maxResponseTokens
     private static let maxDailyCalls = 100

@@ -15,6 +15,23 @@ final class AppState {
         case settings
         case onboarding
         case summary
+        case playtest
+        case playtestDetail(PlaytestScenario)
+
+        static func == (lhs: Screen, rhs: Screen) -> Bool {
+            switch (lhs, rhs) {
+            case (.dashboard, .dashboard), (.nudge, .nudge), (.practice, .practice),
+                 (.weatherBefore, .weatherBefore), (.weatherAfter, .weatherAfter),
+                 (.completion, .completion), (.whatHelped, .whatHelped),
+                 (.settings, .settings), (.onboarding, .onboarding),
+                 (.summary, .summary), (.playtest, .playtest):
+                return true
+            case (.playtestDetail(let a), .playtestDetail(let b)):
+                return a.id == b.id
+            default:
+                return false
+            }
+        }
     }
 
     var currentScreen: Screen = .dashboard
@@ -57,6 +74,11 @@ final class AppState {
     private var dismissalLogger: DismissalLogger?
     private var smartSuppression: SmartSuppression?
     private var demoModeService: DemoModeService?
+    var playtestService: PlaytestService?
+
+    func configurePlaytest(_ service: PlaytestService) {
+        self.playtestService = service
+    }
 
     func configureMonitoring(service: MonitoringService) {
         self.monitoringService = service
@@ -297,5 +319,13 @@ final class AppState {
 
     func showSummary() {
         currentScreen = .summary
+    }
+
+    func showPlaytest() {
+        currentScreen = .playtest
+    }
+
+    func showPlaytestDetail(_ scenario: PlaytestScenario) {
+        currentScreen = .playtestDetail(scenario)
     }
 }

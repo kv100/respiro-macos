@@ -71,6 +71,10 @@ struct RespiroDesktopApp: App {
         let screenMonitor = ScreenMonitor()
         let visionClient = ClaudeVisionClient()
 
+        // Wire PlaytestService (uses same mode as vision client)
+        let playtestService = PlaytestService(mode: visionClient.mode)
+        appState.configurePlaytest(playtestService)
+
         let service = MonitoringService(screenMonitor: screenMonitor, visionClient: visionClient)
 
         // Wire up weather callback — captures appState for @MainActor update

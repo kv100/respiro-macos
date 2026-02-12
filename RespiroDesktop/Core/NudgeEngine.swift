@@ -50,6 +50,13 @@ actor NudgeEngine {
     private var dailyNudgeCount: Int = 0
     private var dailyPracticeNudgeCount: Int = 0
     private var dailyResetDate: Date = Calendar.current.startOfDay(for: Date())
+    private var clockOffset: TimeInterval = 0
+
+    private var now: Date { Date().addingTimeInterval(clockOffset) }
+
+    func advanceTime(by interval: TimeInterval) {
+        clockOffset += interval
+    }
 
     // MARK: - Smart Suppression
 
@@ -78,7 +85,7 @@ actor NudgeEngine {
     func shouldNudge(for analysis: StressAnalysisResponse) -> NudgeDecision {
         resetDailyCountersIfNeeded()
 
-        let now = Date()
+        let now = self.now
 
         // 1. AI says don't nudge
         guard let nudgeTypeRaw = analysis.nudgeType,
@@ -149,7 +156,7 @@ actor NudgeEngine {
     // MARK: - Event Recording
 
     func recordNudgeShown(type: NudgeType) {
-        let now = Date()
+        let now = self.now
         lastNudgeTime = now
         dailyNudgeCount += 1
 
@@ -158,17 +165,17 @@ actor NudgeEngine {
             dailyPracticeNudgeCount += 1
         }
 
-        // Showing a nudge resets consecutive dismissals
-        // (they get incremented again if user dismisses)
+        // Note: consecutiveDismissals is NOT reset here — only reset when practice is completed.
+        // Counter tracks dismissals-in-a-row without completing any practice.
     }
 
     func recordDismissal() {
         consecutiveDismissals += 1
-        lastDismissalTime = Date()
+        lastDismissalTime = now
     }
 
     func recordPracticeCompleted() {
-        lastPracticeCompletedTime = Date()
+        lastPracticeCompletedTime = now
         consecutiveDismissals = 0
     }
 
@@ -183,11 +190,44 @@ actor NudgeEngine {
         return dailyNudgeCount
     }
 
+    func cooldownSnapshot() -> PlaytestResult.CooldownSnapshot {
+        let now = self.now
+        var isInCooldown = false
+        var cooldownReason: String?
+
+        if let last = lastNudgeTime, now.timeIntervalSince(last) < Cooldown.hardMinInterval {
+            isInCooldown = true
+            cooldownReason = "hard_min_interval"
+        } else if let last = lastNudgeTime, now.timeIntervalSince(last) < Cooldown.minAnyNudgeInterval {
+            isInCooldown = true
+            cooldownReason = "min_nudge_interval"
+        } else if let last = lastPracticeCompletedTime, now.timeIntervalSince(last) < Cooldown.postPracticeCooldown {
+            isInCooldown = true
+            cooldownReason = "post_practice_cooldown"
+        } else if let last = lastDismissalTime {
+            let cooldown = consecutiveDismissals >= 3
+                ? Cooldown.consecutiveDismissalCooldown
+                : Cooldown.postDismissalCooldown
+            if now.timeIntervalSince(last) < cooldown {
+                isInCooldown = true
+                cooldownReason = consecutiveDismissals >= 3 ? "consecutive_dismissal_cooldown" : "post_dismissal_cooldown"
+            }
+        }
+
+        return PlaytestResult.CooldownSnapshot(
+            consecutiveDismissals: consecutiveDismissals,
+            dailyNudgeCount: dailyNudgeCount,
+            dailyPracticeNudgeCount: dailyPracticeNudgeCount,
+            isInCooldown: isInCooldown,
+            cooldownReason: cooldownReason
+        )
+    }
+
     // MARK: - Private
 
     @discardableResult
     private func resetDailyCountersIfNeeded() -> Bool {
-        let todayStart = Calendar.current.startOfDay(for: Date())
+        let todayStart = Calendar.current.startOfDay(for: now)
         if todayStart > dailyResetDate {
             dailyResetDate = todayStart
             dailyNudgeCount = 0

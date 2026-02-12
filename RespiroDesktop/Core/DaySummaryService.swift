@@ -12,7 +12,7 @@ actor DaySummaryService {
         }
     }
 
-    private static let model = "claude-opus-4-6-20250219"
+    private static let model = "claude-opus-4-6"
     private static let apiVersion = "2023-06-01"
     private static let maxTokens = EffortLevel.max.budgetTokens + EffortLevel.max.maxResponseTokens
 
