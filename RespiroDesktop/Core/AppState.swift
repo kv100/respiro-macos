@@ -105,6 +105,7 @@ final class AppState {
     var monitoringPausedAt: Date?
     var userReportedWeather: InnerWeather?
     var monitoringDiagnostic: String = ""  // Live diagnostic shown in dashboard
+    var cameFromPracticeLibrary: Bool = false
 
     // MARK: - Weather Floor (user-reported minimum for 30 min)
 
@@ -568,6 +569,13 @@ final class AppState {
     }
 
     func showCompletion() {
+        // Update menu bar icon to reflect post-practice weather
+        if let after = selectedWeatherAfter {
+            currentWeather = after
+            // Clear weather floor — user completed practice and reported new state
+            weatherFloor = nil
+            weatherFloorExpiry = nil
+        }
         currentScreen = .completion
     }
 

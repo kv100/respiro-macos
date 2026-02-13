@@ -152,9 +152,6 @@ struct DaySummaryView: View {
             // Day score ring
             dayScoreView(summary.dayScore)
 
-            // Stress timeline
-            stressTimeline
-
             // AI reflection cards
             reflectionCard(
                 icon: "cloud.sun",

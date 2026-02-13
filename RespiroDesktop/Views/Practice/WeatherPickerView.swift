@@ -65,7 +65,13 @@ struct WeatherPickerView: View {
         HStack {
             Button(action: {
                 if isBefore {
-                    appState.showDashboard()
+                    // Go back to where user came from (library or dashboard)
+                    if appState.cameFromPracticeLibrary {
+                        appState.cameFromPracticeLibrary = false
+                        appState.showPracticeLibrary()
+                    } else {
+                        appState.showDashboard()
+                    }
                 } else {
                     appState.showPractice()
                 }

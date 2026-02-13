@@ -102,6 +102,7 @@ struct PracticeLibraryView: View {
         Button {
             appState.selectedPracticeID = practice.id
             appState.lastPracticeCategory = practice.category
+            appState.cameFromPracticeLibrary = true
             appState.showWeatherBefore()
         } label: {
             VStack(alignment: .leading, spacing: 6) {

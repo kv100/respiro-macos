@@ -30,7 +30,7 @@ struct RespiroDesktopApp: App {
         }()
 
         // Playtest window (only visible when opened explicitly)
-        WindowGroup(id: "playtest") {
+        Window("Playtest", id: "playtest") {
             PlaytestWindowView()
                 .environment(appState)
                 .frame(width: 360, height: 480)
@@ -39,5 +39,6 @@ struct RespiroDesktopApp: App {
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
         .defaultPosition(.center)
+        // Window (not WindowGroup) prevents state restoration auto-open
     }
 }
