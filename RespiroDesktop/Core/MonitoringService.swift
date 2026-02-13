@@ -24,16 +24,14 @@ actor MonitoringService {
     private var appSwitchHistory: [(app: String, timestamp: Date)] = []
     private var sessionStartTime: Date?
     private var lastContextUpdate: Date = Date()
+    private var workspaceObserver: Any?
 
     // MARK: - Callbacks (Sendable, @MainActor-safe)
 
     var onWeatherUpdate: (@Sendable (InnerWeather, StressAnalysisResponse) -> Void)?
     var onSilenceDecision: (@Sendable (SilenceDecision) -> Void)?
 
-    // MARK: - Active Hours
-
-    private var activeHoursStart: Int = 9   // 0-23
-    private var activeHoursEnd: Int = 18    // 0-23
+    // Active hours removed — monitor whenever app is running
 
     // MARK: - Learned Patterns (from DismissalLogger)
 
@@ -55,8 +53,8 @@ actor MonitoringService {
         static let stormy: TimeInterval = 180         // 3 min
         static let afterPractice: TimeInterval = 600  // 10 min
         static let afterDismissal: TimeInterval = 900 // 15 min
-        static let afterMultipleDismissals: TimeInterval = 1800 // 30 min
-        static let maxInterval: TimeInterval = 900    // 15 min
+        static let afterMultipleDismissals: TimeInterval = 900 // 15 min (hard cap)
+        static let maxInterval: TimeInterval = 900    // 15 min absolute max
         static let clearMultiplier: Double = 1.5
     }
 
@@ -76,6 +74,8 @@ actor MonitoringService {
         consecutiveClearCount = 0
         dismissalCount = 0
 
+        startAppSwitchTracking()
+
         monitorTask?.cancel()
         monitorTask = Task { [weak self] in
             await self?.monitorLoop()
@@ -86,14 +86,44 @@ actor MonitoringService {
         isRunning = false
         monitorTask?.cancel()
         monitorTask = nil
+        stopAppSwitchTracking()
+    }
+
+    /// Subscribe to NSWorkspace app activation notifications for real-time context switch tracking
+    private func startAppSwitchTracking() {
+        // Remove old observer if any
+        stopAppSwitchTracking()
+        workspaceObserver = NotificationCenter.default.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification,
+            object: NSWorkspace.shared,
+            queue: .main
+        ) { [weak self] notification in
+            guard let app = (notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication)?.localizedName else { return }
+            Task { await self?.recordAppSwitch(app) }
+        }
+    }
+
+    private func stopAppSwitchTracking() {
+        if let observer = workspaceObserver {
+            NotificationCenter.default.removeObserver(observer)
+            workspaceObserver = nil
+        }
+    }
+
+    /// Record an app switch from NSWorkspace notification
+    private func recordAppSwitch(_ app: String) {
+        // Only record if different from last app (avoid duplicates)
+        if appSwitchHistory.last?.app != app {
+            appSwitchHistory.append((app, Date()))
+        }
+        // Keep only last hour
+        let oneHourAgo = Date().addingTimeInterval(-3600)
+        appSwitchHistory = appSwitchHistory.filter { $0.timestamp > oneHourAgo }
     }
 
     /// Perform a single capture + analyze cycle, returns the analysis result.
     /// When effort is .high or .max and tool context is available, uses tool use for practice selection.
     func performSingleCheck() async throws -> StressAnalysisResponse {
-        // Track current app before taking screenshot
-        trackCurrentApp()
-
         let imageData = try await screenMonitor.captureScreenshot()
 
         // Collect behavioral metrics and system context
@@ -201,10 +231,7 @@ actor MonitoringService {
         toolContext = context
     }
 
-    func updateActiveHours(start: Int, end: Int) {
-        activeHoursStart = max(0, min(23, start))
-        activeHoursEnd = max(0, min(23, end))
-    }
+    // Active hours removed — app monitors whenever running
 
     /// Trigger an immediate check (e.g., after wake from sleep).
     func triggerImmediateCheck() async {
@@ -232,13 +259,6 @@ actor MonitoringService {
 
     private func monitorLoop() async {
         while !Task.isCancelled && isRunning {
-            // Check active hours — skip monitoring if outside window
-            if !isWithinActiveHours() {
-                // Sleep 5 minutes and re-check
-                try? await Task.sleep(nanoseconds: 300_000_000_000)
-                continue
-            }
-
             do {
                 let response = try await performSingleCheck()
 
@@ -254,16 +274,6 @@ actor MonitoringService {
             // Sleep for the current interval
             let sleepNanos = UInt64(currentInterval * 1_000_000_000)
             try? await Task.sleep(nanoseconds: sleepNanos)
-        }
-    }
-
-    private func isWithinActiveHours() -> Bool {
-        let hour = Calendar.current.component(.hour, from: Date())
-        if activeHoursStart <= activeHoursEnd {
-            return hour >= activeHoursStart && hour < activeHoursEnd
-        } else {
-            // Wraps midnight (e.g., 22-06)
-            return hour >= activeHoursStart || hour < activeHoursEnd
         }
     }
 
@@ -294,25 +304,22 @@ actor MonitoringService {
 
     // MARK: - Behavior Tracking Methods
 
-    /// Track the currently active app (called periodically)
-    private func trackCurrentApp() {
-        let app = NSWorkspace.shared.frontmostApplication?.localizedName ?? "Unknown"
-        appSwitchHistory.append((app, Date()))
-
-        // Keep only last hour
-        let oneHourAgo = Date().addingTimeInterval(-3600)
-        appSwitchHistory = appSwitchHistory.filter { $0.timestamp > oneHourAgo }
-    }
-
     /// Calculate context switches per minute over the last 5 minutes
+    /// Counts actual app transitions (each switch from app A to app B = 1 switch)
     private func calculateContextSwitchRate() -> Double {
         let fiveMinutesAgo = Date().addingTimeInterval(-300)
         let recentSwitches = appSwitchHistory.filter { $0.timestamp > fiveMinutesAgo }
 
-        guard recentSwitches.count > 1 else { return 0 }
+        // Each entry is already a unique switch (deduped in recordAppSwitch)
+        // So count = number of transitions
+        let switches = max(0, recentSwitches.count - 1)
+        guard switches > 0 else { return 0 }
 
-        let uniqueApps = Set(recentSwitches.map { $0.app })
-        let switches = uniqueApps.count - 1
+        // Calculate actual time window for accurate rate
+        if let first = recentSwitches.first?.timestamp, let last = recentSwitches.last?.timestamp {
+            let windowMinutes = max(1.0, last.timeIntervalSince(first) / 60.0)
+            return Double(switches) / windowMinutes
+        }
         return Double(switches) / 5.0
     }
 

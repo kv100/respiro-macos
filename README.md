@@ -73,7 +73,12 @@ End-of-day summary uses `.max` effort (10K thinking tokens) to reflect on the fu
 - **Sound design** — subtle system sounds for key moments
 - **Keyboard shortcuts** — Return, Escape, Space, 1/2/3 for quick navigation
 - **Demo mode** — 8 pre-scripted scenarios showcasing all Opus features
-- **Active hours** — respects your work schedule
+- **Real-time context switch tracking** — NSWorkspace notification-based, not polling
+- **Screen sharing suppression** — blocks nudges during Loom/screen share
+- **Encouragement nudges** — lighter intervention for moderate stress (severity 0.4-0.7)
+- **Extreme behavioral override** — bypasses confidence gate at severity 0.85+
+- **dismiss_later semantics** — "not now" doesn't penalize, "I'm fine" does
+- **AI Playtest System** — 15 seed + 20 AI-generated scenarios, regression suite
 - **Wake-from-sleep** — immediate check after returning
 
 ## 🧠 How Respiro Actually Works (The Hard Part)
@@ -135,7 +140,7 @@ Example: User with 20 open browser tabs
 
 Respiro tracks:
 
-- Active app changes every 10 seconds
+- Active app changes via NSWorkspace notifications (real-time, not polling)
 - Window switching patterns
 - Notification arrival rates
 - Session duration without breaks

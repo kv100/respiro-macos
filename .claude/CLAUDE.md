@@ -161,14 +161,22 @@ RespiroDesktop/
 - ✅ Spacing fix (WeatherPicker + Completion views)
   **See:** `docs/POST_V2_UPDATES.md` for full details
 
-**PLAYTEST V2 ENHANCEMENTS (Feb 13):**
+**PLAYTEST V3 (Feb 13):**
 
-- ✅ PT.10: Expanded seed scenarios (8 → 22: +4 behavioral, +10 edge cases)
-- ✅ PT.11: Scenario Bank with SwiftData (history + fuzzy deduplication)
-- ✅ PT.12: Auto-Regression Mode (failed scenario tracking, 2-pass fix detection)
-- ✅ PT.13: Regression UI (banner, badges, history sheet, detail view)
-- ✅ PT.14: Code review and integration (Swift 6 compliance, build verification)
-  **See:** `docs/BACKLOG_PLAYTEST.md` V2 Enhancements section for full details
+- ✅ 15 seed scenarios (all passing 95%+ confidence)
+- ✅ Regression suite with AI-generated fresh scenarios (save bug descriptions, regenerate on run)
+- ✅ Parallel evaluation (3 concurrent API calls, ~3x speedup)
+- ✅ 10 AI-generated hypotheses per round (was 5)
+- ✅ 15 NudgeEngine bugs found and fixed via playtest
+- ✅ Enriched reason strings with behavioral metrics context
+- ✅ Screen sharing smart suppression (isScreenSharing field)
+- ✅ Encouragement nudge path (severity 0.4-0.7)
+- ✅ Extreme behavioral override (severity >= 0.85 bypasses confidence gate)
+- ✅ dismiss_later semantics (doesn't count toward 2h cooldown, resets chain)
+- ✅ Real-time context switch tracking (NSWorkspace.didActivateApplicationNotification)
+- ✅ Active hours removed (monitor whenever app is running)
+- ✅ Max screenshot interval capped at 15 min
+- ✅ capturesAudio = false (no audio permission prompt)
   **Build status:** ✅ **BUILD SUCCEEDED**
 
 **Remaining:** D5.2 (demo video), D5.3 (submission text)
