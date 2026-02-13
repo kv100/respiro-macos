@@ -40,20 +40,21 @@ After each agent completes, summarize results in Russian.
 
 ### Model Costs (ALWAYS specify!)
 
-| Model      | Cost | Use For                        |
-| ---------- | ---- | ------------------------------ |
-| **haiku**  | $    | Search, exploration, debugging |
-| **sonnet** | $$   | Implementation, review, UI     |
+| Model      | Cost | Use For                             |
+| ---------- | ---- | ----------------------------------- |
+| **haiku**  | $    | Search, exploration, debugging      |
+| **sonnet** | $$   | Review, UI                          |
+| **opus**   | $$$  | Core implementation (25%+ of calls) |
 
 ### Agent Catalog
 
-| Agent             | Model  | Purpose                           |
-| ----------------- | ------ | --------------------------------- |
-| `explorer`        | haiku  | Find files, understand structure  |
-| `debugger`        | haiku  | Analyze errors, investigate bugs  |
-| `swift-developer` | sonnet | Write/edit Swift code             |
-| `reviewer`        | sonnet | Code quality, Swift 6 compliance  |
-| `swiftui-pro`     | sonnet | SwiftUI, animations, MenuBarExtra |
+| Agent             | Model    | Purpose                           |
+| ----------------- | -------- | --------------------------------- |
+| `explorer`        | haiku    | Find files, understand structure  |
+| `debugger`        | haiku    | Analyze errors, investigate bugs  |
+| `swift-developer` | **opus** | Write/edit Swift code             |
+| `reviewer`        | sonnet   | Code quality, Swift 6 compliance  |
+| `swiftui-pro`     | sonnet   | SwiftUI, animations, MenuBarExtra |
 
 ---
 
@@ -64,11 +65,11 @@ TASK RECEIVED
     |
     +-- Need to find code? -> explorer (haiku)
     |
-    +-- Bug/error? -> debugger (haiku) -> swift-developer (sonnet)
+    +-- Bug/error? -> debugger (haiku) -> swift-developer (opus)
     |
-    +-- Simple fix (< 3 files)? -> swift-developer (sonnet) directly
+    +-- Simple fix (< 3 files)? -> swift-developer (opus) directly
     |
-    +-- New feature (< 5 files)? -> swift-developer (sonnet) -> reviewer
+    +-- New feature (< 5 files)? -> swift-developer (opus) -> reviewer
     |
     +-- New feature (5+ files, cross-layer)? -> AGENT TEAM
     |
@@ -84,16 +85,16 @@ TASK RECEIVED
 ### Feature (Medium)
 
 ```
-TaskCreate: "Implement feature"                  // swift-developer
-TaskCreate: "Review code" -> blockedBy:[1]       // reviewer
+TaskCreate: "Implement feature"                  // swift-developer (opus)
+TaskCreate: "Review code" -> blockedBy:[1]       // reviewer (sonnet)
 ```
 
 ### Bug Fix (Medium)
 
 ```
-TaskCreate: "Investigate bug"                    // debugger
-TaskCreate: "Fix bug" -> blockedBy:[1]           // swift-developer
-TaskCreate: "Verify fix" -> blockedBy:[2]        // reviewer
+TaskCreate: "Investigate bug"                    // debugger (haiku)
+TaskCreate: "Fix bug" -> blockedBy:[1]           // swift-developer (opus)
+TaskCreate: "Verify fix" -> blockedBy:[2]        // reviewer (sonnet)
 ```
 
 ### Simple Fix (Simple)
@@ -101,7 +102,7 @@ TaskCreate: "Verify fix" -> blockedBy:[2]        // reviewer
 No Tasks needed — direct delegation:
 
 ```
-Task({ subagent_type: "swift-developer", model: "sonnet", prompt: "..." })
+Task({ subagent_type: "swift-developer", model: "opus", prompt: "..." })
 ```
 
 ---
@@ -120,12 +121,12 @@ Use Agent Teams when:
 
 ```
 1. TeamCreate({ team_name: "feature-x" })
-2. TaskCreate: "Implement services"              // dev-backend (swift-developer)
-3. TaskCreate: "Implement views"                 // dev-frontend (swiftui-pro)
-4. TaskCreate: "Code review"                     // reviewer
+2. TaskCreate: "Implement services"              // dev-backend (swift-developer, opus)
+3. TaskCreate: "Implement views"                 // dev-frontend (swiftui-pro, sonnet)
+4. TaskCreate: "Code review"                     // reviewer (sonnet)
    -> blockedBy: [services, views]
 5. Spawn teammates with team_name + name, assign tasks
-6. Wait for completion -> cleanup
+6. Wait for completion -> shutdown teammates -> TeamDelete
 ```
 
 Key: dev-backend and dev-frontend work PARALLEL.
@@ -134,7 +135,7 @@ Key: dev-backend and dev-frontend work PARALLEL.
 
 - Each teammate owns **separate files** (no edit conflicts!)
 - Always specify `team_name` + `name` when spawning
-- **Always cleanup** when done
+- **Always cleanup** when done (shutdown + TeamDelete)
 - Hackathon: prefer subagents over teams (faster, cheaper, less overhead)
 
 ---
@@ -169,5 +170,6 @@ Next: [what's next]
 - Report to user after every agent completes
 - Ask user for architectural decisions
 - Parallel agents when independent (multiple Task calls in one message)
-- Never skip model parameter (defaults to expensive Opus)
+- Never skip model parameter
+- Always cleanup teams (shutdown + TeamDelete)
 - HACKATHON: speed > perfection, cut scope, demo is 30% of judging

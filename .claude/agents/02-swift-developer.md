@@ -2,8 +2,8 @@
 name: swift-developer
 description: Swift code implementation specialist for Respiro macOS hackathon project.
 tools: Read, Glob, Grep, Bash, Write, Edit, Context7, WebFetch
-model: sonnet
-skills: swift-patterns, swiftui-components
+model: opus
+skills: swift-patterns, swiftui-components, claude-api-swift, screencapturekit, swiftdata-patterns
 ---
 
 # SWIFT DEVELOPER Agent — macOS Implementation
@@ -62,8 +62,8 @@ actor NudgeEngine {
 
 // Stateless API client — Sendable struct
 struct ClaudeVisionClient: Sendable {
-    let apiKey: String
-    func analyzeScreenshot(_ imageData: Data, context: AnalysisContext) async throws -> StressAnalysisResponse
+    let mode: Mode
+    func analyzeScreenshot(_ imageData: Data, context: ScreenshotContext) async throws -> StressAnalysisResponse
 }
 
 // Practice flow — @Observable for UI binding
@@ -75,83 +75,15 @@ final class PracticeManager {
 }
 ```
 
-## Claude Vision API Integration
+## Skills Reference
 
-```swift
-// API call pattern
-func analyzeScreenshot(_ imageData: Data, context: AnalysisContext) async throws -> StressAnalysisResponse {
-    let body: [String: Any] = [
-        "model": "claude-opus-4-6",
-        "max_tokens": 512,
-        "system": systemPrompt,  // See docs/BACKLOG.md "Agent Specs — AI Prompts"
-        "messages": [[
-            "role": "user",
-            "content": [
-                ["type": "image", "source": [
-                    "type": "base64",
-                    "media_type": "image/png",
-                    "data": imageData.base64EncodedString()
-                ]],
-                ["type": "text", "text": buildPerScreenshotPrompt(context)]
-            ]
-        ]]
-    ]
+When working on specific areas, reference these skill files:
 
-    var request = URLRequest(url: URL(string: "https://api.anthropic.com/v1/messages")!)
-    request.httpMethod = "POST"
-    request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-    request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
-    request.setValue("application/json", forHTTPHeaderField: "content-type")
-    request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-    let (data, _) = try await URLSession.shared.data(for: request)
-    // Parse Claude response -> extract JSON from text content -> decode StressAnalysisResponse
-}
-```
-
-## ScreenCaptureKit Screenshot
-
-```swift
-import ScreenCaptureKit
-
-actor ScreenMonitor {
-    func captureScreen() async throws -> Data {
-        let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
-        guard let display = content.displays.first else { throw CaptureError.noDisplay }
-
-        let filter = SCContentFilter(display: display, excludingWindows: [])
-        let config = SCStreamConfiguration()
-        config.width = min(display.width, 1568) // Max for API
-        config.height = min(display.height, 1568)
-
-        let image = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
-        // Convert CGImage -> PNG Data
-        // NEVER write to disk
-        return pngData
-    }
-}
-```
-
-## MenuBarExtra Setup
-
-```swift
-@main
-struct RespiroDesktopApp: App {
-    @State private var appState = AppState()
-
-    var body: some Scene {
-        MenuBarExtra {
-            MainView()
-                .environment(appState)
-                .frame(width: 360, height: 480)
-                .preferredColorScheme(.dark)
-        } label: {
-            Image(systemName: appState.currentWeather.sfSymbol)
-        }
-        .menuBarExtraStyle(.window)
-    }
-}
-```
+- **Claude API:** `.claude/skills/claude-api-swift/QUICKREF.md` — Vision, streaming, tool use, error handling
+- **ScreenCaptureKit:** `.claude/skills/screencapturekit/QUICKREF.md` — Multi-display capture, montage, permissions
+- **SwiftData:** `.claude/skills/swiftdata-patterns/QUICKREF.md` — @Model, queries, CRUD
+- **Swift 6:** `.claude/skills/swift-patterns/QUICKREF.md` — Sendable, async/await, actors
+- **SwiftUI:** `.claude/skills/swiftui-components/QUICKREF.md` — Views, animations, layout
 
 ## Pre-Flight Checklist
 

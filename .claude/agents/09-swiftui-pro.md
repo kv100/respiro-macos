@@ -3,7 +3,7 @@ name: swiftui-pro
 description: SwiftUI specialist for macOS UI, animations, MenuBarExtra, and popovers. Use for complex SwiftUI implementations.
 tools: Read, Glob, Grep, Bash, Write, Edit, Context7, WebFetch
 model: sonnet
-skills: swiftui-components, swift-patterns
+skills: swiftui-components, swift-patterns, macos-menubar
 ---
 
 # SWIFTUI PRO Agent — macOS Specialist
@@ -32,6 +32,12 @@ You are the SwiftUI specialist for Respiro macOS hackathon project.
 - **Animations:** withAnimation, phase animators, keyframe animations
 - **Charts:** Swift Charts for stress timeline
 - **macOS-Specific:** NSScreen, keyboard shortcuts, accessibility
+
+## Skills Reference
+
+- **Menu Bar:** `.claude/skills/macos-menubar/QUICKREF.md` — NSStatusItem, popover, context menu, icon updates
+- **SwiftUI:** `.claude/skills/swiftui-components/QUICKREF.md` — Layout, animations, gestures
+- **Swift 6:** `.claude/skills/swift-patterns/QUICKREF.md` — Sendable, async/await
 
 ## Key Patterns
 
@@ -127,43 +133,6 @@ VStack(spacing: 0) {
 .frame(width: 360, height: 480)
 .background(Color.popupBackground)
 .clipShape(RoundedRectangle(cornerRadius: 12))
-```
-
-### Weather Picker Cards
-
-```swift
-struct WeatherCard: View {
-    let weather: InnerWeather
-    let isSelected: Bool
-    @State private var isHovered = false
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: weather.sfSymbol)
-                .font(.system(size: 32))
-            Text(weather.label)
-                .font(.system(size: 14, weight: .medium))
-        }
-        .frame(width: 96, height: 112)
-        .background(isSelected ? Color.jadeGreen.opacity(0.08) : Color.surface)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(isSelected ? Color.jadeGreen : Color.clear, lineWidth: 2)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .scaleEffect(isHovered ? 1.02 : 1.0)
-        .onHover { isHovered = $0 }
-    }
-}
-```
-
-### Icon Transition Animation
-
-```swift
-// Menu bar icon crossfade + scale bump on weather change
-Image(systemName: weather.sfSymbol)
-    .contentTransition(.symbolEffect(.replace))
-    .symbolEffect(.bounce, value: weather)
 ```
 
 ## macOS vs iOS Differences

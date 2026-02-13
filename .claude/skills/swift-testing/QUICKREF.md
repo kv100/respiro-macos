@@ -4,20 +4,22 @@
 
 ```swift
 import Testing
-@testable import Respiro
+@testable import RespiroDesktop
 
-@Suite("Calculator Tests")
-struct CalculatorTests {
-    @Test("Addition works correctly")
-    func addition() {
-        let result = Calculator.add(2, 3)
-        #expect(result == 5)
+@Suite("StressEntry Tests")
+struct StressEntryTests {
+    @Test("Creates entry with correct defaults")
+    func creation() {
+        let entry = StressEntry(weather: "clear", confidence: 0.8)
+        #expect(entry.weather == "clear")
+        #expect(entry.confidence == 0.8)
+        #expect(entry.nudgeType == nil)
     }
 
-    @Test("Division by zero throws")
-    func divisionByZero() {
-        #expect(throws: CalculatorError.divisionByZero) {
-            try Calculator.divide(10, by: 0)
+    @Test("Weather validation rejects invalid values")
+    func weatherValidation() {
+        #expect(throws: ValidationError.invalidWeather) {
+            try validateWeather("hurricane")
         }
     }
 }
@@ -52,47 +54,44 @@ struct CalculatorTests {
 ## Async Tests
 
 ```swift
-@Test("Async fetch returns data")
-func asyncFetch() async throws {
-    let data = try await client.fetch()
-    #expect(data.count > 0)
+@Test("Claude API returns valid response")
+func apiResponse() async throws {
+    let client = ClaudeVisionClient(apiKey: "test-key")
+    let response = try await client.analyzeScreenshot(testImageData, context: testContext)
+    #expect(response.weather == "clear" || response.weather == "cloudy" || response.weather == "stormy")
+    #expect(response.confidence >= 0.0 && response.confidence <= 1.0)
 }
 ```
 
 ## Parameterized Tests
 
 ```swift
-@Test("Validation works", arguments: [
-    ("valid@email.com", true),
-    ("invalid", false),
-    ("", false)
+@Test("Weather SF symbols are correct", arguments: [
+    ("clear", "sun.max"),
+    ("cloudy", "cloud"),
+    ("stormy", "cloud.bolt.rain")
 ])
-func emailValidation(email: String, expected: Bool) {
-    let result = Validator.isValidEmail(email)
-    #expect(result == expected)
-}
-
-// Multiple argument sources
-@Test(arguments: [1, 2, 3], ["a", "b", "c"])
-func combinedArgs(number: Int, letter: String) {
-    // Tests all combinations
+func weatherSymbols(weather: String, expectedSymbol: String) {
+    let w = InnerWeather(rawValue: weather)!
+    #expect(w.sfSymbol == expectedSymbol)
 }
 ```
 
 ## Test Suites
 
 ```swift
-@Suite("Feature Tests")
-struct FeatureTests {
-    @Suite("Unit Tests")
-    struct UnitTests {
-        @Test func unitTest1() { }
-        @Test func unitTest2() { }
+@Suite("NudgeEngine Tests")
+struct NudgeEngineTests {
+    @Suite("Cooldown Logic")
+    struct CooldownTests {
+        @Test func respectsCooldownPeriod() async { }
+        @Test func resetsAfterCooldown() async { }
     }
 
-    @Suite("Integration Tests")
-    struct IntegrationTests {
-        @Test func integrationTest1() async { }
+    @Suite("Suppression Logic")
+    struct SuppressionTests {
+        @Test func suppressesDuringVideoCall() async { }
+        @Test func suppressesAfterDismissal() async { }
     }
 }
 ```
@@ -102,80 +101,24 @@ struct FeatureTests {
 ```swift
 @Suite("Database Tests")
 struct DatabaseTests {
-    let database: Database
+    let container: ModelContainer
 
-    init() async throws {
-        database = try await Database.createTest()
+    init() throws {
+        container = try ModelContainer(
+            for: StressEntry.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
     }
 
-    deinit {
-        database.cleanup()
-    }
+    @Test func insertEntry() throws {
+        let context = container.mainContext
+        let entry = StressEntry(weather: "clear", confidence: 0.9)
+        context.insert(entry)
+        try context.save()
 
-    @Test func insert() async throws {
-        try await database.insert(Item.mock)
-        let items = try await database.fetchAll()
-        #expect(items.count == 1)
-    }
-}
-```
-
-## TCA TestStore
-
-```swift
-import Testing
-import ComposableArchitecture
-@testable import Respiro
-
-@Suite("BreathingFeature Tests")
-struct BreathingFeatureTests {
-    @Test("Start breathing updates state")
-    func startBreathing() async {
-        let clock = TestClock()
-
-        let store = TestStore(
-            initialState: BreathingFeature.State()
-        ) {
-            BreathingFeature()
-        } withDependencies: {
-            $0.continuousClock = clock
-        }
-
-        await store.send(.startBreathing) {
-            $0.isAnimating = true
-        }
-
-        await clock.advance(by: .milliseconds(16))
-
-        await store.receive(.tick) {
-            $0.progress = 0.016
-        }
-    }
-}
-```
-
-## Mocking Dependencies
-
-```swift
-@Test("Fetch handles error")
-func fetchError() async {
-    let store = TestStore(
-        initialState: DataFeature.State()
-    ) {
-        DataFeature()
-    } withDependencies: {
-        $0.apiClient.fetch = {
-            throw APIError.networkError
-        }
-    }
-
-    await store.send(.fetch) {
-        $0.isLoading = true
-    }
-
-    await store.receive(.fetchResponse(.failure)) {
-        $0.isLoading = false
-        $0.error = "Network error"
+        let descriptor = FetchDescriptor<StressEntry>()
+        let entries = try context.fetch(descriptor)
+        #expect(entries.count == 1)
     }
 }
 ```
@@ -186,11 +129,12 @@ func fetchError() async {
 extension Tag {
     @Tag static var slow: Self
     @Tag static var integration: Self
+    @Tag static var api: Self
 }
 
-@Test(.tags(.slow, .integration))
-func slowIntegrationTest() async {
-    // Long running test
+@Test(.tags(.slow, .api))
+func claudeAPIIntegration() async {
+    // Tests that hit real Claude API
 }
 ```
 
@@ -200,12 +144,70 @@ func slowIntegrationTest() async {
 # All tests
 swift test
 
+# Via Xcode
+xcodebuild -scheme RespiroDesktop -destination 'platform=macOS' test
+
 # Specific suite
-swift test --filter BreathingFeatureTests
+swift test --filter StressEntryTests
 
 # With tags
 swift test --filter "tag:slow"
 
 # Verbose output
 swift test --verbose
+```
+
+## Testing Actors
+
+```swift
+@Test("MonitoringService respects interval")
+func monitoringInterval() async {
+    let service = MonitoringService(...)
+    await service.startMonitoring()
+
+    // Actor methods are called with await
+    let isActive = await service.isActive
+    #expect(isActive == true)
+
+    await service.stopMonitoring()
+    let isActiveAfter = await service.isActive
+    #expect(isActiveAfter == false)
+}
+```
+
+## Testing @Observable
+
+```swift
+@Test("AppState updates weather correctly")
+@MainActor
+func appStateWeather() {
+    let state = AppState()
+    state.currentWeather = .stormy
+    #expect(state.currentWeather == .stormy)
+    #expect(state.currentWeather.sfSymbol == "cloud.bolt.rain")
+}
+```
+
+## Mocking Dependencies
+
+```swift
+// Protocol-based mocking
+protocol ScreenCapturing: Sendable {
+    func captureScreenshot() async throws -> Data
+}
+
+struct MockScreenMonitor: ScreenCapturing {
+    let mockData: Data
+
+    func captureScreenshot() async throws -> Data {
+        return mockData
+    }
+}
+
+@Test("Monitoring uses screen capture")
+func monitoringCapture() async throws {
+    let mock = MockScreenMonitor(mockData: testImageData)
+    let service = MonitoringService(screenMonitor: mock)
+    // ...
+}
 ```

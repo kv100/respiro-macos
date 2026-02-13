@@ -15,10 +15,11 @@ Base Claude = Orchestrator (Opus). Reads documents as needed.
 
 ## Model Selection (MANDATORY)
 
-| Model      | Cost | Agents                                 | When                               |
-| ---------- | ---- | -------------------------------------- | ---------------------------------- |
-| **haiku**  | $    | explorer, debugger                     | Search, find files, quick analysis |
-| **sonnet** | $$   | swift-developer, reviewer, swiftui-pro | Implementation, review, UI         |
+| Model      | Cost | Agents                | When                               |
+| ---------- | ---- | --------------------- | ---------------------------------- |
+| **haiku**  | $    | explorer, debugger    | Search, find files, quick analysis |
+| **sonnet** | $$   | reviewer, swiftui-pro | Review, UI                         |
+| **opus**   | $$$  | swift-developer       | Core implementation (25%+ Opus)    |
 
 ### Invocation (ALWAYS specify model!)
 
@@ -27,17 +28,19 @@ Base Claude = Orchestrator (Opus). Reads documents as needed.
 Task({ subagent_type: "explorer", model: "haiku", prompt: "..." })
 Task({ subagent_type: "debugger", model: "haiku", prompt: "..." })
 
-// Implementation (Sonnet - balanced)
-Task({ subagent_type: "swift-developer", model: "sonnet", prompt: "..." })
+// UI/Review (Sonnet - balanced)
 Task({ subagent_type: "swiftui-pro", model: "sonnet", prompt: "..." })
 Task({ subagent_type: "reviewer", model: "sonnet", prompt: "..." })
+
+// Core Implementation (Opus - best quality, 25%+ of agent calls)
+Task({ subagent_type: "swift-developer", model: "opus", prompt: "..." })
 ```
 
 ### Quick Decision
 
 - "Find file/code" -> explorer (haiku)
-- "Fix bug/error" -> debugger (haiku) -> swift-developer (sonnet)
-- "Write code" -> swift-developer (sonnet)
+- "Fix bug/error" -> debugger (haiku) -> swift-developer (opus)
+- "Write code" -> swift-developer (opus)
 - "UI/Animation" -> swiftui-pro (sonnet)
 - "Review code" -> reviewer (sonnet)
 
@@ -45,6 +48,16 @@ Task({ subagent_type: "reviewer", model: "sonnet", prompt: "..." })
 
 If user explicitly asks for "agent team" / "parallel" / "team" ->
 ALWAYS use Agent Team (TeamCreate), even if task seems simple enough for subagents.
+
+## Team Cleanup (MANDATORY)
+
+After all team tasks are complete:
+
+1. `SendMessage(shutdown_request)` to ALL teammates
+2. Wait for shutdown confirmations
+3. `TeamDelete` to clean up
+
+NEVER leave teams running. User should not have to clean up manually.
 
 ---
 
@@ -104,14 +117,14 @@ TASK RECEIVED
 
 ```
 TeamCreate({ team_name: "feature-x" })
-Task({ subagent_type: "swift-developer", model: "sonnet", team_name: "feature-x", name: "dev-1", prompt: "..." })
+Task({ subagent_type: "swift-developer", model: "opus", team_name: "feature-x", name: "dev-1", prompt: "..." })
 Task({ subagent_type: "swiftui-pro", model: "sonnet", team_name: "feature-x", name: "ui-1", prompt: "..." })
 ```
 
 **Rules:**
 
 - Each teammate owns THEIR OWN files (no conflicts)
-- Always cleanup after completion
+- Always cleanup after completion (shutdown + TeamDelete)
 - Hackathon: prefer subagents (faster, cheaper)
 
 ---
