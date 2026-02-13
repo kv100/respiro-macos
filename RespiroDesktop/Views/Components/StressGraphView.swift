@@ -77,23 +77,15 @@ struct StressGraphView: View {
         VStack(spacing: 4) {
             // Y-axis labels + chart
             HStack(alignment: .top, spacing: 6) {
-                // Y-axis labels (5 levels)
+                // Y-axis labels (weather icons at levels 1, 3, 5)
                 VStack(spacing: 0) {
                     Image(systemName: "sun.max")
                         .font(.system(size: 9))
                         .foregroundStyle(Color(hex: "#10B981"))
                     Spacer()
-                    Text("2")
-                        .font(.system(size: 8, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color(hex: "#10B981").opacity(0.6))
-                    Spacer()
                     Image(systemName: "cloud")
                         .font(.system(size: 9))
                         .foregroundStyle(Color(hex: "#8BA4B0"))
-                    Spacer()
-                    Text("4")
-                        .font(.system(size: 8, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color(hex: "#7B6B9E").opacity(0.6))
                     Spacer()
                     Image(systemName: "cloud.bolt.rain")
                         .font(.system(size: 9))

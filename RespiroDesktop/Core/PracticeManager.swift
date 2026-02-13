@@ -368,6 +368,18 @@ final class PracticeManager {
         }
     }
 
+    // MARK: - Phase Transition
+
+    private func setPhase(_ phase: BreathPhase, duration: Double) {
+        let previousPhase = currentPhase
+        currentPhase = phase
+        phaseDuration = duration
+        // Play subtle sound on phase transitions (not on first phase from idle)
+        if previousPhase != .idle && previousPhase != phase {
+            SoundService.shared.playPhaseChange()
+        }
+    }
+
     // MARK: - Practice Router
 
     private func runPractice() async {
@@ -414,23 +426,19 @@ final class PracticeManager {
             guard !Task.isCancelled else { return }
 
             // Phase 1: First inhale (1.0s)
-            currentPhase = .inhale
-            phaseDuration = 1.0
+            setPhase(.inhale, duration: 1.0)
             if await sleepPhase(seconds: 1.0) { return }
 
             // Phase 2: Short hold (0.3s)
-            currentPhase = .hold
-            phaseDuration = 0.3
+            setPhase(.hold, duration: 0.3)
             if await sleepPhase(seconds: 0.3) { return }
 
             // Phase 3: Second inhale (0.7s)
-            currentPhase = .inhale
-            phaseDuration = 0.7
+            setPhase(.inhale, duration: 0.7)
             if await sleepPhase(seconds: 0.7) { return }
 
             // Phase 4: Long exhale (4.0s)
-            currentPhase = .exhale
-            phaseDuration = 4.0
+            setPhase(.exhale, duration: 4.0)
             if await sleepPhase(seconds: 4.0) { return }
 
             completedCycles = cycle + 1
@@ -451,23 +459,19 @@ final class PracticeManager {
             guard !Task.isCancelled else { return }
 
             // Phase 1: Inhale (4s)
-            currentPhase = .inhale
-            phaseDuration = 4.0
+            setPhase(.inhale, duration: 4.0)
             if await sleepPhase(seconds: 4.0) { return }
 
             // Phase 2: Hold (4s)
-            currentPhase = .hold
-            phaseDuration = 4.0
+            setPhase(.hold, duration: 4.0)
             if await sleepPhase(seconds: 4.0) { return }
 
             // Phase 3: Exhale (4s)
-            currentPhase = .exhale
-            phaseDuration = 4.0
+            setPhase(.exhale, duration: 4.0)
             if await sleepPhase(seconds: 4.0) { return }
 
             // Phase 4: Hold (4s)
-            currentPhase = .hold
-            phaseDuration = 4.0
+            setPhase(.hold, duration: 4.0)
             if await sleepPhase(seconds: 4.0) { return }
 
             completedCycles = cycle + 1
@@ -536,13 +540,11 @@ final class PracticeManager {
             guard !Task.isCancelled else { return }
 
             // Phase 1: Inhale (4s)
-            currentPhase = .inhale
-            phaseDuration = 4.0
+            setPhase(.inhale, duration: 4.0)
             if await sleepPhase(seconds: 4.0) { return }
 
             // Phase 2: Long exhale (6s)
-            currentPhase = .exhale
-            phaseDuration = 6.0
+            setPhase(.exhale, duration: 6.0)
             if await sleepPhase(seconds: 6.0) { return }
 
             completedCycles = cycle + 1
@@ -580,13 +582,11 @@ final class PracticeManager {
             guard !Task.isCancelled else { return }
 
             // Phase 1: Inhale (5s)
-            currentPhase = .inhale
-            phaseDuration = 5.0
+            setPhase(.inhale, duration: 5.0)
             if await sleepPhase(seconds: 5.0) { return }
 
             // Phase 2: Exhale (5s)
-            currentPhase = .exhale
-            phaseDuration = 5.0
+            setPhase(.exhale, duration: 5.0)
             if await sleepPhase(seconds: 5.0) { return }
 
             completedCycles = cycle + 1
@@ -606,16 +606,13 @@ final class PracticeManager {
         for cycle in startCycle..<totalCycles {
             guard !Task.isCancelled else { return }
 
-            currentPhase = .inhale
-            phaseDuration = 4.0
+            setPhase(.inhale, duration: 4.0)
             if await sleepPhase(seconds: 4.0) { return }
 
-            currentPhase = .hold
-            phaseDuration = 7.0
+            setPhase(.hold, duration: 7.0)
             if await sleepPhase(seconds: 7.0) { return }
 
-            currentPhase = .exhale
-            phaseDuration = 8.0
+            setPhase(.exhale, duration: 8.0)
             if await sleepPhase(seconds: 8.0) { return }
 
             completedCycles = cycle + 1
@@ -635,12 +632,10 @@ final class PracticeManager {
         for cycle in startCycle..<totalCycles {
             guard !Task.isCancelled else { return }
 
-            currentPhase = .inhale
-            phaseDuration = 5.0
+            setPhase(.inhale, duration: 5.0)
             if await sleepPhase(seconds: 5.0) { return }
 
-            currentPhase = .exhale
-            phaseDuration = 5.0
+            setPhase(.exhale, duration: 5.0)
             if await sleepPhase(seconds: 5.0) { return }
 
             completedCycles = cycle + 1
@@ -661,31 +656,25 @@ final class PracticeManager {
             guard !Task.isCancelled else { return }
 
             currentStepInstruction = "Left nostril inhale"
-            currentPhase = .inhale
-            phaseDuration = 4.0
+            setPhase(.inhale, duration: 4.0)
             if await sleepPhase(seconds: 4.0) { return }
 
-            currentPhase = .hold
-            phaseDuration = 2.0
+            setPhase(.hold, duration: 2.0)
             if await sleepPhase(seconds: 2.0) { return }
 
             currentStepInstruction = "Right nostril exhale"
-            currentPhase = .exhale
-            phaseDuration = 4.0
+            setPhase(.exhale, duration: 4.0)
             if await sleepPhase(seconds: 4.0) { return }
 
             currentStepInstruction = "Right nostril inhale"
-            currentPhase = .inhale
-            phaseDuration = 4.0
+            setPhase(.inhale, duration: 4.0)
             if await sleepPhase(seconds: 4.0) { return }
 
-            currentPhase = .hold
-            phaseDuration = 2.0
+            setPhase(.hold, duration: 2.0)
             if await sleepPhase(seconds: 2.0) { return }
 
             currentStepInstruction = "Left nostril exhale"
-            currentPhase = .exhale
-            phaseDuration = 4.0
+            setPhase(.exhale, duration: 4.0)
             if await sleepPhase(seconds: 4.0) { return }
 
             completedCycles = cycle + 1
@@ -705,12 +694,10 @@ final class PracticeManager {
         for cycle in startCycle..<totalCycles {
             guard !Task.isCancelled else { return }
 
-            currentPhase = .inhale
-            phaseDuration = 6.0
+            setPhase(.inhale, duration: 6.0)
             if await sleepPhase(seconds: 6.0) { return }
 
-            currentPhase = .exhale
-            phaseDuration = 6.0
+            setPhase(.exhale, duration: 6.0)
             if await sleepPhase(seconds: 6.0) { return }
 
             completedCycles = cycle + 1

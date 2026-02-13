@@ -13,7 +13,7 @@ struct WeatherPickerView: View {
         VStack(spacing: 0) {
             // Header with back button
             header
-                .padding(.top, 4)
+                .padding(.top, 0)
                 .padding(.bottom, 0)
 
             // Title

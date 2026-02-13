@@ -18,25 +18,24 @@ struct PracticeLibraryView: View {
         VStack(spacing: 0) {
             // Header
             header
-                .padding(.top, 8)
+                .padding(.top, 4)
                 .padding(.horizontal, 16)
 
             Divider()
                 .background(Color(hex: "#C0E0D6").opacity(0.10))
-                .padding(.top, 6)
+                .padding(.top, 2)
 
             // Scrollable content
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     categorySection(title: "Breathing", icon: "wind", practices: breathingPractices)
                     categorySection(title: "Body", icon: "figure.mind.and.body", practices: bodyPractices)
                     categorySection(title: "Mind", icon: "brain.head.profile", practices: mindPractices)
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 16)
+                .padding(.top, 12)
                 .padding(.bottom, 24)
             }
-            .scrollIndicators(.hidden)
         }
         .frame(width: 360, height: 480)
         .background(Color(hex: "#142823"))
