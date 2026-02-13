@@ -39,7 +39,7 @@ struct WeatherCheckInView: View {
 
             Spacer()
         }
-        .frame(width: 320, height: 260)
+        .frame(width: 360, height: 480)
         .background(Color(hex: "#0A1F1A"))
         .preferredColorScheme(.dark)
     }

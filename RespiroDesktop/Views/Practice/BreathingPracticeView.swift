@@ -13,7 +13,7 @@ struct BreathingPracticeView: View {
             VStack(spacing: 0) {
                 // Header
                 practiceHeader
-                    .padding(.top, 16)
+                    .padding(.top, 8)
 
                 Spacer()
 
@@ -47,6 +47,11 @@ struct BreathingPracticeView: View {
         }
         .onDisappear {
             practiceManager.stopPractice()
+        }
+        .onChange(of: practiceManager.isActive) { oldValue, newValue in
+            if oldValue == true && newValue == false {
+                appState.showWeatherAfter()
+            }
         }
     }
 

@@ -13,14 +13,14 @@ struct WeatherPickerView: View {
         VStack(spacing: 0) {
             // Header with back button
             header
-                .padding(.top, 12)
-                .padding(.bottom, 8)
+                .padding(.top, 4)
+                .padding(.bottom, 0)
 
             // Title
             Text(title)
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
-                .padding(.bottom, 16)
+                .padding(.bottom, 12)
 
             // Weather cards row
             HStack(spacing: 16) {

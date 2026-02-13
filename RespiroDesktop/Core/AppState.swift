@@ -105,8 +105,6 @@ final class AppState {
     var monitoringPausedAt: Date?
     var userReportedWeather: InnerWeather?
     var monitoringDiagnostic: String = ""  // Live diagnostic shown in dashboard
-    private var checkInWindow: NSPanel?
-    private var checkInCloseObserver: Any?
 
     // MARK: - Weather Floor (user-reported minimum for 30 min)
 
@@ -223,9 +221,8 @@ final class AppState {
         }
 
         if needsCheckIn {
-            logger.fault("🟡 Showing check-in window")
+            logger.fault("🟡 Showing check-in (in popover)")
             showWeatherCheckIn = true
-            showCheckInWindow()
         } else {
             logger.fault("🔵 No check-in needed, starting directly")
         }
@@ -233,7 +230,6 @@ final class AppState {
 
     func completeWeatherCheckIn(weather: InnerWeather) {
         showWeatherCheckIn = false
-        dismissCheckInWindow()
         lastCheckInTime = Date()
         userReportedWeather = weather
 
@@ -270,75 +266,7 @@ final class AppState {
 
     func skipWeatherCheckIn() {
         showWeatherCheckIn = false
-        dismissCheckInWindow()
         Task { await startMonitoringDirectly() }
-    }
-
-    // MARK: - Floating Check-In Window
-
-    func showCheckInWindow() {
-        guard checkInWindow == nil else { return }
-
-        let state = self
-        let checkInView = WeatherCheckInView(
-            onSelect: { weather in
-                state.completeWeatherCheckIn(weather: weather)
-            },
-            onSkip: {
-                state.skipWeatherCheckIn()
-            }
-        )
-        .preferredColorScheme(.dark)
-
-        let hostingView = NSHostingView(rootView: checkInView)
-        hostingView.frame = NSRect(x: 0, y: 0, width: 320, height: 280)
-
-        let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 320, height: 280),
-            styleMask: [.titled, .closable, .fullSizeContentView, .nonactivatingPanel],
-            backing: .buffered,
-            defer: false
-        )
-        panel.isFloatingPanel = true
-        panel.level = .floating
-        panel.titlebarAppearsTransparent = true
-        panel.titleVisibility = .hidden
-        panel.isMovableByWindowBackground = true
-        panel.backgroundColor = NSColor(red: 0.04, green: 0.12, blue: 0.10, alpha: 0.95)
-        panel.hasShadow = true
-        panel.isReleasedWhenClosed = false
-        panel.contentView = hostingView
-        panel.center()
-        panel.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
-
-        // Observe window close (user clicks X) -- treat as skip
-        checkInCloseObserver = NotificationCenter.default.addObserver(
-            forName: NSWindow.willCloseNotification,
-            object: panel,
-            queue: .main
-        ) { [weak self] _ in
-            guard let self else { return }
-            if self.showWeatherCheckIn {
-                self.skipWeatherCheckIn()
-            }
-            self.checkInWindow = nil
-            if let obs = self.checkInCloseObserver {
-                NotificationCenter.default.removeObserver(obs)
-                self.checkInCloseObserver = nil
-            }
-        }
-
-        checkInWindow = panel
-    }
-
-    func dismissCheckInWindow() {
-        if let obs = checkInCloseObserver {
-            NotificationCenter.default.removeObserver(obs)
-            checkInCloseObserver = nil
-        }
-        checkInWindow?.close()
-        checkInWindow = nil
     }
 
     private func startMonitoringDirectly() async {
@@ -570,6 +498,22 @@ final class AppState {
         if let practiceID = selectedPracticeID {
             lastCompletedPracticeID = practiceID
         }
+
+        // Persist PracticeSession to SwiftData so Day Summary can find it
+        if let ctx = modelContext {
+            let session = PracticeSession(
+                practiceID: selectedPracticeID ?? "unknown",
+                startedAt: Date(),
+                completedAt: Date(),
+                weatherBefore: (selectedWeatherBefore ?? currentWeather).rawValue,
+                weatherAfter: selectedWeatherAfter?.rawValue,
+                wasCompleted: true,
+                triggeredByNudge: pendingNudge?.shouldShow ?? false
+            )
+            ctx.insert(session)
+            try? ctx.save()
+        }
+
         await monitoringService?.onPracticeCompleted()
         await nudgeEngine?.recordPracticeCompleted()
     }

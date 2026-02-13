@@ -22,7 +22,7 @@ struct DaySummaryView: View {
                 .background(Color(hex: "#C0E0D6").opacity(0.10))
 
             // Content
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: false) {
                 if isLoading {
                     loadingView
                 } else if let error = errorMessage {
@@ -154,11 +154,6 @@ struct DaySummaryView: View {
 
             // Stress timeline
             stressTimeline
-
-            // AI Day Reflection thinking panel
-            if let thinking = summary.thinkingText, !thinking.isEmpty {
-                dayReflectionThinkingPanel(text: thinking)
-            }
 
             // AI reflection cards
             reflectionCard(
@@ -353,17 +348,22 @@ struct DaySummaryView: View {
             }
         }
 
-        // Build dots for hours 8-20 (working day)
-        return (8...20).map { hour in
+        // Only show hours that have data
+        let hoursWithData = (0...23).filter { hourWeather[$0] != nil }.sorted()
+        if hoursWithData.isEmpty {
+            return []
+        }
+
+        // Show range from first to last data hour, only dots with data
+        let minHour = hoursWithData.first!
+        let maxHour = hoursWithData.last!
+        return (minHour...maxHour).compactMap { hour -> HourDot? in
+            guard let weather = hourWeather[hour] else { return nil }
             let color: Color
-            if let weather = hourWeather[hour] {
-                switch weather {
-                case .clear: color = Color(hex: "#10B981")
-                case .cloudy: color = Color(hex: "#8BA4B0")
-                case .stormy: color = Color(hex: "#7B6B9E")
-                }
-            } else {
-                color = Color(hex: "#C7E8DE").opacity(0.15)
+            switch weather {
+            case .clear: color = Color(hex: "#10B981")
+            case .cloudy: color = Color(hex: "#8BA4B0")
+            case .stormy: color = Color(hex: "#7B6B9E")
             }
             return HourDot(hour: hour, color: color)
         }

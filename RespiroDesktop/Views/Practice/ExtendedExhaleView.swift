@@ -11,7 +11,7 @@ struct ExtendedExhaleView: View {
 
             VStack(spacing: 0) {
                 practiceHeader
-                    .padding(.top, 16)
+                    .padding(.top, 8)
 
                 Spacer()
 
@@ -40,6 +40,11 @@ struct ExtendedExhaleView: View {
         }
         .onDisappear {
             practiceManager.stopPractice()
+        }
+        .onChange(of: practiceManager.isActive) { oldValue, newValue in
+            if oldValue == true && newValue == false {
+                appState.showWeatherAfter()
+            }
         }
     }
 

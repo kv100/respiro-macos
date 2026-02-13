@@ -7,8 +7,9 @@ struct CompletionView: View {
     @State private var sparklePhase: Int = 0
     @State private var deltaBadgeOffset: CGFloat = 10
     @State private var deltaBadgeOpacity: Double = 0
+    @State private var scienceSnippet: String = ""
 
-    private func scienceSnippet(for category: PracticeCategory) -> String {
+    private static func pickScienceSnippet(for category: PracticeCategory) -> String {
         let snippets: [String]
         switch category {
         case .breathing:
@@ -72,7 +73,7 @@ struct CompletionView: View {
             }
 
             // Science snippet
-            Text(scienceSnippet(for: appState.lastPracticeCategory ?? .breathing))
+            Text(scienceSnippet)
                 .font(.system(size: 13))
                 .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.70))
                 .multilineTextAlignment(.center)
@@ -98,6 +99,7 @@ struct CompletionView: View {
             Button(action: {
                 appState.completedPracticeCount += 1
                 SoundService.shared.playPracticeComplete()
+                Task { await appState.notifyPracticeCompleted() }
 
                 if appState.completedPracticeCount >= 3 {
                     appState.showWhatHelped()
@@ -123,6 +125,9 @@ struct CompletionView: View {
         .frame(width: 360, height: 480)
         .background(Color(hex: "#142823"))
         .onAppear {
+            if scienceSnippet.isEmpty {
+                scienceSnippet = Self.pickScienceSnippet(for: appState.lastPracticeCategory ?? .breathing)
+            }
             withAnimation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.2)) {
                 checkmarkScale = 1.0
                 checkmarkOpacity = 1.0

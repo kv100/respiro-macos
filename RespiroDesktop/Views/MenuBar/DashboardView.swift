@@ -8,6 +8,7 @@ struct DashboardView: View {
     @State private var silenceCardExpanded: Bool = false
     @State private var silenceCardVisible: Bool = false
     @State private var currentTip: WellnessTip?
+    @State private var lastTipRefresh: Date = .distantPast
     @State private var now: Date = Date()  // live-updating clock for "X min ago"
     private let minuteTimer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
 
@@ -141,27 +142,24 @@ struct DashboardView: View {
     // MARK: - Zone B: Content Cards
 
     private var monitoringCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 12) {
-                Circle()
-                    .fill(appState.isMonitoring ? Color(hex: "#10B981") : Color(hex: "#E0F4EE").opacity(0.30))
-                    .frame(width: 8, height: 8)
+        HStack(spacing: 8) {
+            Circle()
+                .fill(appState.isMonitoring ? Color(hex: "#10B981") : Color(hex: "#E0F4EE").opacity(0.30))
+                .frame(width: 8, height: 8)
 
-                Text(appState.isMonitoring ? "Active — checking periodically" : "Paused — no screenshots being taken")
-                    .font(.system(size: 13))
-                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
-
-                Spacer()
-            }
-
-            // Live diagnostic
             if appState.isMonitoring, !appState.monitoringDiagnostic.isEmpty {
                 Text(appState.monitoringDiagnostic)
-                    .font(.system(size: 11, design: .monospaced))
-                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.45))
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.72))
+            } else {
+                Text("Paused")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
             }
+
+            Spacer()
         }
-        .padding(12)
+        .padding(10)
         .background(Color(hex: "#C7E8DE").opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
@@ -261,7 +259,9 @@ struct DashboardView: View {
     }
 
     private func refreshTip() {
+        guard Date().timeIntervalSince(lastTipRefresh) > 1800 || currentTip == nil else { return }
         currentTip = TipService().tipFor(weather: appState.currentWeather)
+        lastTipRefresh = Date()
     }
 
     // MARK: - Practice Library Button
@@ -338,6 +338,9 @@ struct DashboardView: View {
         HStack(spacing: 12) {
             // Start Practice button
             Button(action: {
+                // Smart practice selection based on current weather
+                let practice = appState.pickPracticeForInternalStress()
+                appState.selectedPracticeID = practice.id
                 appState.showWeatherBefore()
             }) {
                 HStack(spacing: 6) {

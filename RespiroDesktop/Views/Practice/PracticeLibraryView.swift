@@ -18,12 +18,12 @@ struct PracticeLibraryView: View {
         VStack(spacing: 0) {
             // Header
             header
-                .padding(.top, 16)
+                .padding(.top, 8)
                 .padding(.horizontal, 16)
 
             Divider()
                 .background(Color(hex: "#C0E0D6").opacity(0.10))
-                .padding(.top, 12)
+                .padding(.top, 6)
 
             // Scrollable content
             ScrollView {

@@ -37,13 +37,7 @@ struct SettingsView: View {
                     demoModeSection
                     sectionDivider
 
-                    activeHoursSection
-                    sectionDivider
-
                     preferencesSection
-                    sectionDivider
-
-                    apiSection
                     sectionDivider
 
                     playtestSection
@@ -211,30 +205,6 @@ struct SettingsView: View {
                     .toggleStyle(.switch)
                     .tint(Color(hex: "#10B981"))
             }
-
-            // Max practice duration - RIGHT-aligned pills
-            HStack {
-                Text("Max practice duration")
-                    .font(.system(size: 13))
-                    .foregroundStyle(Color.white.opacity(0.92))
-
-                Spacer()
-
-                HStack(spacing: 6) {
-                    ForEach([60, 90, 180], id: \.self) { duration in
-                        Button(action: { maxPracticeDuration = duration }) {
-                            Text(duration == 180 ? "3m" : "\(duration)s")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(maxPracticeDuration == duration ? .white : Color.white.opacity(0.50))
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 4)
-                                .background(maxPracticeDuration == duration ? Color(hex: "#10B981") : Color.clear)
-                                .clipShape(RoundedRectangle(cornerRadius: 4))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
         }
     }
 
@@ -377,15 +347,6 @@ struct SettingsView: View {
             aboutRow(label: "AI Engine", value: "Claude Opus 4.6")
 
             HStack(spacing: 6) {
-                Image(systemName: "apple.logo")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Color.white.opacity(0.45))
-                Text("Also available on iOS")
-                    .font(.system(size: 12))
-                    .foregroundStyle(Color.white.opacity(0.60))
-            }
-
-            HStack(spacing: 6) {
                 Image(systemName: "hammer")
                     .font(.system(size: 11))
                     .foregroundStyle(Color.white.opacity(0.45))
@@ -404,14 +365,6 @@ struct SettingsView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            HStack(spacing: 6) {
-                Image(systemName: "chevron.left.forwardslash.chevron.right")
-                    .font(.system(size: 10))
-                    .foregroundStyle(Color.white.opacity(0.35))
-                Text("Open Source on GitHub")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Color.white.opacity(0.35))
-            }
         }
     }
 

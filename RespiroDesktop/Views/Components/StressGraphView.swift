@@ -12,10 +12,28 @@ struct StressGraphView: View {
         return formatter
     }()
 
-    private var dataPoints: [(date: Date, weather: InnerWeather)] {
+    private var dataPoints: [(date: Date, weather: InnerWeather, level: Int)] {
         entries.compactMap { entry in
             guard let weather = InnerWeather(rawValue: entry.weather) else { return nil }
-            return (date: entry.timestamp, weather: weather)
+            let level = Self.stressLevel(weather: weather, confidence: entry.confidence)
+            return (date: entry.timestamp, weather: weather, level: level)
+        }
+    }
+
+    /// Map weather + confidence to 5 stress levels:
+    /// 1 = Clear, high confidence (relaxed)
+    /// 2 = Clear, low confidence (okay)
+    /// 3 = Cloudy (moderate stress)
+    /// 4 = Stormy, moderate confidence (stressed)
+    /// 5 = Stormy, high confidence (very stressed)
+    private static func stressLevel(weather: InnerWeather, confidence: Double) -> Int {
+        switch weather {
+        case .clear:
+            return confidence >= 0.6 ? 1 : 2
+        case .cloudy:
+            return 3
+        case .stormy:
+            return confidence >= 0.7 ? 5 : 4
         }
     }
 
@@ -59,21 +77,29 @@ struct StressGraphView: View {
         VStack(spacing: 4) {
             // Y-axis labels + chart
             HStack(alignment: .top, spacing: 6) {
-                // Y-axis labels
-                VStack {
+                // Y-axis labels (5 levels)
+                VStack(spacing: 0) {
                     Image(systemName: "sun.max")
-                        .font(.system(size: 10))
+                        .font(.system(size: 9))
                         .foregroundStyle(Color(hex: "#10B981"))
                     Spacer()
+                    Text("2")
+                        .font(.system(size: 8, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color(hex: "#10B981").opacity(0.6))
+                    Spacer()
                     Image(systemName: "cloud")
-                        .font(.system(size: 10))
+                        .font(.system(size: 9))
                         .foregroundStyle(Color(hex: "#8BA4B0"))
                     Spacer()
+                    Text("4")
+                        .font(.system(size: 8, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color(hex: "#7B6B9E").opacity(0.6))
+                    Spacer()
                     Image(systemName: "cloud.bolt.rain")
-                        .font(.system(size: 10))
+                        .font(.system(size: 9))
                         .foregroundStyle(Color(hex: "#7B6B9E"))
                 }
-                .frame(width: 16, height: 56)
+                .frame(width: 16, height: 72)
 
                 // Chart area
                 GeometryReader { geometry in
@@ -81,9 +107,9 @@ struct StressGraphView: View {
                     let points = calculatePoints(in: size)
 
                     ZStack {
-                        // Horizontal guide lines
-                        ForEach(0..<3) { i in
-                            let y = CGFloat(i) * size.height / 2
+                        // Horizontal guide lines (5 levels)
+                        ForEach(0..<5) { i in
+                            let y = CGFloat(i) * size.height / 4
                             Path { path in
                                 path.move(to: CGPoint(x: 0, y: y))
                                 path.addLine(to: CGPoint(x: size.width, y: y))
@@ -126,7 +152,7 @@ struct StressGraphView: View {
                         }
                     }
                 }
-                .frame(height: 56)
+                .frame(height: 72)
             }
 
             // Time labels
@@ -146,7 +172,7 @@ struct StressGraphView: View {
 
     private var timeLabels: some View {
         GeometryReader { geometry in
-            let points = calculatePoints(in: CGSize(width: geometry.size.width, height: 56))
+            let points = calculatePoints(in: CGSize(width: geometry.size.width, height: 72))
             let labelCount = min(dataPoints.count, maxVisibleLabels(width: geometry.size.width))
             let step = max(1, dataPoints.count / labelCount)
             ZStack {
@@ -167,24 +193,22 @@ struct StressGraphView: View {
     private func calculatePoints(in size: CGSize) -> [CGPoint] {
         guard dataPoints.count > 0 else { return [] }
         if dataPoints.count == 1 {
-            return [CGPoint(x: size.width / 2, y: yPosition(for: dataPoints[0].weather, height: size.height))]
+            return [CGPoint(x: size.width / 2, y: yPosition(forLevel: dataPoints[0].level, height: size.height))]
         }
 
         return dataPoints.enumerated().map { index, point in
             let x = CGFloat(index) / CGFloat(dataPoints.count - 1) * size.width
-            let y = yPosition(for: point.weather, height: size.height)
+            let y = yPosition(forLevel: point.level, height: size.height)
             return CGPoint(x: x, y: y)
         }
     }
 
-    private func yPosition(for weather: InnerWeather, height: CGFloat) -> CGFloat {
+    /// Y position based on 5-level stress (1=top/relaxed, 5=bottom/very stressed)
+    private func yPosition(forLevel level: Int, height: CGFloat) -> CGFloat {
         let padding: CGFloat = 4
         let usable = height - padding * 2
-        switch weather {
-        case .clear: return padding
-        case .cloudy: return padding + usable / 2
-        case .stormy: return padding + usable
-        }
+        let fraction = CGFloat(level - 1) / 4.0
+        return padding + usable * fraction
     }
 
     private func smoothLine(points: [CGPoint], in size: CGSize) -> Path {
@@ -210,7 +234,7 @@ struct StressGraphView: View {
         }
     }
 
-    private func gradientColors(for points: [(date: Date, weather: InnerWeather)]) -> [Color] {
+    private func gradientColors(for points: [(date: Date, weather: InnerWeather, level: Int)]) -> [Color] {
         if points.count <= 1 {
             return [weatherColor(points.first?.weather ?? .clear)]
         }
