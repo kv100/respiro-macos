@@ -75,15 +75,17 @@
 		APP_208 /* PlaytestWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_208 /* PlaytestWindowView.swift */; };
 		APP_209 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_209 /* AppDelegate.swift */; };
 		APP_210 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_210 /* MenuBarController.swift */; };
+		APP_73F /* BehaviorMetricsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_B3F /* BehaviorMetricsCard.swift */; };
 		B8B46176CB15520707A3E097 /* FalsePositivePattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D410A75A6C1B0EA4D578C6 /* FalsePositivePattern.swift */; };
 		BC80F08121FC2CBA888A3C22 /* SystemContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D249B96740EFD06EF7A23531 /* SystemContext.swift */; };
+		EA6ED317E0FF4D0B0E95942E /* PracticeLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699E28B6BEBA2162164C15AA /* PracticeLibraryView.swift */; };
 		EDA8F7E436AF8ECC0A4755CB /* BreathingPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC1F2650C26A54BCF77961F /* BreathingPracticeView.swift */; };
-		APP_73F /* BehaviorMetricsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_B3F /* BehaviorMetricsCard.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		19D1B7DD1D97F84B04DBFA37 /* UserBaseline.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UserBaseline.swift; path = UserBaseline.swift; sourceTree = "<group>"; };
 		556118D7EB98B2705B4FA6DF /* BaselineService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BaselineService.swift; path = BaselineService.swift; sourceTree = "<group>"; };
+		699E28B6BEBA2162164C15AA /* PracticeLibraryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PracticeLibraryView.swift; sourceTree = "<group>"; };
 		APP_PRODUCT /* RespiroDesktop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RespiroDesktop.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B6D410A75A6C1B0EA4D578C6 /* FalsePositivePattern.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FalsePositivePattern.swift; path = FalsePositivePattern.swift; sourceTree = "<group>"; };
 		BBC1F2650C26A54BCF77961F /* BreathingPracticeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BreathingPracticeView.swift; sourceTree = "<group>"; };
@@ -288,6 +290,7 @@
 				FILE_083 /* WhatHelpedView.swift */,
 				FILE_150 /* GenericBreathingView.swift */,
 				FILE_151 /* GenericStepPracticeView.swift */,
+				699E28B6BEBA2162164C15AA /* PracticeLibraryView.swift */,
 			);
 			path = Practice;
 			sourceTree = "<group>";
@@ -511,6 +514,7 @@
 				1EAB28003E65340170CDB8AC /* UserBaseline.swift in Sources */,
 				B8B46176CB15520707A3E097 /* FalsePositivePattern.swift in Sources */,
 				9554FE557331413887E4B05B /* BaselineService.swift in Sources */,
+				EA6ED317E0FF4D0B0E95942E /* PracticeLibraryView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

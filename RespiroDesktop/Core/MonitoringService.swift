@@ -38,7 +38,7 @@ actor MonitoringService {
     // MARK: - Learned Patterns (from DismissalLogger)
 
     private var learnedPatterns: String?
-    private var preferredPracticeIDs: [String] = ["physiological-sigh", "box-breathing"]
+    private var preferredPracticeIDs: [String] = ["box-breathing", "physiological-sigh"]
 
     // MARK: - False Positive Patterns (from NudgeEngine)
 
@@ -114,7 +114,7 @@ actor MonitoringService {
             dismissalCount: dismissalCount
         )
 
-        let response: StressAnalysisResponse
+        var response: StressAnalysisResponse
 
         // Use tool use for high/max effort when we might need practice selection
         if effort != .low, let toolCtx = toolContext {
@@ -127,6 +127,11 @@ actor MonitoringService {
         } else {
             response = try await visionClient.analyzeScreenshot(imageData, context: context, effortLevel: effort)
         }
+
+        // Attach behavioral context to response for NudgeEngine
+        response.behaviorMetrics = behaviorMetrics
+        response.baselineDeviation = baselineDeviation
+        response.systemContext = systemContext
 
         recordResponse(response)
         return response

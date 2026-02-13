@@ -393,7 +393,7 @@ final class DemoModeService {
                 signals: demoSignals(for: weather),
                 nudgeType: index == 4 ? "practice" : nil, // Nudge during stormy period
                 nudgeMessage: index == 4 ? "Things are getting intense. Consider a breathing practice." : nil,
-                suggestedPracticeID: index == 4 ? "physiological-sigh" : nil,
+                suggestedPracticeID: index == 4 ? "box-breathing" : nil,
                 screenshotInterval: 3600
             )
             modelContext.insert(entry)
@@ -417,7 +417,7 @@ final class DemoModeService {
         // Session 2: 14:00 (after stormy), completed
         let practice2Time = calendar.date(byAdding: .hour, value: 5, to: todayStart) ?? now
         let practice2 = PracticeSession(
-            practiceID: "physiological-sigh",
+            practiceID: "box-breathing",
             startedAt: practice2Time,
             completedAt: calendar.date(byAdding: .minute, value: 2, to: practice2Time),
             weatherBefore: "stormy",

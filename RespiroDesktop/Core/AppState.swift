@@ -17,6 +17,7 @@ final class AppState {
         case summary
         case playtest
         case playtestDetail(PlaytestScenario)
+        case practiceLibrary
 
         static func == (lhs: Screen, rhs: Screen) -> Bool {
             switch (lhs, rhs) {
@@ -24,7 +25,7 @@ final class AppState {
                  (.weatherBefore, .weatherBefore), (.weatherAfter, .weatherAfter),
                  (.completion, .completion), (.whatHelped, .whatHelped),
                  (.settings, .settings), (.onboarding, .onboarding),
-                 (.summary, .summary), (.playtest, .playtest):
+                 (.summary, .summary), (.playtest, .playtest), (.practiceLibrary, .practiceLibrary):
                 return true
             case (.playtestDetail(let a), .playtestDetail(let b)):
                 return a.id == b.id
@@ -228,7 +229,17 @@ final class AppState {
                 }
             }
 
-            let decision = await engine.shouldNudge(for: analysis)
+            // Build behavioral context for rule-based override
+            var behavioralCtx: BehavioralContext? = nil
+            if let metrics = analysis.behaviorMetrics,
+               let deviation = analysis.baselineDeviation {
+                behavioralCtx = BehavioralContext(
+                    metrics: metrics,
+                    baselineDeviation: deviation,
+                    systemContext: analysis.systemContext
+                )
+            }
+            let decision = await engine.shouldNudge(for: analysis, behavioral: behavioralCtx)
             self.pendingNudge = decision
             if decision.shouldShow, let nudgeType = decision.nudgeType {
                 await engine.recordNudgeShown(type: nudgeType)
@@ -336,5 +347,9 @@ final class AppState {
 
     func showPlaytestDetail(_ scenario: PlaytestScenario) {
         currentScreen = .playtestDetail(scenario)
+    }
+
+    func showPracticeLibrary() {
+        currentScreen = .practiceLibrary
     }
 }

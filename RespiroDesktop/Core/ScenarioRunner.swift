@@ -32,8 +32,16 @@ actor ScenarioRunner {
                 }
             }
 
-            // 3. Evaluate nudge decision with enhanced analysis
-            let decision = await engine.shouldNudge(for: enhancedAnalysis)
+            // 3. Build behavioral context and evaluate nudge decision
+            var behavioralContext: BehavioralContext? = nil
+            if let metrics = step.behaviorMetrics, let deviation = step.baselineDeviation {
+                behavioralContext = BehavioralContext(
+                    metrics: metrics,
+                    baselineDeviation: deviation,
+                    systemContext: step.systemContext
+                )
+            }
+            let decision = await engine.shouldNudge(for: enhancedAnalysis, behavioral: behavioralContext)
 
             // 3. If nudge approved, record it (updates cooldown tracking)
             if decision.shouldShow, let nudgeType = decision.nudgeType {

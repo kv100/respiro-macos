@@ -58,6 +58,7 @@ struct DashboardView: View {
                     if let tip = currentTip {
                         wellnessTipCard(tip)
                     }
+                    practiceLibraryButton
                     daySummaryButton
                 }
                 .padding(16)
@@ -249,6 +250,40 @@ struct DashboardView: View {
         currentTip = TipService().tipFor(weather: appState.currentWeather)
     }
 
+    // MARK: - Practice Library Button
+
+    private var practiceLibraryButton: some View {
+        Button(action: {
+            appState.showPracticeLibrary()
+        }) {
+            HStack(spacing: 10) {
+                Image(systemName: "books.vertical")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color(hex: "#10B981"))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Practice Library")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
+
+                    Text("Browse all 20 practices")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.40))
+            }
+            .padding(12)
+            .background(Color(hex: "#C7E8DE").opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: - Day Summary Button
 
     private var daySummaryButton: some View {
@@ -289,7 +324,7 @@ struct DashboardView: View {
         HStack(spacing: 12) {
             // Start Practice button
             Button(action: {
-                appState.showPractice()
+                appState.showWeatherBefore()
             }) {
                 HStack(spacing: 6) {
                     Image(systemName: "lungs.fill")

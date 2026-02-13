@@ -89,7 +89,7 @@ RespiroDesktop/
 │   ├── ScreenMonitor.swift          # ScreenCaptureKit, multi-display capture + montage (actor)
 │   ├── ClaudeVisionClient.swift     # Opus 4.6 Vision + Tool Use + Streaming (Sendable struct)
 │   ├── MonitoringService.swift      # Adaptive timer, screenshot loop (actor)
-│   ├── NudgeEngine.swift            # Cooldowns, suppression, NudgeDecision (actor)
+│   ├── NudgeEngine.swift            # Cooldowns, suppression, BehavioralContext, NudgeDecision (actor)
 │   ├── PracticeManager.swift        # Practice flow, breathing timer (@Observable)
 │   ├── DemoModeService.swift        # 8 pre-scripted scenarios + clearDemoData (@Observable)
 │   ├── DaySummaryService.swift      # End-of-day reflection with max thinking (actor)
@@ -109,7 +109,7 @@ RespiroDesktop/
 │   ├── MainView.swift               # Screen router with keyboard shortcuts
 │   ├── MenuBar/DashboardView.swift  # Graph, silence card, tip card, controls (hidden scrollbar)
 │   ├── Nudge/NudgeView.swift        # Nudge cards, thinking panel, tool use display
-│   ├── Practice/                    # 10 practice views + completion + weather picker
+│   ├── Practice/                    # 10 practice views + completion + weather picker + library
 │   ├── Components/                  # EffortIndicatorView, StressGraphView, ThinkingStreamView
 │   ├── Settings/SettingsView.swift  # Preferences, about, demo toggle
 │   ├── Summary/DaySummaryView.swift # Day reflection with thinking panel
@@ -154,8 +154,24 @@ RespiroDesktop/
 - ✅ Demo mode cleanup (clearDemoData when disabled)
 - ✅ UI polish (hidden scrollbars on Dashboard)
 - ✅ Keychain optimization (reduced password prompts)
+- ✅ Behavioral analysis pipeline fix (rule-based override in NudgeEngine)
+- ✅ Default practice changed to Box Breathing
+- ✅ Practice Library screen (browse all 20 practices by category)
+- ✅ Pre-practice weather check-in (manual flow)
+- ✅ Spacing fix (WeatherPicker + Completion views)
   **See:** `docs/POST_V2_UPDATES.md` for full details
-  **Remaining:** D5.2 (demo video), D5.3 (submission text)
+
+**PLAYTEST V2 ENHANCEMENTS (Feb 13):**
+
+- ✅ PT.10: Expanded seed scenarios (8 → 22: +4 behavioral, +10 edge cases)
+- ✅ PT.11: Scenario Bank with SwiftData (history + fuzzy deduplication)
+- ✅ PT.12: Auto-Regression Mode (failed scenario tracking, 2-pass fix detection)
+- ✅ PT.13: Regression UI (banner, badges, history sheet, detail view)
+- ✅ PT.14: Code review and integration (Swift 6 compliance, build verification)
+  **See:** `docs/BACKLOG_PLAYTEST.md` V2 Enhancements section for full details
+  **Build status:** ✅ **BUILD SUCCEEDED**
+
+**Remaining:** D5.2 (demo video), D5.3 (submission text)
 
 ---
 

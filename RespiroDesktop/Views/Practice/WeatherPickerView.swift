@@ -15,7 +15,7 @@ struct WeatherPickerView: View {
             header
                 .padding(.top, 16)
 
-            Spacer()
+            Spacer(minLength: 40)
 
             // Title
             Text(title)

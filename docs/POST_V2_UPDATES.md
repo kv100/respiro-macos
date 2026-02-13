@@ -252,6 +252,96 @@ All changes:
 
 ---
 
+## 6. Behavioral Analysis Pipeline Fix
+
+### Problem
+
+Playtest report (9/17 failed) revealed that behavioral metrics (context switches/min, baseline deviation, app fragmentation) had **zero influence** on nudge decisions. NudgeEngine only checked `analysis.nudgeType` from AI — if AI said no nudge, behavioral data was ignored entirely.
+
+### Solution
+
+Added rule-based behavioral override layer in NudgeEngine:
+
+- **Behavioral override** (severity >= 0.7): Force practice nudge even when AI says no
+- **Behavioral contradiction** (severity < 0.15 + stormy): Suppress nudge when user is calm
+- **Video call smart suppression**: Always suppress during active video calls
+- **Severity scoring**: Weighted combination of context switches/min, baseline deviation, session duration, app fragmentation
+
+### Implementation
+
+- **NudgeEngine.swift** — New `BehavioralContext` struct, `severity()` calculator, override logic in `shouldNudge(for:behavioral:)`
+- **StressAnalysisResponse.swift** — Added `behaviorMetrics`, `baselineDeviation`, `systemContext` fields (programmatic, excluded from CodingKeys)
+- **MonitoringService.swift** — Attaches behavioral data to response in `performSingleCheck()`
+- **AppState.swift** — Builds `BehavioralContext` and passes to `shouldNudge`
+- **ScenarioRunner.swift** — Passes behavioral context for playtest scenarios
+
+### Impact
+
+- Fixes SC-10, SC-12, SC-13, SC-15, SC-16, SC-17 playtest failures
+- Behavioral metrics now directly influence nudge decisions
+- Core app value proposition ("AI that stays quiet") now works with behavioral data
+
+---
+
+## 7. Default Practice Changed to Box Breathing
+
+### Problem
+
+Physiological Sigh (double inhale + long exhale) was the default fallback practice. While scientifically effective, the "double inhale" instruction is confusing for first-time users.
+
+### Solution
+
+Changed default/fallback from `physiological-sigh` to `box-breathing` across all files. Box Breathing (4s inhale, 4s hold, 4s exhale, 4s hold) is universally understood.
+
+### Files Updated
+
+MonitoringService, NudgeEngine, NudgeView, CompletionView, DemoModeService, PlaytestCatalog (10 occurrences)
+
+---
+
+## 8. Practice Library Screen
+
+### Problem
+
+Users had no way to browse or manually select practices. Practices were only accessible through AI nudge suggestions.
+
+### Solution
+
+New `PracticeLibraryView` showing all 20 practices grouped by category (Breathing/Body/Mind) in a 2-column grid. Accessible from Dashboard via "Practice Library" button.
+
+### Implementation
+
+- **New file:** `RespiroDesktop/Views/Practice/PracticeLibraryView.swift`
+- **AppState.swift** — Added `.practiceLibrary` screen case + navigation
+- **MainView.swift** — Added router case
+- **DashboardView.swift** — Added library button
+
+---
+
+## 9. Pre-Practice Weather Check-in
+
+### Problem
+
+When manually starting a practice, the app auto-set "weather before" from monitoring data. Users were only asked how they feel AFTER practice, not before.
+
+### Solution
+
+Manual practice flow now goes: Dashboard -> "How are you feeling?" (WeatherBefore) -> Practice -> "How do you feel now?" (WeatherAfter) -> Completion. AI nudge flow unchanged (auto-sets weather).
+
+---
+
+## 10. Spacing Fix (WeatherPicker + Completion)
+
+### Problem
+
+Equal `Spacer()` in `VStack` pushed content too low, creating excessive top padding on WeatherPickerView and CompletionView.
+
+### Solution
+
+Changed top `Spacer()` to `Spacer(minLength: 40)` to push content higher while maintaining visual balance.
+
+---
+
 ## Technical Debt
 
 None. All changes are:

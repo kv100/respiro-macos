@@ -180,7 +180,7 @@ enum PlaytestCatalog {
                     signals: ["47 unread messages", "rapid tab switching"],
                     nudge: .practice,
                     message: "Things look intense. Try a quick breathing exercise?",
-                    practiceID: "physiological-sigh"
+                    practiceID: "box-breathing"
                 ),
                 userAction: nil,
                 timeDelta: 600,
@@ -382,7 +382,7 @@ enum PlaytestCatalog {
                     signals: ["overwhelming inbox", "multiple deadlines"],
                     nudge: .practice,
                     message: "Things are piling up. Try a physiological sigh?",
-                    practiceID: "physiological-sigh"
+                    practiceID: "box-breathing"
                 ),
                 userAction: nil,
                 timeDelta: 0,
@@ -604,7 +604,7 @@ enum PlaytestCatalog {
                     signals: ["frantic typing", "error messages on screen"],
                     nudge: .practice,
                     message: "Looks like you hit a wall. Try a breathing exercise?",
-                    practiceID: "physiological-sigh"
+                    practiceID: "box-breathing"
                 ),
                 userAction: nil,
                 timeDelta: 0,
@@ -783,7 +783,7 @@ enum PlaytestCatalog {
                 mockAnalysis: .stormy(
                     confidence: 0.80, signals: ["morning rush"],
                     nudge: .practice, message: "Rough start. Try breathing?",
-                    practiceID: "physiological-sigh"
+                    practiceID: "box-breathing"
                 ),
                 userAction: nil,
                 timeDelta: 0,
@@ -957,7 +957,7 @@ enum PlaytestCatalog {
                 mockAnalysis: .stormy(
                     confidence: 0.83, signals: ["end of day burnout"],
                     nudge: .practice, message: "Almost done. Try a quick reset?",
-                    practiceID: "physiological-sigh"
+                    practiceID: "box-breathing"
                 ),
                 userAction: nil,
                 timeDelta: 1801,
@@ -1109,7 +1109,7 @@ enum PlaytestCatalog {
                     signals: ["GitHub PR open", "terminal with errors", "15 tabs"],
                     nudge: .practice,
                     message: "Looks intense...",
-                    practiceID: "physiological-sigh"
+                    practiceID: "box-breathing"
                 ),
                 userAction: nil,
                 timeDelta: 0,

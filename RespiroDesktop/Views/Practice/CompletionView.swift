@@ -47,7 +47,7 @@ struct CompletionView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
+            Spacer(minLength: 40)
 
             // Checkmark animation with sparkles
             ZStack {
@@ -85,7 +85,7 @@ struct CompletionView: View {
             if let before = appState.selectedWeatherBefore,
                let after = appState.selectedWeatherAfter,
                let alternative = SecondChanceService().suggestAlternative(
-                   completedPracticeID: appState.selectedPracticeID ?? "physiological-sigh",
+                   completedPracticeID: appState.selectedPracticeID ?? "box-breathing",
                    weatherBefore: before,
                    weatherAfter: after
                ) {

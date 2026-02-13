@@ -40,12 +40,18 @@ struct StressAnalysisResponse: Codable, Sendable {
     var toolUseLog: [ToolCall]?
     /// Reason from suggest_practice tool call (user-friendly explanation)
     var practiceReason: String?
+    /// Behavioral metrics at time of analysis (set programmatically, not from JSON)
+    var behaviorMetrics: BehaviorMetrics?
+    /// Baseline deviation at time of analysis (set programmatically, not from JSON)
+    var baselineDeviation: Double?
+    /// System context at time of analysis (set programmatically, not from JSON)
+    var systemContext: SystemContext?
 
     enum CodingKeys: String, CodingKey {
         case weather, confidence, signals
         case nudgeType = "nudge_type"
         case nudgeMessage = "nudge_message"
         case suggestedPracticeID = "suggested_practice_id"
-        // thinkingText, effortLevel, toolUseLog, practiceReason are excluded — set programmatically
+        // thinkingText, effortLevel, toolUseLog, practiceReason, behaviorMetrics, baselineDeviation, systemContext — set programmatically
     }
 }

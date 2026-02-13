@@ -394,7 +394,7 @@ struct NudgeView: View {
         shouldShow: true,
         nudgeType: .practice,
         message: "You seem to have a lot going on. A quick breathing exercise might help you refocus.",
-        suggestedPracticeID: "physiological-sigh",
+        suggestedPracticeID: "box-breathing",
         reason: "approved",
         thinkingText: "I noticed 12 open browser tabs, rapid switching between apps every few seconds, and the inbox shows 47 unread messages. The user's screen context suggests elevated cognitive load."
     )

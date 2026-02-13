@@ -55,6 +55,8 @@ struct MainView: View {
                             onBack: { appState.showPlaytest() }
                         )
                     }
+                case .practiceLibrary:
+                    PracticeLibraryView()
                 }
             }
         }
