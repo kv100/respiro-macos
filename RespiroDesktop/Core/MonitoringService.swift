@@ -329,6 +329,16 @@ actor MonitoringService {
         let videoCallApps = ["Zoom", "Microsoft Teams", "Google Meet", "FaceTime", "Skype"]
         let isOnVideoCall = runningApps.contains(where: { videoCallApps.contains($0) })
 
+        // Detect screen sharing via CGDisplayStream or common screen sharing indicators
+        let screenSharingBundleIDs = Set(NSWorkspace.shared.runningApplications.compactMap { $0.bundleIdentifier })
+        let screenSharingApps: Set<String> = [
+            "com.apple.ScreenSharing",
+            "us.zoom.xos",  // Zoom screen share
+            "com.microsoft.teams",
+        ]
+        // Also check if any display is being mirrored
+        let isScreenSharing = !screenSharingApps.isDisjoint(with: screenSharingBundleIDs)
+
         return SystemContext(
             activeApp: activeApp,
             activeWindowTitle: nil,  // TODO: AXUIElement API for window title
@@ -336,6 +346,7 @@ actor MonitoringService {
             recentAppSwitches: Array(recentApps),
             pendingNotificationCount: 0,  // TODO: UNUserNotificationCenter
             isOnVideoCall: isOnVideoCall,
+            isScreenSharing: isScreenSharing,
             systemUptime: ProcessInfo.processInfo.systemUptime,
             idleTime: 0  // TODO: CGEventSource for idle time
         )

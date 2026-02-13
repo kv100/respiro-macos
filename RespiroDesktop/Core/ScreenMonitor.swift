@@ -80,6 +80,7 @@ actor ScreenMonitor {
             config.height = captureHeight
             config.showsCursor = false
             config.captureResolution = .best
+            config.capturesAudio = false
 
             let image: CGImage
             do {

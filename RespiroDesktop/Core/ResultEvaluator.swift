@@ -195,8 +195,9 @@ struct ResultEvaluator: Sendable {
         switch mode {
         case .direct:
             return URL(string: "https://api.anthropic.com/v1/messages")!
-        case .proxy(let url, _, _):
-            return URL(string: "\(url)/functions/v1/claude-proxy")!
+        case .proxy:
+            // Use Railway proxy — no 150s timeout limit (vs Supabase edge functions)
+            return URL(string: RespiroConfig.railwayProxyURL)!
         }
     }
 
@@ -207,12 +208,9 @@ struct ResultEvaluator: Sendable {
                 "x-api-key": apiKey,
                 "anthropic-version": Self.apiVersion,
             ]
-        case .proxy(_, let anonKey, let deviceID):
-            return [
-                "Authorization": "Bearer \(anonKey)",
-                "apikey": anonKey,
-                "x-device-id": deviceID,
-            ]
+        case .proxy(_, _, let deviceID):
+            // Railway proxy handles Anthropic auth server-side
+            return ["x-device-id": deviceID]
         }
     }
 
@@ -232,6 +230,7 @@ struct ResultEvaluator: Sendable {
 
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
+        request.timeoutInterval = 300  // 5 min — Railway proxy has no 150s limit
         for (key, value) in authHeaders() {
             request.setValue(value, forHTTPHeaderField: key)
         }

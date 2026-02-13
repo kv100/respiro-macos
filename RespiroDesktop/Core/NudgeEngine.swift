@@ -119,10 +119,16 @@ actor NudgeEngine {
         resetDailyCountersIfNeeded()
 
         let now = self.now
+        let bSuffix = behavioralSuffix(behavioral)
 
-        // 0. Smart suppression: video call active
-        if let ctx = behavioral?.systemContext, ctx.isOnVideoCall {
-            return denied(reason: "smart_suppression_video_call")
+        // 0. Smart suppression: video call or screen sharing active
+        if let ctx = behavioral?.systemContext {
+            if ctx.isOnVideoCall {
+                return denied(reason: "smart_suppression_video_call" + bSuffix)
+            }
+            if ctx.isScreenSharing {
+                return denied(reason: "smart_suppression_screen_sharing" + bSuffix)
+            }
         }
 
         // 1. Calculate behavioral severity
@@ -131,64 +137,89 @@ actor NudgeEngine {
         // 2. AI says don't nudge — check behavioral override
         guard let nudgeTypeRaw = analysis.nudgeType,
               let nudgeType = NudgeType(rawValue: nudgeTypeRaw) else {
-            // Behavioral override: extreme distress forces nudge
-            if severity >= 0.7 {
-                return applyCooldowns(analysis: analysis, now: now, reason: "behavioral_override")
+            // Behavioral override: extreme distress forces practice nudge
+            // Extreme severity (>= 0.85) overrides confidence gate — user is clearly in distress
+            // Normal severity (0.7-0.85) still requires confidence >= 0.6
+            if severity >= 0.85 {
+                let overrideReason = "extreme_behavioral_override [severity=\(String(format: "%.2f", severity))\(bSuffix)]"
+                return applyCooldowns(analysis: analysis, now: now, reason: overrideReason)
+            }
+            if severity >= 0.7 && analysis.confidence >= 0.6 {
+                let overrideReason = "behavioral_override [severity=\(String(format: "%.2f", severity))\(bSuffix)]"
+                return applyCooldowns(analysis: analysis, now: now, reason: overrideReason)
+            }
+            // Moderate behavioral stress -> encouragement nudge (lighter than practice)
+            if severity >= 0.4 {
+                let encourageReason = "behavioral_encouragement [severity=\(String(format: "%.2f", severity))\(bSuffix)]"
+                return applyEncouragementCooldowns(now: now, reason: encourageReason, bSuffix: bSuffix)
             }
             return NudgeDecision(
                 shouldShow: false, nudgeType: nil, message: nil,
-                suggestedPracticeID: nil, reason: "ai_no_nudge"
+                suggestedPracticeID: nil, reason: "ai_no_nudge [severity=\(String(format: "%.2f", severity))\(bSuffix)]"
             )
         }
 
         // 3. Behavioral contradiction: AI says nudge but behavior is calm
         if severity < 0.15 && analysis.weather == "stormy" {
-            return denied(reason: "behavioral_contradiction")
+            return denied(reason: "behavioral_contradiction [severity=\(String(format: "%.2f", severity))\(bSuffix)]")
         }
 
         // 4. Hard 5-min minimum between any nudges
         if let last = lastNudgeTime, now.timeIntervalSince(last) < Cooldown.hardMinInterval {
-            return denied(reason: "hard_min_interval")
+            return denied(reason: "hard_min_interval" + bSuffix)
         }
 
-        // 5. Daily total limit
-        if dailyNudgeCount >= Cooldown.maxDailyTotalNudges {
-            return denied(reason: "daily_total_limit")
-        }
-
-        // 6. Daily practice nudge limit
-        if nudgeType == .practice && dailyPracticeNudgeCount >= Cooldown.maxDailyPracticeNudges {
-            return denied(reason: "daily_practice_limit")
-        }
-
-        // 7. Min interval between any nudge (10 min)
-        if let last = lastNudgeTime, now.timeIntervalSince(last) < Cooldown.minAnyNudgeInterval {
-            return denied(reason: "min_nudge_interval")
-        }
-
-        // 8. Min interval between practice nudges (30 min)
-        if nudgeType == .practice,
-           let last = lastPracticeNudgeTime,
-           now.timeIntervalSince(last) < Cooldown.minPracticeInterval {
-            return denied(reason: "min_practice_interval")
-        }
-
-        // 9. Post-practice cooldown (45 min)
-        if let last = lastPracticeCompletedTime,
-           now.timeIntervalSince(last) < Cooldown.postPracticeCooldown {
-            return denied(reason: "post_practice_cooldown")
-        }
-
-        // 10. Post-dismissal cooldown
+        // 5. Post-dismissal cooldown (check early — consecutive dismissals are safety-critical)
         if let last = lastDismissalTime {
             let cooldown = consecutiveDismissals >= 3
                 ? Cooldown.consecutiveDismissalCooldown
                 : Cooldown.postDismissalCooldown
             if now.timeIntervalSince(last) < cooldown {
-                return denied(reason: consecutiveDismissals >= 3
-                    ? "consecutive_dismissal_cooldown"
-                    : "post_dismissal_cooldown")
+                let reason = consecutiveDismissals >= 3
+                    ? "consecutive_dismissal_cooldown [\(consecutiveDismissals) dismissals]"
+                    : "post_dismissal_cooldown"
+                return denied(reason: reason + bSuffix)
+            } else if consecutiveDismissals >= 3 {
+                // 2h cooldown expired — reset counter so user gets fresh 3-dismissal allowance
+                consecutiveDismissals = 0
             }
+        }
+
+        // 6. Daily total limit
+        if dailyNudgeCount >= Cooldown.maxDailyTotalNudges {
+            return denied(reason: "daily_total_limit [\(dailyNudgeCount)/\(Cooldown.maxDailyTotalNudges)]" + bSuffix)
+        }
+
+        // 7. Daily practice nudge limit
+        if nudgeType == .practice && dailyPracticeNudgeCount >= Cooldown.maxDailyPracticeNudges {
+            return denied(reason: "daily_practice_limit [\(dailyPracticeNudgeCount)/\(Cooldown.maxDailyPracticeNudges)]" + bSuffix)
+        }
+
+        // 8. Min interval between any nudge (10 min)
+        if let last = lastNudgeTime, now.timeIntervalSince(last) < Cooldown.minAnyNudgeInterval {
+            return denied(reason: "min_nudge_interval" + bSuffix)
+        }
+
+        // 9. Min interval between practice nudges (30 min)
+        if nudgeType == .practice,
+           let last = lastPracticeNudgeTime,
+           now.timeIntervalSince(last) < Cooldown.minPracticeInterval {
+            return denied(reason: "min_practice_interval" + bSuffix)
+        }
+
+        // 10. Post-practice cooldown (45 min)
+        if let last = lastPracticeCompletedTime,
+           now.timeIntervalSince(last) < Cooldown.postPracticeCooldown {
+            let elapsed = Int(now.timeIntervalSince(last) / 60)
+            return denied(reason: "post_practice_cooldown [\(elapsed)min/45min]" + bSuffix)
+        }
+
+        // 11. False positive pattern check
+        // Only suppress if behavioral severity is low — high stress overrides FP patterns
+        let currentContext = buildContextString(analysis: analysis, metrics: behavioral?.metrics)
+        let matchingDismissals = dismissalContexts.filter { $0.context == currentContext }.count
+        if matchingDismissals >= 3 && severity < 0.5 {
+            return denied(reason: "false_positive_suppressed [\(matchingDismissals) prior dismissals in context '\(currentContext)']" + bSuffix)
         }
 
         // All checks passed
@@ -197,37 +228,79 @@ actor NudgeEngine {
             nudgeType: nudgeType,
             message: analysis.nudgeMessage,
             suggestedPracticeID: analysis.suggestedPracticeID,
-            reason: "approved",
+            reason: "approved" + bSuffix,
             thinkingText: analysis.thinkingText,
             effortLevel: analysis.effortLevel
         )
     }
 
-    /// Apply cooldown checks for behavioral override nudges
-    private func applyCooldowns(analysis: StressAnalysisResponse, now: Date, reason: String) -> NudgeDecision {
+    /// Apply cooldown checks for encouragement nudges
+    private func applyEncouragementCooldowns(now: Date, reason: String, bSuffix: String) -> NudgeDecision {
         if let last = lastNudgeTime, now.timeIntervalSince(last) < Cooldown.hardMinInterval {
-            return denied(reason: "hard_min_interval")
+            return denied(reason: "hard_min_interval" + bSuffix)
         }
         if dailyNudgeCount >= Cooldown.maxDailyTotalNudges {
-            return denied(reason: "daily_total_limit")
-        }
-        if dailyPracticeNudgeCount >= Cooldown.maxDailyPracticeNudges {
-            return denied(reason: "daily_practice_limit")
+            return denied(reason: "daily_total_limit [\(dailyNudgeCount)/\(Cooldown.maxDailyTotalNudges)]" + bSuffix)
         }
         if let last = lastNudgeTime, now.timeIntervalSince(last) < Cooldown.minAnyNudgeInterval {
-            return denied(reason: "min_nudge_interval")
+            return denied(reason: "min_nudge_interval" + bSuffix)
         }
-        if let last = lastPracticeNudgeTime, now.timeIntervalSince(last) < Cooldown.minPracticeInterval {
-            return denied(reason: "min_practice_interval")
-        }
+        // Encouragement uses minAnyNudgeInterval (10 min), NOT minPracticeInterval (30 min)
+        // minPracticeInterval only gates practice-to-practice intervals per rule definition
         if let last = lastPracticeCompletedTime, now.timeIntervalSince(last) < Cooldown.postPracticeCooldown {
-            return denied(reason: "post_practice_cooldown")
+            let elapsed = Int(now.timeIntervalSince(last) / 60)
+            return denied(reason: "post_practice_cooldown [\(elapsed)min/45min]" + bSuffix)
         }
         if let last = lastDismissalTime {
             let cooldown = consecutiveDismissals >= 3 ? Cooldown.consecutiveDismissalCooldown : Cooldown.postDismissalCooldown
             if now.timeIntervalSince(last) < cooldown {
-                return denied(reason: consecutiveDismissals >= 3 ? "consecutive_dismissal_cooldown" : "post_dismissal_cooldown")
+                let reason = consecutiveDismissals >= 3 ? "consecutive_dismissal_cooldown [\(consecutiveDismissals) dismissals]" : "post_dismissal_cooldown"
+                return denied(reason: reason + bSuffix)
+            } else if consecutiveDismissals >= 3 {
+                consecutiveDismissals = 0
             }
+        }
+        return NudgeDecision(
+            shouldShow: true,
+            nudgeType: .encouragement,
+            message: "Your activity patterns suggest building stress. Consider a brief pause.",
+            suggestedPracticeID: nil,
+            reason: reason
+        )
+    }
+
+    /// Apply cooldown checks for behavioral override nudges
+    private func applyCooldowns(analysis: StressAnalysisResponse, now: Date, reason: String) -> NudgeDecision {
+        let bSuffix = behavioralSuffix(nil) // no context in override path
+        if let last = lastNudgeTime, now.timeIntervalSince(last) < Cooldown.hardMinInterval {
+            return denied(reason: "hard_min_interval" + bSuffix)
+        }
+        // Dismissal cooldown first (safety-critical, same order as shouldNudge)
+        if let last = lastDismissalTime {
+            let cooldown = consecutiveDismissals >= 3 ? Cooldown.consecutiveDismissalCooldown : Cooldown.postDismissalCooldown
+            if now.timeIntervalSince(last) < cooldown {
+                let r = consecutiveDismissals >= 3
+                    ? "consecutive_dismissal_cooldown [\(consecutiveDismissals) dismissals]"
+                    : "post_dismissal_cooldown"
+                return denied(reason: r + bSuffix)
+            } else if consecutiveDismissals >= 3 {
+                consecutiveDismissals = 0
+            }
+        }
+        if dailyNudgeCount >= Cooldown.maxDailyTotalNudges {
+            return denied(reason: "daily_total_limit" + bSuffix)
+        }
+        if dailyPracticeNudgeCount >= Cooldown.maxDailyPracticeNudges {
+            return denied(reason: "daily_practice_limit" + bSuffix)
+        }
+        if let last = lastNudgeTime, now.timeIntervalSince(last) < Cooldown.minAnyNudgeInterval {
+            return denied(reason: "min_nudge_interval" + bSuffix)
+        }
+        if let last = lastPracticeNudgeTime, now.timeIntervalSince(last) < Cooldown.minPracticeInterval {
+            return denied(reason: "min_practice_interval" + bSuffix)
+        }
+        if let last = lastPracticeCompletedTime, now.timeIntervalSince(last) < Cooldown.postPracticeCooldown {
+            return denied(reason: "post_practice_cooldown" + bSuffix)
         }
         return NudgeDecision(
             shouldShow: true,
@@ -256,8 +329,13 @@ actor NudgeEngine {
         // Counter tracks dismissals-in-a-row without completing any practice.
     }
 
-    func recordDismissal() {
-        consecutiveDismissals += 1
+    func recordDismissal(isLater: Bool = false) {
+        if isLater {
+            // dismiss_later breaks the consecutive chain — user showed willingness
+            consecutiveDismissals = 0
+        } else {
+            consecutiveDismissals += 1
+        }
         lastDismissalTime = now
     }
 
@@ -282,15 +360,10 @@ actor NudgeEngine {
         var isInCooldown = false
         var cooldownReason: String?
 
+        // Order matches shouldNudge() priority: hard_min → dismissal → daily → intervals → practice cooldown
         if let last = lastNudgeTime, now.timeIntervalSince(last) < Cooldown.hardMinInterval {
             isInCooldown = true
             cooldownReason = "hard_min_interval"
-        } else if let last = lastNudgeTime, now.timeIntervalSince(last) < Cooldown.minAnyNudgeInterval {
-            isInCooldown = true
-            cooldownReason = "min_nudge_interval"
-        } else if let last = lastPracticeCompletedTime, now.timeIntervalSince(last) < Cooldown.postPracticeCooldown {
-            isInCooldown = true
-            cooldownReason = "post_practice_cooldown"
         } else if let last = lastDismissalTime {
             let cooldown = consecutiveDismissals >= 3
                 ? Cooldown.consecutiveDismissalCooldown
@@ -299,6 +372,22 @@ actor NudgeEngine {
                 isInCooldown = true
                 cooldownReason = consecutiveDismissals >= 3 ? "consecutive_dismissal_cooldown" : "post_dismissal_cooldown"
             }
+        }
+        if !isInCooldown && dailyNudgeCount >= Cooldown.maxDailyTotalNudges {
+            isInCooldown = true
+            cooldownReason = "daily_total_limit"
+        } else if !isInCooldown && dailyPracticeNudgeCount >= Cooldown.maxDailyPracticeNudges {
+            isInCooldown = true
+            cooldownReason = "daily_practice_limit"
+        } else if !isInCooldown, let last = lastNudgeTime, now.timeIntervalSince(last) < Cooldown.minAnyNudgeInterval {
+            isInCooldown = true
+            cooldownReason = "min_nudge_interval"
+        } else if !isInCooldown, let last = lastPracticeNudgeTime, now.timeIntervalSince(last) < Cooldown.minPracticeInterval {
+            isInCooldown = true
+            cooldownReason = "min_practice_interval"
+        } else if !isInCooldown, let last = lastPracticeCompletedTime, now.timeIntervalSince(last) < Cooldown.postPracticeCooldown {
+            isInCooldown = true
+            cooldownReason = "post_practice_cooldown"
         }
 
         return PlaytestResult.CooldownSnapshot(
@@ -358,6 +447,26 @@ actor NudgeEngine {
             .map { "\($0.key) (\($0.value) dismissals)" }
     }
 
+    // MARK: - Testing Support
+
+    /// Pre-seed dismissal contexts for testing false positive detection
+    func seedDismissalContexts(_ contexts: [(context: String, confidence: Double, count: Int)]) {
+        for seed in contexts {
+            for _ in 0..<seed.count {
+                dismissalContexts.append((seed.context, seed.confidence, now))
+            }
+        }
+    }
+
+    /// Build context string for external seeding (matches buildContextString format)
+    func buildContextForSeeding(primarySignal: String?, contextSwitchesPerMinute: Double?, topApp: String?) -> String {
+        var parts: [String] = []
+        if let signal = primarySignal { parts.append(signal) }
+        if let switches = contextSwitchesPerMinute, switches > 4.0 { parts.append("high_context_switching") }
+        if let app = topApp { parts.append("focus_\(app)") }
+        return parts.joined(separator: ", ")
+    }
+
     // MARK: - Private
 
     @discardableResult
@@ -377,5 +486,17 @@ actor NudgeEngine {
             shouldShow: false, nudgeType: nil, message: nil,
             suggestedPracticeID: nil, reason: reason
         )
+    }
+
+    /// Build behavioral context suffix for enriched reason strings
+    private func behavioralSuffix(_ behavioral: BehavioralContext?) -> String {
+        guard let ctx = behavioral else { return "" }
+        let switches = String(format: "%.1f", ctx.metrics.contextSwitchesPerMinute)
+        let deviation = String(format: "%.0f%%", ctx.baselineDeviation * 100)
+        let session = Int(ctx.metrics.sessionDuration / 60)
+        let topApp = ctx.metrics.applicationFocus.max(by: { $0.value < $1.value })?.key ?? "unknown"
+        let maxFocus = ctx.metrics.applicationFocus.values.max() ?? 0
+        let focusLabel = maxFocus > 0.7 ? "focused" : (maxFocus > 0.4 ? "moderate" : "fragmented")
+        return " [switches=\(switches)/min, baseline=\(deviation), session=\(session)min, focus=\(focusLabel)(\(topApp))]"
     }
 }

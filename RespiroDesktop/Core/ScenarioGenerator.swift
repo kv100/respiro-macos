@@ -14,11 +14,152 @@ struct ScenarioGenerator: Sendable {
         let response = try await callClaude(
             systemPrompt: "You are an AI testing specialist. Generate new test scenarios as JSON.",
             userPrompt: prompt,
-            thinkingBudget: 10240,
-            maxTokens: 16384  // Must be > thinkingBudget (10240)
+            thinkingBudget: 12000,
+            maxTokens: 16384
         )
         let generated = parseGeneratedScenarios(response.text, roundNumber: roundNumber)
         return generated.filter { isValid($0) }
+    }
+
+    // MARK: - Regression Generation
+
+    func generateRegressionScenarios(bugs: [RegressionBug]) async throws -> [PlaytestScenario] {
+        // Split into batches of 4 to avoid proxy timeouts
+        let batchSize = 4
+        var allScenarios: [PlaytestScenario] = []
+
+        for batchStart in stride(from: 0, to: bugs.count, by: batchSize) {
+            let batchEnd = min(batchStart + batchSize, bugs.count)
+            let batch = Array(bugs[batchStart..<batchEnd])
+            print("[ScenarioGenerator] Generating regression batch \(batchStart/batchSize + 1) (\(batch.count) bugs)...")
+
+            let prompt = buildRegressionPrompt(bugs: batch)
+            let response = try await callClaude(
+                systemPrompt: "You are an AI testing specialist. Generate regression test scenarios to verify bug fixes. Respond with JSON only.",
+                userPrompt: prompt,
+                thinkingBudget: 8000,
+                maxTokens: 8192
+            )
+            let scenarios = parseGeneratedScenarios(response.text, roundNumber: 0)
+                .filter { isValid($0) }
+            allScenarios.append(contentsOf: scenarios)
+        }
+
+        return allScenarios
+    }
+
+    private func buildRegressionPrompt(bugs: [RegressionBug]) -> String {
+        var prompt = """
+        You are verifying bug fixes in a stress-coaching app called Respiro.
+        The app uses weather metaphors (clear/cloudy/stormy) and decides when to nudge users with practices.
+
+        APP RULES:
+        - minPracticeInterval: 30 min between practice nudges
+        - minAnyNudgeInterval: 10 min between any nudge
+        - hardMinInterval: 5 min absolute minimum
+        - postDismissalCooldown: 15 min after dismiss_im_fine
+        - consecutiveDismissalCooldown: 2 hours (after 3 dismiss_im_fine — dismiss_later does NOT count)
+        - postPracticeCooldown: 45 min
+        - maxDailyPracticeNudges: 6
+        - maxDailyTotalNudges: 12
+        - Confidence >= 0.6 required for practice nudge
+        - Smart suppression: skip nudge during video calls AND screen sharing (isOnVideoCall or isScreenSharing)
+        - Weather types: clear, cloudy, stormy
+        - Nudge types: practice, encouragement, acknowledgment
+        - Behavioral override: severity >= 0.7 + confidence >= 0.6 → practice nudge
+        - Behavioral encouragement: severity 0.4-0.7 → encouragement nudge (lighter, 10min interval)
+        - dismiss_later: updates lastDismissalTime but does NOT increment consecutiveDismissals counter
+        - dismiss_im_fine: updates lastDismissalTime AND increments consecutiveDismissals counter
+
+        BEHAVIORAL SEVERITY CALCULATION:
+        - switches > 8: +0.4, > 5: +0.3, > 3: +0.15
+        - baselineDeviation > 2.5: +0.4, > 1.5: +0.3, > 0.5: +0.15
+        - sessionDuration > 3h: +0.1, > 2h: +0.05
+        - maxFocus < 0.3: +0.1
+
+        BUGS TO VERIFY (generate one scenario per bug):
+        """
+
+        for (index, bug) in bugs.enumerated() {
+            prompt += """
+
+            BUG \(index + 1): \(bug.scenarioName)
+            Description: \(bug.description)
+            \(bug.hypothesis.map { "Hypothesis: \($0)" } ?? "")
+            Previous mismatches: \(bug.mismatches.joined(separator: "; "))
+            Expected behavior: \(bug.expectedBehavior.joined(separator: "; "))
+            """
+        }
+
+        prompt += """
+
+
+        For EACH bug above, generate exactly ONE scenario that directly tests whether the bug is fixed.
+
+        CRITICAL REQUIREMENTS:
+        - Include complete behavioral data (behaviorMetrics, systemContext, baselineDeviation) in every step
+        - For screen sharing tests: set "is_screen_sharing": true in system_context
+        - For dismiss_later tests: use "dismiss_later" as user_action
+        - For encouragement tests: ensure behavioral metrics produce severity 0.4-0.7 (e.g., switches > 5, baseline > 1.5)
+        - Use realistic, sufficient time_delta between steps (>1801 for practice intervals, >901 for dismissal cooldowns)
+        - Each scenario must have clear expected_behavior and a hypothesis explaining what it verifies
+
+        Start scenario IDs from "reg-1".
+
+        For each step, the weather field determines what the mock analysis will contain:
+        - "clear" -> no nudge (nudge_type null)
+        - "cloudy" -> usually no nudge unless confidence is high
+        - "stormy" -> can have nudge_type "practice" or "encouragement" with appropriate message and practice_id
+
+        IMPORTANT: Include behavioral data in steps to test behavioral stress detection:
+        - behaviorMetrics: {contextSwitchesPerMinute (double), sessionDuration (seconds), applicationFocus (0.0-1.0), notificationAccumulation (int), recentAppSequence (array of strings)}
+        - systemContext: {activeApp (string), openWindowCount (int), isOnVideoCall (bool), isScreenSharing (bool), batteryLevel (double), timeOfDay (string)}
+        - baselineDeviation (double, e.g., 0.0 = no change, 2.5 = 250% above baseline)
+
+        Respond with JSON ONLY (no markdown, no code blocks):
+        {
+          "scenarios": [
+            {
+              "id": "reg-N",
+              "name": "short name",
+              "hypothesis": "What this regression test verifies",
+              "description": "What the original bug was",
+              "steps": [
+                {
+                  "id": "Na",
+                  "description": "step description",
+                  "weather": "clear|cloudy|stormy",
+                  "confidence": 0.0-1.0,
+                  "signals": ["signal1", "signal2"],
+                  "nudge_type": "practice|encouragement|null",
+                  "nudge_message": "message or null",
+                  "practice_id": "id or null",
+                  "user_action": "dismiss_im_fine|dismiss_later|start_practice|complete_practice|null",
+                  "time_delta": seconds_since_last_step,
+                  "behavior_metrics": {
+                    "context_switches_per_minute": 0.0,
+                    "session_duration": 0,
+                    "application_focus": 0.0,
+                    "notification_accumulation": 0,
+                    "recent_app_sequence": []
+                  },
+                  "system_context": {
+                    "active_app": "AppName",
+                    "open_window_count": 0,
+                    "is_on_video_call": false,
+                    "is_screen_sharing": false,
+                    "battery_level": 0.0,
+                    "time_of_day": "morning|afternoon|evening"
+                  },
+                  "baseline_deviation": 0.0
+                }
+              ],
+              "expected_behavior": [...]
+            }
+          ]
+        }
+        """
+        return prompt
     }
 
     // MARK: - Prompt Building
@@ -117,7 +258,7 @@ struct ScenarioGenerator: Sendable {
         prompt += """
 
 
-        Based on these results, generate 3-5 NEW test scenarios that:
+        Based on these results, generate 8-10 NEW test scenarios that:
         1. Test BOUNDARY CONDITIONS around rules (exact time thresholds, counts at limits)
         2. Test COMBINATIONS of behaviors not yet tested together
         3. Probe areas where confidence was LOW
@@ -189,8 +330,9 @@ struct ScenarioGenerator: Sendable {
         switch mode {
         case .direct:
             return URL(string: "https://api.anthropic.com/v1/messages")!
-        case .proxy(let url, _, _):
-            return URL(string: "\(url)/functions/v1/claude-proxy")!
+        case .proxy:
+            // Use Railway proxy — no 150s timeout limit (vs Supabase edge functions)
+            return URL(string: RespiroConfig.railwayProxyURL)!
         }
     }
 
@@ -198,8 +340,9 @@ struct ScenarioGenerator: Sendable {
         switch mode {
         case .direct(let apiKey):
             return ["x-api-key": apiKey, "anthropic-version": Self.apiVersion]
-        case .proxy(_, let anonKey, let deviceID):
-            return ["Authorization": "Bearer \(anonKey)", "apikey": anonKey, "x-device-id": deviceID]
+        case .proxy(_, _, let deviceID):
+            // Railway proxy handles Anthropic auth server-side
+            return ["x-device-id": deviceID]
         }
     }
 
@@ -219,24 +362,41 @@ struct ScenarioGenerator: Sendable {
             ]],
             "thinking": [
                 "type": "enabled",
-                "budget_tokens": 15000  // High budget for creative behavioral scenario generation
+                "budget_tokens": thinkingBudget
             ]
         ]
 
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
+        request.timeoutInterval = 300  // 5 min — Railway proxy has no 150s limit
         for (key, value) in authHeaders() {
             request.setValue(value, forHTTPHeaderField: key)
         }
         request.setValue("application/json", forHTTPHeaderField: "content-type")
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
-        let data: Data
-        let response: URLResponse
-        do {
-            (data, response) = try await URLSession.shared.data(for: request)
-        } catch {
-            throw ClaudeAPIError.networkError(underlying: error)
+        var data: Data
+        var response: URLResponse
+        let maxRetries = 2
+        var lastError: Error?
+        (data, response) = (Data(), URLResponse())  // placeholders
+        for attempt in 0...maxRetries {
+            do {
+                (data, response) = try await URLSession.shared.data(for: request)
+                lastError = nil
+                break
+            } catch {
+                lastError = error
+                if attempt < maxRetries {
+                    let delay = UInt64((attempt + 1) * 5) * 1_000_000_000  // 5s, 10s
+                    print("[ScenarioGenerator] Retry \(attempt + 1)/\(maxRetries) after error: \(error.localizedDescription)")
+                    try? await Task.sleep(nanoseconds: delay)
+                    continue
+                }
+            }
+        }
+        if let lastError {
+            throw ClaudeAPIError.networkError(underlying: lastError)
         }
 
         guard let httpResponse = response as? HTTPURLResponse else {
@@ -368,6 +528,7 @@ struct ScenarioGenerator: Sendable {
                         recentAppSwitches: contextJSON["recent_app_switches"] as? [String] ?? [],
                         pendingNotificationCount: contextJSON["pending_notification_count"] as? Int ?? 0,
                         isOnVideoCall: contextJSON["is_on_video_call"] as? Bool ?? false,
+                        isScreenSharing: contextJSON["is_screen_sharing"] as? Bool ?? false,
                         systemUptime: contextJSON["system_uptime"] as? TimeInterval ?? 0,
                         idleTime: contextJSON["idle_time"] as? TimeInterval ?? 0
                     )

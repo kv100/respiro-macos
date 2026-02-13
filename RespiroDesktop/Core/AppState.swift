@@ -274,7 +274,7 @@ final class AppState {
 
     func notifyDismissal(type: DismissalType = .imFine) async {
         await monitoringService?.onDismissal()
-        await nudgeEngine?.recordDismissal()
+        await nudgeEngine?.recordDismissal(isLater: type == .later)
 
         // Log to SwiftData and update learned patterns for AI
         if let logger = dismissalLogger, let analysis = lastAnalysis {

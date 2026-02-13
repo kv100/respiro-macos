@@ -16,6 +16,21 @@ struct PlaytestView: View {
             Divider()
                 .background(Color.white.opacity(0.06))
 
+            // Regression banner: FIXED above scroll, always visible
+            if !service.isRunning && (service.hasRegressionSuite || (service.failedCount > 0 && service.currentReport != nil)) {
+                let count = service.failedCount > 0 ? service.failedCount : service.regressionCount
+                if count > 0 {
+                    PlaytestRegressionBanner(
+                        stillFailing: count,
+                        fixed: 0,
+                        regression: 0,
+                        total: count,
+                        onClearFixed: { },
+                        onRunRegression: { service.runFailedOnly() }
+                    )
+                }
+            }
+
             ScrollView {
                 VStack(spacing: 0) {
                     roundsList
@@ -442,7 +457,7 @@ struct PlaytestView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "folder")
                             .font(.system(size: 12))
-                        Text("Open Folder")
+                        Text("Folder")
                             .font(.system(size: 13, weight: .medium))
                     }
                     .frame(maxWidth: .infinity)

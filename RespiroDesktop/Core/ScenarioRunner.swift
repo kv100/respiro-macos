@@ -11,6 +11,12 @@ actor ScenarioRunner {
         onStepProgress: (@Sendable (Int, Int) async -> Void)? = nil
     ) async -> PlaytestResult {
         let engine = NudgeEngine()
+
+        // Pre-seed false positive contexts if scenario requires them
+        if let fpSeeds = scenario.falsePositiveSeeds {
+            await engine.seedDismissalContexts(fpSeeds.map { ($0.context, $0.confidence, $0.count) })
+        }
+
         var stepResults: [PlaytestResult.StepResult] = []
         let totalSteps = scenario.steps.count
 
@@ -63,8 +69,18 @@ actor ScenarioRunner {
 
             // 4. Apply user action AFTER evaluation (affects subsequent steps)
             switch step.userAction {
-            case .dismissImFine, .dismissLater:
-                await engine.recordDismissal()
+            case .dismissImFine:
+                // Only record dismissal if nudge was actually shown to user
+                if decision.shouldShow {
+                    await engine.recordDismissal(isLater: false)
+                    // Record context for false positive pattern learning
+                    await engine.recordDismissalContext(analysis: enhancedAnalysis, behaviorMetrics: step.behaviorMetrics)
+                }
+            case .dismissLater:
+                if decision.shouldShow {
+                    await engine.recordDismissal(isLater: true)
+                    await engine.recordDismissalContext(analysis: enhancedAnalysis, behaviorMetrics: step.behaviorMetrics)
+                }
             case .completePractice:
                 await engine.recordPracticeCompleted()
             case .startPractice, nil:
@@ -149,6 +165,9 @@ actor ScenarioRunner {
             reasoning += "- Open windows: \(context.openWindowCount)\n"
             if context.isOnVideoCall {
                 reasoning += "- Video call active\n"
+            }
+            if context.isScreenSharing {
+                reasoning += "- Screen sharing active\n"
             }
         }
 

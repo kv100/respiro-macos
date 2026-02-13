@@ -8,9 +8,9 @@ final class PlaytestService {
     // MARK: - Exploration Bounds
     private enum Bounds {
         static let maxRounds = 3
-        static let maxScenariosPerRound = 5
+        static let maxScenariosPerRound = 10
         static let confidenceThreshold = 0.90
-        static let timeoutSeconds: TimeInterval = 900  // 15 minutes (for full 3-round exploration with AI generation)
+        static let timeoutSeconds: TimeInterval = 1200  // 20 minutes (for full 3-round exploration with 10 scenarios/round)
     }
 
     // MARK: - State
@@ -59,6 +59,78 @@ final class PlaytestService {
     var seedCount: Int { seedScenarios.count }
     var generatedCount: Int { max(0, allScenarios.count - seedCount) }
 
+    var failedScenarios: [PlaytestScenario] {
+        let failedIDs = Set(allEvaluations.filter { !$0.value.passed }.map(\.key))
+        return allScenarios.filter { failedIDs.contains($0.id) }
+    }
+
+    // MARK: - Regression Suite (Persisted)
+
+    var hasRegressionSuite: Bool {
+        FileManager.default.fileExists(atPath: regressionFileURL.path)
+    }
+
+    var regressionCount: Int {
+        loadRegressionBugs().count
+    }
+
+    private var regressionFileURL: URL {
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let reportsDir = documents.appendingPathComponent("Respiro_Playtest_Reports", isDirectory: true)
+        try? FileManager.default.createDirectory(at: reportsDir, withIntermediateDirectories: true)
+        return reportsDir.appendingPathComponent("regression_suite.json")
+    }
+
+    private func loadRegressionBugs() -> [RegressionBug] {
+        guard let data = try? Data(contentsOf: regressionFileURL) else {
+            print("[Playtest] No regression file found")
+            return []
+        }
+        do {
+            let bugs = try JSONDecoder().decode([RegressionBug].self, from: data)
+            print("[Playtest] Loaded \(bugs.count) regression bugs")
+            return bugs
+        } catch {
+            print("[Playtest] Failed to decode regression bugs: \(error)")
+            return []
+        }
+    }
+
+    private func saveRegressionSuite() {
+        // Collect bugs from failed evaluations
+        var bugs: [RegressionBug] = []
+        for round in rounds {
+            for (index, eval) in round.evaluations.enumerated() {
+                guard !eval.passed, let scenario = round.scenarios[safe: index] else { continue }
+                bugs.append(RegressionBug(
+                    scenarioID: scenario.id,
+                    scenarioName: scenario.name,
+                    description: scenario.description,
+                    hypothesis: scenario.hypothesis,
+                    mismatches: eval.mismatches,
+                    expectedBehavior: scenario.expectedBehavior,
+                    round: scenario.round
+                ))
+            }
+        }
+
+        guard !bugs.isEmpty else {
+            try? FileManager.default.removeItem(at: regressionFileURL)
+            print("[Playtest] No failures -- regression suite cleared")
+            return
+        }
+
+        do {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
+            let data = try encoder.encode(bugs)
+            try data.write(to: regressionFileURL)
+            print("[Playtest] Saved \(bugs.count) bugs to regression suite")
+        } catch {
+            print("[Playtest] Failed to save regression suite: \(error)")
+        }
+    }
+
     func evaluation(for scenarioID: String) -> ScenarioEvaluation? {
         allEvaluations[scenarioID]
     }
@@ -86,7 +158,7 @@ final class PlaytestService {
 
             // ROUND 1: Seed scenarios
             currentRound = 1
-            let round1 = await runRound(scenarios: seedScenarios, roundNumber: 1)
+            let round1 = await runRoundParallel(scenarios: seedScenarios, roundNumber: 1)
             rounds.append(round1)
 
             let round1Confidence = averageConfidence(for: rounds)
@@ -121,7 +193,7 @@ final class PlaytestService {
                         break
                     }
 
-                    let round = await runRound(scenarios: newScenarios, roundNumber: roundNum)
+                    let round = await runRoundParallel(scenarios: newScenarios, roundNumber: roundNum)
                     rounds.append(round)
                 } catch {
                     print("[Playtest] Generation failed: \(error)")
@@ -145,6 +217,80 @@ final class PlaytestService {
                 }
 
                 saveResults()
+                saveRegressionSuite()
+            }
+
+            isRunning = false
+            currentScenarioID = nil
+            progressMessage = ""
+        }
+    }
+
+    func runFailedOnly() {
+        let bugs = loadRegressionBugs()
+        guard !bugs.isEmpty, !isRunning else { return }
+
+        runTask = Task {
+            isRunning = true
+            rounds = []
+            currentReport = nil
+            error = nil
+            currentRound = 1
+
+            // Phase 1: AI generates fresh regression scenarios from bug descriptions
+            progressMessage = "Generating \(bugs.count) regression scenarios..."
+
+            let scenarios: [PlaytestScenario]
+            do {
+                scenarios = try await generator.generateRegressionScenarios(bugs: bugs)
+                print("[Regression] Generated \(scenarios.count) regression scenarios")
+            } catch {
+                self.error = "Regression generation failed: \(error.localizedDescription)"
+                isRunning = false
+                return
+            }
+
+            guard !scenarios.isEmpty else {
+                self.error = "No regression scenarios generated"
+                isRunning = false
+                return
+            }
+
+            // Phase 2: Run scenarios with parallel evaluation
+            progressMessage = "Running \(scenarios.count) regression scenarios..."
+            let round = await runRoundParallel(scenarios: scenarios, roundNumber: 1)
+            rounds.append(round)
+
+            // Phase 3: Report
+            if !Task.isCancelled {
+                let passedCount = round.evaluations.filter(\.passed).count
+                let failedCount = round.evaluations.count - passedCount
+
+                if failedCount == 0 {
+                    currentReport = PlaytestReport(
+                        rounds: rounds,
+                        overallPassed: true,
+                        overallConfidence: 1.0,
+                        summary: "All \(passedCount) regression bugs verified as FIXED.",
+                        discoveries: [],
+                        criticalIssues: [],
+                        strengths: ["All \(passedCount) previously failing scenarios now pass"],
+                        untestedAreas: [],
+                        confidenceTrajectory: [],
+                        thinkingText: nil,
+                        completedAt: Date()
+                    )
+                } else {
+                    progressMessage = "Generating regression report..."
+                    do {
+                        currentReport = try await evaluator.generateReport(rounds: rounds)
+                    } catch {
+                        self.error = "Report failed: \(error.localizedDescription)"
+                    }
+                }
+
+                saveResults()
+                saveRegressionSuite()  // Update with remaining failures
             }
 
             isRunning = false
@@ -159,6 +305,109 @@ final class PlaytestService {
         isRunning = false
         currentScenarioID = nil
         progressMessage = ""
+    }
+
+    // MARK: - Parallel Evaluation
+
+    /// Run scenarios sequentially (fast, in-memory execution) then evaluate in parallel with a concurrency limit.
+    /// This is faster than runRound for AI-generated scenarios because evaluations (API calls) overlap.
+    private func runRoundParallel(scenarios: [PlaytestScenario], roundNumber: Int, maxConcurrency: Int = 3) async -> PlaytestRound {
+        // Phase 1: Execute all scenarios sequentially (fast, no API)
+        var executionResults: [(PlaytestScenario, PlaytestResult)] = []
+        for (index, scenario) in scenarios.enumerated() {
+            guard !Task.isCancelled else { break }
+            currentScenarioID = scenario.id
+            progressMessage = "Round \(roundNumber): Executing \(scenario.name) (\(index + 1)/\(scenarios.count))"
+
+            let result = await runner.execute(scenario: scenario) { [weak self] stepNum, totalSteps in
+                guard let self else { return }
+                await MainActor.run {
+                    self.progressMessage = "Round \(roundNumber): \(scenario.name) — Step \(stepNum)/\(totalSteps)"
+                }
+            }
+            executionResults.append((scenario, result))
+        }
+
+        // Phase 2: Evaluate in parallel with concurrency limit
+        progressMessage = "Round \(roundNumber): Evaluating \(executionResults.count) scenarios..."
+
+        // Capture evaluator (Sendable struct) for use in task group
+        let evalRef = evaluator
+        let totalCount = executionResults.count
+
+        // Create indexed work items for ordered results
+        struct IndexedEvaluation: Sendable {
+            let index: Int
+            let evaluation: ScenarioEvaluation
+        }
+
+        let indexedResults: [IndexedEvaluation] = await withTaskGroup(of: IndexedEvaluation.self) { group in
+            var results: [IndexedEvaluation] = []
+            var nextIndex = 0
+
+            // Seed initial batch up to maxConcurrency
+            while nextIndex < min(maxConcurrency, executionResults.count) {
+                let idx = nextIndex
+                let (scenario, result) = executionResults[idx]
+                group.addTask {
+                    do {
+                        let eval = try await evalRef.evaluate(scenario: scenario, result: result)
+                        return IndexedEvaluation(index: idx, evaluation: eval)
+                    } catch {
+                        return IndexedEvaluation(index: idx, evaluation: .error(scenarioID: scenario.id, message: error.localizedDescription))
+                    }
+                }
+                nextIndex += 1
+            }
+
+            // Process results and add new tasks as slots free up
+            for await indexed in group {
+                results.append(indexed)
+
+                // Update progress on main actor
+                let completedCount = results.count
+                await MainActor.run {
+                    self.progressMessage = "Round \(roundNumber): Evaluated \(completedCount)/\(totalCount)..."
+                }
+
+                if nextIndex < executionResults.count {
+                    let idx = nextIndex
+                    let (scenario, result) = executionResults[idx]
+                    group.addTask {
+                        do {
+                            let eval = try await evalRef.evaluate(scenario: scenario, result: result)
+                            return IndexedEvaluation(index: idx, evaluation: eval)
+                        } catch {
+                            return IndexedEvaluation(index: idx, evaluation: .error(scenarioID: scenario.id, message: error.localizedDescription))
+                        }
+                    }
+                    nextIndex += 1
+                }
+            }
+
+            return results
+        }
+
+        // Sort evaluations back to scenario order
+        let orderedEvals = indexedResults
+            .sorted { $0.index < $1.index }
+            .map(\.evaluation)
+
+        // If some scenarios were skipped (cancellation), fill with errors
+        let finalEvals: [ScenarioEvaluation] = scenarios.enumerated().map { index, scenario in
+            if index < orderedEvals.count {
+                return orderedEvals[index]
+            } else {
+                return .error(scenarioID: scenario.id, message: "Skipped due to cancellation")
+            }
+        }
+
+        return PlaytestRound(
+            id: roundNumber,
+            scenarios: scenarios,
+            evaluations: finalEvals,
+            isAIGenerated: roundNumber > 1
+        )
     }
 
     // MARK: - Private

@@ -75,6 +75,7 @@
 		APP_208 /* PlaytestWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_208 /* PlaytestWindowView.swift */; };
 		APP_209 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_209 /* AppDelegate.swift */; };
 		APP_210 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_210 /* MenuBarController.swift */; };
+		APP_211 /* PlaytestRegressionBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_211 /* PlaytestRegressionBanner.swift */; };
 		APP_73F /* BehaviorMetricsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_B3F /* BehaviorMetricsCard.swift */; };
 		B8B46176CB15520707A3E097 /* FalsePositivePattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D410A75A6C1B0EA4D578C6 /* FalsePositivePattern.swift */; };
 		BC80F08121FC2CBA888A3C22 /* SystemContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D249B96740EFD06EF7A23531 /* SystemContext.swift */; };
@@ -158,6 +159,7 @@
 		FILE_208 /* PlaytestWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestWindowView.swift; sourceTree = "<group>"; };
 		FILE_209 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FILE_210 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
+		FILE_211 /* PlaytestRegressionBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestRegressionBanner.swift; sourceTree = "<group>"; };
 		FILE_B3F /* BehaviorMetricsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BehaviorMetricsCard.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -269,6 +271,7 @@
 				FILE_206 /* PlaytestView.swift */,
 				FILE_207 /* ScenarioDetailView.swift */,
 				FILE_208 /* PlaytestWindowView.swift */,
+				FILE_211 /* PlaytestRegressionBanner.swift */,
 			);
 			path = Playtest;
 			sourceTree = "<group>";
@@ -509,6 +512,7 @@
 				APP_206 /* PlaytestView.swift in Sources */,
 				APP_207 /* ScenarioDetailView.swift in Sources */,
 				APP_208 /* PlaytestWindowView.swift in Sources */,
+				APP_211 /* PlaytestRegressionBanner.swift in Sources */,
 				11FE8B69FA27180E636935D3 /* BehaviorMetrics.swift in Sources */,
 				BC80F08121FC2CBA888A3C22 /* SystemContext.swift in Sources */,
 				1EAB28003E65340170CDB8AC /* UserBaseline.swift in Sources */,

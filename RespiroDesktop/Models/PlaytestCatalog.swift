@@ -1,6 +1,6 @@
 import Foundation
 
-// MARK: - Playtest Catalog (12 Scenarios: 8 Seed + 4 Behavioral)
+// MARK: - Playtest Catalog (15 Scenarios: 8 Seed + 4 Behavioral + 3 Targeted)
 
 enum PlaytestCatalog {
     static let allScenarios: [PlaytestScenario] = [
@@ -17,6 +17,10 @@ enum PlaytestCatalog {
         sc10ContrastiveB,
         sc11FalsePositive,
         sc12BaselineSpike,
+        // NEW: Targeted fix scenarios
+        sc13ScreenSharingSuppression,
+        sc14EncouragementNudge,
+        sc15DismissLaterSemantics,
     ]
 
     // MARK: - SC-1: Sustained Focus
@@ -228,7 +232,7 @@ enum PlaytestCatalog {
         steps: [
             ScenarioStep(
                 id: "3a",
-                description: "Stormy — first nudge shown",
+                description: "Stormy — first nudge shown, user dismisses",
                 mockAnalysis: .stormy(
                     confidence: 0.80,
                     signals: ["high tab count", "error logs visible"],
@@ -236,7 +240,7 @@ enum PlaytestCatalog {
                     message: "You seem stressed. Try a breathing exercise?",
                     practiceID: "box-breathing"
                 ),
-                userAction: nil,
+                userAction: .dismissImFine,
                 timeDelta: 0,
                 behaviorMetrics: BehaviorMetrics(
                     contextSwitchesPerMinute: 4.2,
@@ -259,7 +263,7 @@ enum PlaytestCatalog {
             ),
             ScenarioStep(
                 id: "3b",
-                description: "User dismisses first nudge, stormy again 15min later",
+                description: "Stormy 30+ min later — second nudge shown, user dismisses",
                 mockAnalysis: .stormy(
                     confidence: 0.78,
                     signals: ["rapid window switching", "long session"],
@@ -268,7 +272,7 @@ enum PlaytestCatalog {
                     practiceID: "body-scan"
                 ),
                 userAction: .dismissImFine,
-                timeDelta: 900,
+                timeDelta: 1801,
                 behaviorMetrics: BehaviorMetrics(
                     contextSwitchesPerMinute: 4.8,
                     sessionDuration: 4500,
@@ -290,7 +294,7 @@ enum PlaytestCatalog {
             ),
             ScenarioStep(
                 id: "3c",
-                description: "User dismisses second nudge, stormy again 15min later",
+                description: "Stormy 30+ min later — third nudge shown, user dismisses",
                 mockAnalysis: .stormy(
                     confidence: 0.75,
                     signals: ["cluttered desktop", "notifications piling up"],
@@ -299,7 +303,7 @@ enum PlaytestCatalog {
                     practiceID: "five-senses"
                 ),
                 userAction: .dismissImFine,
-                timeDelta: 900,
+                timeDelta: 1801,
                 behaviorMetrics: BehaviorMetrics(
                     contextSwitchesPerMinute: 5.0,
                     sessionDuration: 5400,
@@ -321,7 +325,7 @@ enum PlaytestCatalog {
             ),
             ScenarioStep(
                 id: "3d",
-                description: "User dismisses third nudge, stormy again 15min later — should be BLOCKED",
+                description: "Stormy 30+ min later — should be BLOCKED (3 consecutive dismissals)",
                 mockAnalysis: .stormy(
                     confidence: 0.80,
                     signals: ["continued stress indicators"],
@@ -329,8 +333,8 @@ enum PlaytestCatalog {
                     message: "How about a grounding exercise?",
                     practiceID: "finger-tapping"
                 ),
-                userAction: .dismissImFine,
-                timeDelta: 900,
+                userAction: nil,
+                timeDelta: 1801,
                 behaviorMetrics: BehaviorMetrics(
                     contextSwitchesPerMinute: 5.2,
                     sessionDuration: 6300,
@@ -353,7 +357,7 @@ enum PlaytestCatalog {
         ],
         round: 1,
         expectedBehavior: [
-            "Nudge shown on steps 3a, 3b, 3c",
+            "Nudge shown on steps 3a, 3b, 3c (each 30+ min apart)",
             "Nudge BLOCKED on step 3d (3 consecutive dismissals → 2h cooldown)",
             "Consecutive dismissal counter reaches 3 after step 3c",
         ],
@@ -1099,11 +1103,11 @@ enum PlaytestCatalog {
     static let sc11FalsePositive = PlaytestScenario(
         id: "sc-11",
         name: "False Positive: Code Review Pattern",
-        description: "Visual chaos (many tabs, GitHub PR, errors) but user has dismissed 5x during code reviews. Should have lower confidence or no nudge.",
+        description: "Visual chaos (many tabs, GitHub PR, errors) but user has dismissed 5x during code reviews. Nudge should be suppressed by false positive pattern.",
         steps: [
             ScenarioStep(
                 id: "11a",
-                description: "Code review — looks stressful but normal for user",
+                description: "Code review — looks stressful but normal for user (5 prior dismissals in this context)",
                 mockAnalysis: .stormy(
                     confidence: 0.70,
                     signals: ["GitHub PR open", "terminal with errors", "15 tabs"],
@@ -1135,15 +1139,19 @@ enum PlaytestCatalog {
         ],
         round: 2,
         expectedBehavior: [
-            "Lower confidence due to learned false positive pattern",
-            "User dismissed this context 5 times before",
-            "AI should mention false positive history",
+            "Nudge suppressed due to false positive pattern (5 prior dismissals in code review context)",
+            "Reason should be 'false_positive_suppressed'",
         ],
-        hypothesis: "Visual stress + learned FP pattern = lower confidence (test FP learning)",
+        hypothesis: "Visual stress + learned FP pattern = suppressed nudge (test FP learning)",
         assertions: [
-            // This one is tricky - might show nudge but with lower confidence
-            // Or might not show nudge at all
-            // Leave flexible for evaluation
+            PlaytestAssertion(stepID: "11a", field: .nudgeShouldShow, expected: "false"),
+        ],
+        falsePositiveSeeds: [
+            PlaytestScenario.FalsePositiveSeed(
+                context: "GitHub PR open, focus_Browser",
+                confidence: 0.70,
+                count: 5
+            )
         ]
     )
 
@@ -1191,6 +1199,246 @@ enum PlaytestCatalog {
             PlaytestAssertion(stepID: "12a", field: .nudgeShouldShow, expected: "true"),
             PlaytestAssertion(stepID: "12a", field: .nudgeType, expected: "practice"),
             PlaytestAssertion(stepID: "12a", field: .baselineDeviationConsidered, expected: "true"),
+        ]
+    )
+
+    // MARK: - SC-13: Screen Sharing Solo Suppression
+
+    static let sc13ScreenSharingSuppression = PlaytestScenario(
+        id: "sc-13",
+        name: "Screen Sharing Suppression",
+        description: "Screen sharing without video call should trigger smart suppression. Nudge blocked during share, allowed after.",
+        steps: [
+            ScenarioStep(
+                id: "13a",
+                description: "Stormy but screen sharing active (Loom recording)",
+                mockAnalysis: .stormy(
+                    confidence: 0.80,
+                    signals: ["high tab count", "rapid switching"],
+                    nudge: .practice,
+                    message: "Take a break?",
+                    practiceID: "box-breathing"
+                ),
+                userAction: nil,
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 5.5,
+                    sessionDuration: 1800,
+                    applicationFocus: ["Loom": 0.70, "Browser": 0.30],
+                    notificationAccumulation: 5,
+                    recentAppSequence: ["Loom", "Browser", "Loom", "Browser", "Loom"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Loom",
+                    activeWindowTitle: "Recording...",
+                    openWindowCount: 8,
+                    recentAppSwitches: ["Loom", "Browser"],
+                    pendingNotificationCount: 3,
+                    isOnVideoCall: false,
+                    isScreenSharing: true,  // KEY: screen sharing without video call
+                    systemUptime: 1800,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.5
+            ),
+            ScenarioStep(
+                id: "13b",
+                description: "Screen sharing ended, stormy — nudge should show",
+                mockAnalysis: .stormy(
+                    confidence: 0.78,
+                    signals: ["post-recording stress"],
+                    nudge: .practice,
+                    message: "Recording done. Quick reset?",
+                    practiceID: "box-breathing"
+                ),
+                userAction: nil,
+                timeDelta: 600,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 4.5,
+                    sessionDuration: 2400,
+                    applicationFocus: ["Browser": 0.50, "Slack": 0.30, "Mail": 0.20],
+                    notificationAccumulation: 8,
+                    recentAppSequence: ["Browser", "Slack", "Mail", "Browser", "Slack"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Browser",
+                    activeWindowTitle: nil,
+                    openWindowCount: 12,
+                    recentAppSwitches: ["Browser", "Slack", "Mail"],
+                    pendingNotificationCount: 6,
+                    isOnVideoCall: false,
+                    isScreenSharing: false,  // Screen sharing ended
+                    systemUptime: 2400,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.2
+            ),
+        ],
+        round: 1,
+        expectedBehavior: [
+            "Nudge BLOCKED on step 13a (screen sharing active)",
+            "Nudge shown on step 13b (screen sharing ended)",
+        ],
+        hypothesis: nil,
+        assertions: [
+            PlaytestAssertion(stepID: "13a", field: .nudgeShouldShow, expected: "false"),
+            PlaytestAssertion(stepID: "13b", field: .nudgeShouldShow, expected: "true"),
+        ]
+    )
+
+    // MARK: - SC-14: Encouragement Nudge on Moderate Stress
+
+    static let sc14EncouragementNudge = PlaytestScenario(
+        id: "sc-14",
+        name: "Encouragement on Moderate Stress",
+        description: "Cloudy weather with moderate behavioral stress (severity 0.4-0.7). Should trigger encouragement nudge, not practice.",
+        steps: [
+            ScenarioStep(
+                id: "14a",
+                description: "Cloudy, moderate stress — encouragement expected",
+                mockAnalysis: .cloudy(confidence: 0.55, signals: ["multiple tabs", "some context switching"]),
+                userAction: nil,
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 5.5,  // > 5 → +0.3
+                    sessionDuration: 3600,
+                    applicationFocus: ["Slack": 0.40, "Mail": 0.35, "Browser": 0.25],
+                    notificationAccumulation: 8,
+                    recentAppSequence: ["Slack", "Mail", "Browser", "Slack", "Mail"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Slack",
+                    activeWindowTitle: nil,
+                    openWindowCount: 15,
+                    recentAppSwitches: ["Slack", "Mail", "Browser"],
+                    pendingNotificationCount: 5,
+                    isOnVideoCall: false,
+                    systemUptime: 3600,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.8  // > 1.5 → +0.3, total severity ~ 0.6
+            ),
+        ],
+        round: 1,
+        expectedBehavior: [
+            "Encouragement nudge shown (not practice)",
+            "Behavioral severity 0.4-0.7 triggers encouragement path",
+        ],
+        hypothesis: nil,
+        assertions: [
+            PlaytestAssertion(stepID: "14a", field: .nudgeShouldShow, expected: "true"),
+            PlaytestAssertion(stepID: "14a", field: .nudgeType, expected: "encouragement"),
+        ]
+    )
+
+    // MARK: - SC-15: Dismiss Later Semantics
+
+    static let sc15DismissLaterSemantics = PlaytestScenario(
+        id: "sc-15",
+        name: "Dismiss Later No Cooldown",
+        description: "3 consecutive dismiss_later should NOT trigger 2h cooldown. Only dismiss_im_fine counts.",
+        steps: [
+            ScenarioStep(
+                id: "15a",
+                description: "Stormy — nudge shown, user says 'later'",
+                mockAnalysis: .stormy(
+                    confidence: 0.80, signals: ["stress indicators"],
+                    nudge: .practice, message: "Try breathing?", practiceID: "box-breathing"
+                ),
+                userAction: .dismissLater,
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 4.5, sessionDuration: 1800,
+                    applicationFocus: ["Editor": 0.50, "Terminal": 0.30, "Browser": 0.20],
+                    notificationAccumulation: 5,
+                    recentAppSequence: ["Editor", "Terminal", "Browser", "Editor", "Terminal"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Editor", activeWindowTitle: nil, openWindowCount: 12,
+                    recentAppSwitches: ["Editor", "Terminal", "Browser"],
+                    pendingNotificationCount: 3, isOnVideoCall: false, systemUptime: 1800, idleTime: 0
+                ),
+                baselineDeviation: 1.2
+            ),
+            ScenarioStep(
+                id: "15b",
+                description: "Stormy 31 min later — nudge shown, user says 'later' again",
+                mockAnalysis: .stormy(
+                    confidence: 0.78, signals: ["continued stress"],
+                    nudge: .practice, message: "Still busy? Try later?", practiceID: "box-breathing"
+                ),
+                userAction: .dismissLater,
+                timeDelta: 1861,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 4.8, sessionDuration: 3661,
+                    applicationFocus: ["Editor": 0.45, "Terminal": 0.35, "Browser": 0.20],
+                    notificationAccumulation: 8,
+                    recentAppSequence: ["Editor", "Terminal", "Editor", "Browser", "Editor"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Editor", activeWindowTitle: nil, openWindowCount: 14,
+                    recentAppSwitches: ["Editor", "Terminal", "Browser"],
+                    pendingNotificationCount: 5, isOnVideoCall: false, systemUptime: 3661, idleTime: 0
+                ),
+                baselineDeviation: 1.4
+            ),
+            ScenarioStep(
+                id: "15c",
+                description: "Stormy 31 min later — nudge shown, third 'later'",
+                mockAnalysis: .stormy(
+                    confidence: 0.75, signals: ["persistent stress"],
+                    nudge: .practice, message: "Maybe now?", practiceID: "box-breathing"
+                ),
+                userAction: .dismissLater,
+                timeDelta: 1861,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 5.0, sessionDuration: 5522,
+                    applicationFocus: ["Editor": 0.40, "Terminal": 0.35, "Browser": 0.25],
+                    notificationAccumulation: 10,
+                    recentAppSequence: ["Editor", "Terminal", "Browser", "Editor", "Terminal"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Terminal", activeWindowTitle: nil, openWindowCount: 16,
+                    recentAppSwitches: ["Editor", "Terminal", "Browser"],
+                    pendingNotificationCount: 8, isOnVideoCall: false, systemUptime: 5522, idleTime: 0
+                ),
+                baselineDeviation: 1.5
+            ),
+            ScenarioStep(
+                id: "15d",
+                description: "Stormy 31 min later — should STILL show (3 dismiss_later ≠ 3 consecutive)",
+                mockAnalysis: .stormy(
+                    confidence: 0.80, signals: ["stress continues"],
+                    nudge: .practice, message: "How about now?", practiceID: "box-breathing"
+                ),
+                userAction: nil,
+                timeDelta: 1861,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 5.2, sessionDuration: 7383,
+                    applicationFocus: ["Editor": 0.40, "Terminal": 0.30, "Browser": 0.30],
+                    notificationAccumulation: 12,
+                    recentAppSequence: ["Editor", "Browser", "Terminal", "Editor", "Browser"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Editor", activeWindowTitle: nil, openWindowCount: 18,
+                    recentAppSwitches: ["Editor", "Browser", "Terminal"],
+                    pendingNotificationCount: 10, isOnVideoCall: false, systemUptime: 7383, idleTime: 0
+                ),
+                baselineDeviation: 1.6
+            ),
+        ],
+        round: 1,
+        expectedBehavior: [
+            "Nudges shown on ALL steps (15a, 15b, 15c, 15d)",
+            "dismiss_later does NOT count toward consecutive dismissal counter",
+            "No 2h cooldown triggered (counter stays at 0)",
+        ],
+        hypothesis: nil,
+        assertions: [
+            PlaytestAssertion(stepID: "15a", field: .nudgeShouldShow, expected: "true"),
+            PlaytestAssertion(stepID: "15b", field: .nudgeShouldShow, expected: "true"),
+            PlaytestAssertion(stepID: "15c", field: .nudgeShouldShow, expected: "true"),
+            PlaytestAssertion(stepID: "15d", field: .nudgeShouldShow, expected: "true"),
         ]
     )
 }
