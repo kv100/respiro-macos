@@ -192,6 +192,16 @@ RespiroDesktop/
 - ✅ OSLog with .fault level for Release builds
   **Build status:** ✅ **BUILD SUCCEEDED**
 
+**DEMO MODE FIXES (Feb 14):**
+
+- ✅ Demo loop navigation guard: nudges only show when on dashboard (no practice flow interruption)
+- ✅ Monitoring diagnostic in demo mode: "Demo: clear — next in 10s" instead of empty "Paused"
+- ✅ Mock Day Summary in demo mode: no API call needed, realistic pre-built response with thinking text
+- ✅ Auto-open popover on nudge: popover appears automatically when nudge arrives (even if closed)
+- ✅ Skip weather check-in in demo mode: Play starts monitoring immediately
+- ✅ Window size increased: 360x480 → 420x560 (17% larger, better for demo video)
+  **Build status:** ✅ **BUILD SUCCEEDED**
+
 **Remaining:** D5.2 (demo video), D5.3 (submission text)
 
 ---

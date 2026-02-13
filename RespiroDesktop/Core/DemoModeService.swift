@@ -504,11 +504,12 @@ final class DemoModeService {
             let response = entry.response
             let weather = InnerWeather(rawValue: response.weather) ?? .clear
 
-            // Update behavioral context in AppState
+            // Update behavioral context and diagnostic in AppState
             Task { @MainActor in
                 appState.currentBehaviorMetrics = entry.behaviorMetrics
                 appState.currentSystemContext = entry.systemContext
                 appState.currentBaselineDeviation = entry.baselineDeviation
+                appState.monitoringDiagnostic = "Demo: \(weather.displayName.lowercased()) — next in \(Int(entry.delay))s"
             }
 
             if let silence = entry.silenceDecision {

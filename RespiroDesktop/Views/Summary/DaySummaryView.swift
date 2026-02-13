@@ -42,7 +42,7 @@ struct DaySummaryView: View {
             closeBar
                 .frame(height: 56)
         }
-        .frame(width: 360, height: 480)
+        .frame(width: 420, height: 560)
         .background(Color(hex: "#142823"))
         .task {
             // Only auto-load if we have a cached summary in AppState
@@ -455,6 +455,36 @@ struct DaySummaryView: View {
         if let cached = appState.cachedDaySummary,
            appState.cachedDaySummaryEntryCount == entries.count {
             summary = cached
+            return
+        }
+
+        // Demo mode: use mock response (no API call needed)
+        if appState.isDemoMode {
+            isLoading = true
+            errorMessage = nil
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+
+            var mockResponse = DaySummaryResponse(
+                overallMood: "Your day started like a clear morning -- focused and calm. By midday, clouds rolled in as meetings and messages piled up. A brief storm hit around 2 PM, but you recovered beautifully after a breathing practice.",
+                stressPattern: "Stress peaked between 1-2 PM with rapid app switching (6.5 switches/min) and 23 open browser tabs. The trigger was a combination of post-meeting backlog and error dialogs in your code.",
+                effectivePractice: "Box Breathing was your most effective practice today. After completing it during the storm, your weather improved from stormy to cloudy within 10 minutes, and you closed 15 browser tabs.",
+                recommendation: "Tomorrow, consider a 2-minute breathing break before your afternoon meetings. Your data shows that pre-meeting practices reduce post-meeting stress peaks by about 40%.",
+                dayScore: 7
+            )
+            mockResponse.thinkingText = """
+            Looking at the full arc of today's data, I see a classic "meeting storm" pattern. The morning was productive with low context switching (0.4-0.8 switches/min) and focused Xcode work. The transition happened around 11 AM when email and Slack demands increased.
+
+            The stormy period at 2 PM showed the highest behavioral stress markers: 6.5 context switches/min, 23 browser tabs, 12 unread Slack channels. But what's impressive is the recovery speed -- after box breathing, metrics dropped to 2.1 switches/min within 20 minutes.
+
+            The user completed 2 practices today, both box breathing. For variety, I'd suggest trying grounding-54321 tomorrow -- body-based practices can complement breathing techniques well.
+
+            Overall day score: 7/10. The storm was real but brief, and the user's self-awareness (completing a practice when needed) shows growing stress management skills.
+            """
+
+            summary = mockResponse
+            appState.cachedDaySummary = mockResponse
+            appState.cachedDaySummaryEntryCount = entries.count
+            isLoading = false
             return
         }
 

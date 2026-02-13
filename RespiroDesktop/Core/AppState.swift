@@ -202,6 +202,12 @@ final class AppState {
         let now = Date()
         logger.fault("🟢 requestStartMonitoring called. lastCheckIn=\(self.lastCheckInTime?.description ?? "nil"), monitoringService=\(self.monitoringService != nil ? "YES" : "NIL")")
 
+        // Demo mode: start immediately, no check-in
+        if isDemoMode {
+            Task { await startMonitoringDirectly() }
+            return
+        }
+
         // Always start monitoring immediately (don't gate on check-in)
         Task { await startMonitoringDirectly() }
 
@@ -380,11 +386,13 @@ final class AppState {
                     effortLevel: analysis.effortLevel
                 )
                 pendingNudge = decision
-                showNudge()
-                sendNudgeNotification(
-                    message: nudgeMessage ?? "Time for a break?",
-                    isInternalStress: floorOverridden
-                )
+                if currentScreen == .dashboard {
+                    showNudge()
+                    sendNudgeNotification(
+                        message: nudgeMessage ?? "Time for a break?",
+                        isInternalStress: floorOverridden
+                    )
+                }
             } else if floorOverridden {
                 // AI said no nudge but floor is active -- create a nudge for internal stress
                 let practice = pickPracticeForInternalStress()
@@ -399,8 +407,10 @@ final class AppState {
                     effortLevel: analysis.effortLevel
                 )
                 pendingNudge = decision
-                showNudge()
-                sendNudgeNotification(message: nudgeMessage, isInternalStress: true)
+                if currentScreen == .dashboard {
+                    showNudge()
+                    sendNudgeNotification(message: nudgeMessage, isInternalStress: true)
+                }
             } else {
                 pendingNudge = NudgeDecision(
                     shouldShow: false, nudgeType: nil, message: nil,

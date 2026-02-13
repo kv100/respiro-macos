@@ -13,7 +13,8 @@ struct WeatherPickerView: View {
         VStack(spacing: 0) {
             // Header with back button
             header
-                .padding(.top, 0)
+                .frame(height: 32)
+                .padding(.top, 8)
                 .padding(.bottom, 0)
 
             // Title
@@ -42,8 +43,9 @@ struct WeatherPickerView: View {
                 .padding(.bottom, 24)
         }
         .padding(.horizontal, 16)
-        .frame(width: 360, height: 480)
+        .frame(width: 420, height: 560)
         .background(Color(hex: "#142823"))
+        .ignoresSafeArea(edges: .top)
         .onKeyPress(characters: .init(charactersIn: "123")) { press in
             let cases = InnerWeather.allCases
             guard let index = Int(String(press.characters.first ?? "0")),

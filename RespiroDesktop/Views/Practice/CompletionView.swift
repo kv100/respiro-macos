@@ -122,7 +122,7 @@ struct CompletionView: View {
             .padding(.bottom, 24)
             .keyboardShortcut(.return, modifiers: [])
         }
-        .frame(width: 360, height: 480)
+        .frame(width: 420, height: 560)
         .background(Color(hex: "#142823"))
         .onAppear {
             if scienceSnippet.isEmpty {

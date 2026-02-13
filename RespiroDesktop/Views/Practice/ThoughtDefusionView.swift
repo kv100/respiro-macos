@@ -32,7 +32,7 @@ struct ThoughtDefusionView: View {
             }
             .padding(.horizontal, 16)
         }
-        .frame(width: 360, height: 480)
+        .frame(width: 420, height: 560)
         .onAppear {
             SoundService.shared.playPracticeStart()
             practiceManager.startPractice(type: .thoughtDefusion)

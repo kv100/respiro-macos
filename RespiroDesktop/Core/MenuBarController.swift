@@ -55,7 +55,7 @@ final class MenuBarController: NSObject {
 
     private func setupPopover() {
         let popover = NSPopover()
-        popover.contentSize = NSSize(width: 360, height: 480)
+        popover.contentSize = NSSize(width: 420, height: 560)
         popover.behavior = .transient // Closes when clicking outside
         popover.animates = true
 
@@ -63,7 +63,8 @@ final class MenuBarController: NSObject {
             .environment(appState)
             .modelContainer(sharedModelContainer)
             .preferredColorScheme(.dark)
-            .frame(width: 360, height: 480)
+            .frame(width: 420, height: 560)
+            .ignoresSafeArea()
 
         popover.contentViewController = NSHostingController(rootView: mainView)
         self.popover = popover
@@ -75,6 +76,14 @@ final class MenuBarController: NSObject {
         } else {
             popover?.show(relativeTo: sender.bounds, of: sender, preferredEdge: .minY)
             // Activate app to ensure popover receives focus
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+
+    private func showPopover() {
+        guard let button = statusItem?.button else { return }
+        if popover?.isShown != true {
+            popover?.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             NSApp.activate(ignoringOtherApps: true)
         }
     }
@@ -154,9 +163,14 @@ final class MenuBarController: NSObject {
                     // Read observed properties to register dependencies
                     _ = appState.currentWeather
                     _ = appState.isMonitoring
+                    _ = appState.currentScreen
                 } onChange: { [weak self] in
                     Task { @MainActor in
                         self?.updateIcon()
+                        // Auto-open popover when nudge arrives
+                        if self?.appState.currentScreen == .nudge {
+                            self?.showPopover()
+                        }
                     }
                 }
 

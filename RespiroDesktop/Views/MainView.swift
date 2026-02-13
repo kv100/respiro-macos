@@ -79,5 +79,5 @@ struct MainView: View {
 #Preview {
     MainView()
         .environment(AppState())
-        .frame(width: 360, height: 480)
+        .frame(width: 420, height: 560)
 }

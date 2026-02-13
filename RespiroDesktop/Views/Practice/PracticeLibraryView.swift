@@ -18,7 +18,8 @@ struct PracticeLibraryView: View {
         VStack(spacing: 0) {
             // Header
             header
-                .padding(.top, 4)
+                .frame(height: 32)
+                .padding(.top, 8)
                 .padding(.horizontal, 16)
 
             Divider()
@@ -36,9 +37,11 @@ struct PracticeLibraryView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 24)
             }
+            .scrollIndicators(.never)
         }
-        .frame(width: 360, height: 480)
+        .frame(width: 420, height: 560)
         .background(Color(hex: "#142823"))
+        .ignoresSafeArea(edges: .top)
     }
 
     // Header with back button

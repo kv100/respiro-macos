@@ -87,7 +87,7 @@ struct DashboardView: View {
             actionBar
                 .frame(height: 56)
         }
-        .frame(width: 360, height: 480)
+        .frame(width: 420, height: 560)
         .background(Color(hex: "#142823"))
     }
 

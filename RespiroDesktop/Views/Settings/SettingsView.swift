@@ -51,7 +51,7 @@ struct SettingsView: View {
             .scrollIndicators(.never) // INVISIBLE
             .frame(maxHeight: .infinity)
         }
-        .frame(width: 360, height: 480)
+        .frame(width: 420, height: 560)
         .background(Color(hex: "#142823"))
         .preferredColorScheme(.dark)
         .onAppear {
