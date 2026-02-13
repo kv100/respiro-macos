@@ -25,7 +25,6 @@ actor MonitoringService {
     private var appSwitchHistory: [(app: String, timestamp: Date)] = []
     private var sessionStartTime: Date?
     private var lastContextUpdate: Date = Date()
-    private var workspaceObserver: Any?
 
     // MARK: - Callbacks (Sendable, @MainActor-safe)
 
@@ -101,24 +100,28 @@ actor MonitoringService {
         stopAppSwitchTracking()
     }
 
-    /// Subscribe to NSWorkspace app activation notifications for real-time context switch tracking
+    /// Subscribe to NSWorkspace app activation notifications for real-time context switch tracking.
+    /// Uses nonisolated(unsafe) observer storage since NotificationCenter requires main thread.
+    private nonisolated(unsafe) static var _workspaceObserver: Any?
+
     private func startAppSwitchTracking() {
-        // Remove old observer if any
         stopAppSwitchTracking()
-        workspaceObserver = NotificationCenter.default.addObserver(
+        // Capture self for actor hop
+        let monitor = self
+        MonitoringService._workspaceObserver = NotificationCenter.default.addObserver(
             forName: NSWorkspace.didActivateApplicationNotification,
             object: NSWorkspace.shared,
             queue: .main
-        ) { [weak self] notification in
+        ) { notification in
             guard let app = (notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication)?.localizedName else { return }
-            Task { await self?.recordAppSwitch(app) }
+            Task { await monitor.recordAppSwitch(app) }
         }
     }
 
     private func stopAppSwitchTracking() {
-        if let observer = workspaceObserver {
+        if let observer = MonitoringService._workspaceObserver {
             NotificationCenter.default.removeObserver(observer)
-            workspaceObserver = nil
+            MonitoringService._workspaceObserver = nil
         }
     }
 

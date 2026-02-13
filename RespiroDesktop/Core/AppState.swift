@@ -145,15 +145,17 @@ final class AppState {
 
     func requestStartMonitoring() {
         let now = Date()
-        let needsCheckIn: Bool
 
-        // First start of day (no prior check-in)
+        // Always start monitoring immediately (don't gate on check-in)
+        Task { await startMonitoringDirectly() }
+
+        // Show check-in if needed (provides context for next analysis, not a gate)
+        let needsCheckIn: Bool
         if lastCheckInTime == nil {
+            // First start of day
             needsCheckIn = true
-        }
-        // Resume after long pause (30+ min)
-        else if let pausedAt = monitoringPausedAt, now.timeIntervalSince(pausedAt) > longPauseThreshold {
-            // Respect 2h cooldown between check-ins
+        } else if let pausedAt = monitoringPausedAt, now.timeIntervalSince(pausedAt) > longPauseThreshold {
+            // Resume after long pause, respect 2h cooldown
             if let lastCheck = lastCheckInTime, now.timeIntervalSince(lastCheck) < checkInCooldown {
                 needsCheckIn = false
             } else {
@@ -165,9 +167,6 @@ final class AppState {
 
         if needsCheckIn {
             showWeatherCheckIn = true
-            // Don't start monitoring yet -- wait for check-in completion
-        } else {
-            Task { await startMonitoringDirectly() }
         }
     }
 
