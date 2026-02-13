@@ -78,6 +78,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
         }
 
+        // Wire diagnostic callback
+        await service.setDiagnosticCallback { @Sendable msg in
+            Task { @MainActor in
+                state.monitoringDiagnostic = msg
+            }
+        }
+
         appState.configureMonitoring(service: service)
 
         // Load initial learned patterns into monitoring service

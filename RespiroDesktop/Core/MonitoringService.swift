@@ -1,9 +1,11 @@
 import Foundation
 import AppKit
+import OSLog
 
 // MARK: - MonitoringService
 
 actor MonitoringService {
+    private let logger = Logger(subsystem: "com.respiro.desktop", category: "Monitoring")
 
     // MARK: - Dependencies
 
@@ -30,6 +32,7 @@ actor MonitoringService {
 
     var onWeatherUpdate: (@Sendable (InnerWeather, StressAnalysisResponse) -> Void)?
     var onSilenceDecision: (@Sendable (SilenceDecision) -> Void)?
+    var onDiagnostic: (@Sendable (String) -> Void)?
 
     // Active hours removed — monitor whenever app is running
 
@@ -68,18 +71,21 @@ actor MonitoringService {
     // MARK: - Public API
 
     func startMonitoring() {
-        guard !isRunning else { return }
-
-        // Debounce: if last screenshot was < 60 seconds ago, resume without resetting state
-        if let last = lastScreenshotTime, Date().timeIntervalSince(last) < 60 {
-            isRunning = true
-            monitorTask?.cancel()
-            monitorTask = Task { [weak self] in
-                await self?.monitorLoop()
-            }
+        guard !isRunning else {
+            logger.notice("⚠️ startMonitoring called but already running")
             return
         }
 
+        // Debounce: if last screenshot was < 60 seconds ago, resume without resetting state
+        if let last = lastScreenshotTime, Date().timeIntervalSince(last) < 60 {
+            logger.notice("🔄 Resuming (debounce, last screenshot \(Int(Date().timeIntervalSince(last)))s ago)")
+            isRunning = true
+            monitorTask?.cancel()
+            monitorTask = Task { await self.monitorLoop() }
+            return
+        }
+
+        logger.notice("▶️ Starting monitoring fresh. Interval: \(Int(Interval.base))s")
         isRunning = true
         currentInterval = Interval.base
         consecutiveClearCount = 0
@@ -88,9 +94,7 @@ actor MonitoringService {
         startAppSwitchTracking()
 
         monitorTask?.cancel()
-        monitorTask = Task { [weak self] in
-            await self?.monitorLoop()
-        }
+        monitorTask = Task { await self.monitorLoop() }
     }
 
     func stopMonitoring() {
@@ -207,6 +211,10 @@ actor MonitoringService {
         onSilenceDecision = callback
     }
 
+    func setDiagnosticCallback(_ callback: @escaping @Sendable (String) -> Void) {
+        onDiagnostic = callback
+    }
+
     /// Emit a silence decision when the AI analyzed but chose not to interrupt.
     func emitSilenceDecision(analysis: StressAnalysisResponse, reason: String) {
         let weather = InnerWeather(rawValue: analysis.weather) ?? .clear
@@ -273,34 +281,50 @@ actor MonitoringService {
     // MARK: - Private
 
     private func monitorLoop() async {
+        logger.notice("⏱ Monitor loop started. lastScreenshot: \(self.lastScreenshotTime?.description ?? "nil"), interval: \(Int(self.currentInterval))s")
+
         // On resume after recent screenshot, skip to sleep. On fresh start, short delay.
         if let last = lastScreenshotTime, Date().timeIntervalSince(last) < currentInterval {
-            // Resume: wait remaining time from last screenshot
             let remaining = currentInterval - Date().timeIntervalSince(last)
+            logger.notice("⏱ Resuming, waiting \(Int(remaining))s remaining")
             try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
         } else if lastScreenshotTime == nil {
-            // Very first screenshot of session: brief 10s delay
+            logger.notice("⏱ First screenshot in 10s")
             try? await Task.sleep(nanoseconds: 10_000_000_000)
         }
 
         while !Task.isCancelled && isRunning {
+            logger.notice("📸 Taking screenshot...")
+            onDiagnostic?("Analyzing...")
+            let checkStart = Date()
             do {
                 let response = try await performSingleCheck()
+                let elapsed = Date().timeIntervalSince(checkStart)
                 lastScreenshotTime = Date()
 
                 let weather = InnerWeather(rawValue: response.weather) ?? .clear
+                let nextMin = Int(currentInterval / 60)
+                logger.notice("📸 Check complete: \(response.weather) (took \(String(format: "%.1f", elapsed))s). Next in \(Int(self.currentInterval))s")
+                onDiagnostic?("\(response.weather) — next in \(nextMin)m")
                 onWeatherUpdate?(weather, response)
 
                 adjustInterval(for: weather)
             } catch {
-                // On error, extend interval to avoid hammering API
+                let elapsed = Date().timeIntervalSince(checkStart)
+                let errMsg = error.localizedDescription
+                logger.error("❌ Check failed after \(String(format: "%.1f", elapsed))s: \(errMsg). Interval now \(Int(self.currentInterval))s")
+                onDiagnostic?("Error: \(errMsg.prefix(50))")
                 currentInterval = max(currentInterval, Interval.afterPractice)
             }
 
             // Sleep for the current interval
+            let sleepMin = Int(currentInterval / 60)
+            logger.notice("💤 Sleeping \(Int(self.currentInterval))s")
+            onDiagnostic?("Waiting \(sleepMin)m...")
             let sleepNanos = UInt64(currentInterval * 1_000_000_000)
             try? await Task.sleep(nanoseconds: sleepNanos)
         }
+        logger.notice("⏱ Monitor loop ended. isRunning=\(self.isRunning), cancelled=\(Task.isCancelled)")
     }
 
     private func recordResponse(_ response: StressAnalysisResponse) {

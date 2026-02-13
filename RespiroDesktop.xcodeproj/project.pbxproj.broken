@@ -1,0 +1,750 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		11FE8B69FA27180E636935D3 /* BehaviorMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71A08A2A9A41F4DBA611637 /* BehaviorMetrics.swift */; };
+		1EAB28003E65340170CDB8AC /* UserBaseline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19D1B7DD1D97F84B04DBFA37 /* UserBaseline.swift */; };
+		9554FE557331413887E4B05B /* BaselineService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 556118D7EB98B2705B4FA6DF /* BaselineService.swift */; };
+		APP_001 /* RespiroDesktopApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_001 /* RespiroDesktopApp.swift */; };
+		APP_002 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_002 /* AppState.swift */; };
+		APP_003 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_003 /* DashboardView.swift */; };
+		APP_004 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_004 /* MainView.swift */; };
+		APP_005 /* ScreenMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_005 /* ScreenMonitor.swift */; };
+		APP_006 /* ClaudeVisionClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_006 /* ClaudeVisionClient.swift */; };
+		APP_007 /* NudgeEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_007 /* NudgeEngine.swift */; };
+		APP_008 /* PracticeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_008 /* PracticeManager.swift */; };
+		APP_009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FILE_009 /* Assets.xcassets */; };
+		APP_010 /* InnerWeather.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_012 /* InnerWeather.swift */; };
+		APP_011 /* StressEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_013 /* StressEntry.swift */; };
+		APP_012 /* PracticeSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_014 /* PracticeSession.swift */; };
+		APP_013 /* DismissalEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_015 /* DismissalEvent.swift */; };
+		APP_014 /* UserPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_016 /* UserPreferences.swift */; };
+		APP_015 /* StressAnalysisResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_017 /* StressAnalysisResponse.swift */; };
+		APP_016 /* Practice.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_018 /* Practice.swift */; };
+		APP_017 /* NudgeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_019 /* NudgeType.swift */; };
+		APP_018 /* DismissalType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_020 /* DismissalType.swift */; };
+		APP_019 /* APIKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_021 /* APIKeyManager.swift */; };
+		APP_020 /* MonitoringService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_022 /* MonitoringService.swift */; };
+		APP_021 /* NudgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_023 /* NudgeView.swift */; };
+		APP_030 /* WeatherPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_030 /* WeatherPickerView.swift */; };
+		APP_031 /* CompletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_031 /* CompletionView.swift */; };
+		APP_032 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_032 /* OnboardingView.swift */; };
+		APP_040 /* DismissalLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_040 /* DismissalLogger.swift */; };
+		APP_041 /* SmartSuppression.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_041 /* SmartSuppression.swift */; };
+		APP_050 /* BoxBreathingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_050 /* BoxBreathingView.swift */; };
+		APP_051 /* GroundingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_051 /* GroundingView.swift */; };
+		APP_052 /* STOPTechniqueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_052 /* STOPTechniqueView.swift */; };
+		APP_053 /* SelfCompassionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_053 /* SelfCompassionView.swift */; };
+		APP_054 /* PracticeRouterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_054 /* PracticeRouterView.swift */; };
+		APP_055 /* PracticeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_055 /* PracticeCatalog.swift */; };
+		APP_060 /* DaySummaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_060 /* DaySummaryService.swift */; };
+		APP_061 /* PreferenceLearner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_061 /* PreferenceLearner.swift */; };
+		APP_062 /* DaySummaryResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_062 /* DaySummaryResponse.swift */; };
+		APP_063 /* DaySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_063 /* DaySummaryView.swift */; };
+		APP_070 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_070 /* SettingsView.swift */; };
+		APP_080 /* ExtendedExhaleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_080 /* ExtendedExhaleView.swift */; };
+		APP_081 /* CoherentBreathingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_081 /* CoherentBreathingView.swift */; };
+		APP_082 /* ThoughtDefusionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_082 /* ThoughtDefusionView.swift */; };
+		APP_083 /* WhatHelpedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_083 /* WhatHelpedView.swift */; };
+		APP_090 /* DemoModeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_090 /* DemoModeService.swift */; };
+		APP_100 /* EffortLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_100 /* EffortLevel.swift */; };
+		APP_101 /* EffortIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_101 /* EffortIndicatorView.swift */; };
+		APP_102 /* ThinkingStreamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_102 /* ThinkingStreamView.swift */; };
+		APP_110 /* SilenceDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_110 /* SilenceDecision.swift */; };
+		APP_120 /* StressGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_120 /* StressGraphView.swift */; };
+		APP_130 /* SoundService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_130 /* SoundService.swift */; };
+		APP_140 /* SecondChanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_140 /* SecondChanceService.swift */; };
+		APP_150 /* GenericBreathingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_150 /* GenericBreathingView.swift */; };
+		APP_151 /* GenericStepPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_151 /* GenericStepPracticeView.swift */; };
+		APP_160 /* TipService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_160 /* TipService.swift */; };
+		APP_170 /* RespiroConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_170 /* RespiroConfig.swift */; };
+		APP_171 /* DeviceID.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_171 /* DeviceID.swift */; };
+		APP_200 /* PlaytestModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_200 /* PlaytestModels.swift */; };
+		APP_201 /* PlaytestCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_201 /* PlaytestCatalog.swift */; };
+ttttFILE_211 /* RegressionEntry.swift */,
+ttttFILE_212 /* ScenarioBankEntry.swift */,
+		APP_202 /* ResultEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_202 /* ResultEvaluator.swift */; };
+		APP_203 /* ScenarioRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_203 /* ScenarioRunner.swift */; };
+		APP_204 /* ScenarioGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_204 /* ScenarioGenerator.swift */; };
+		APP_205 /* PlaytestService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_205 /* PlaytestService.swift */; };
+ttttAPP_211 /* RegressionEntry.swift in Sources */,
+ttttAPP_212 /* ScenarioBankEntry.swift in Sources */,
+ttttAPP_213 /* RegressionService.swift in Sources */,
+ttttAPP_214 /* ScenarioBankService.swift in Sources */,
+ttttFILE_213 /* RegressionService.swift */,
+ttttFILE_214 /* ScenarioBankService.swift */,
+		APP_206 /* PlaytestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_206 /* PlaytestView.swift */; };
+		APP_207 /* ScenarioDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_207 /* ScenarioDetailView.swift */; };
+		APP_208 /* PlaytestWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_208 /* PlaytestWindowView.swift */; };
+		APP_209 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_209 /* AppDelegate.swift */; };
+		APP_210 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_210 /* MenuBarController.swift */; };
+ttAPP_211 /* RegressionEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_211 /* RegressionEntry.swift */; };
+ttAPP_212 /* ScenarioBankEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_212 /* ScenarioBankEntry.swift */; };
+ttAPP_213 /* RegressionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_213 /* RegressionService.swift */; };
+ttAPP_214 /* ScenarioBankService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_214 /* ScenarioBankService.swift */; };
+		B8B46176CB15520707A3E097 /* FalsePositivePattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D410A75A6C1B0EA4D578C6 /* FalsePositivePattern.swift */; };
+		BC80F08121FC2CBA888A3C22 /* SystemContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D249B96740EFD06EF7A23531 /* SystemContext.swift */; };
+		EDA8F7E436AF8ECC0A4755CB /* BreathingPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC1F2650C26A54BCF77961F /* BreathingPracticeView.swift */; };
+		APP_73F /* BehaviorMetricsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FILE_B3F /* BehaviorMetricsCard.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		19D1B7DD1D97F84B04DBFA37 /* UserBaseline.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UserBaseline.swift; path = UserBaseline.swift; sourceTree = "<group>"; };
+		556118D7EB98B2705B4FA6DF /* BaselineService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BaselineService.swift; path = BaselineService.swift; sourceTree = "<group>"; };
+		APP_PRODUCT /* RespiroDesktop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RespiroDesktop.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B6D410A75A6C1B0EA4D578C6 /* FalsePositivePattern.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FalsePositivePattern.swift; path = FalsePositivePattern.swift; sourceTree = "<group>"; };
+		BBC1F2650C26A54BCF77961F /* BreathingPracticeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BreathingPracticeView.swift; sourceTree = "<group>"; };
+		D249B96740EFD06EF7A23531 /* SystemContext.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SystemContext.swift; path = SystemContext.swift; sourceTree = "<group>"; };
+		D71A08A2A9A41F4DBA611637 /* BehaviorMetrics.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BehaviorMetrics.swift; path = BehaviorMetrics.swift; sourceTree = "<group>"; };
+		FILE_001 /* RespiroDesktopApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RespiroDesktopApp.swift; sourceTree = "<group>"; };
+		FILE_002 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		FILE_003 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		FILE_004 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		FILE_005 /* ScreenMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenMonitor.swift; sourceTree = "<group>"; };
+		FILE_006 /* ClaudeVisionClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeVisionClient.swift; sourceTree = "<group>"; };
+		FILE_007 /* NudgeEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NudgeEngine.swift; sourceTree = "<group>"; };
+		FILE_008 /* PracticeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeManager.swift; sourceTree = "<group>"; };
+		FILE_009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FILE_010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FILE_011 /* RespiroDesktop.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RespiroDesktop.entitlements; sourceTree = "<group>"; };
+		FILE_012 /* InnerWeather.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InnerWeather.swift; sourceTree = "<group>"; };
+		FILE_013 /* StressEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StressEntry.swift; sourceTree = "<group>"; };
+		FILE_014 /* PracticeSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeSession.swift; sourceTree = "<group>"; };
+		FILE_015 /* DismissalEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DismissalEvent.swift; sourceTree = "<group>"; };
+		FILE_016 /* UserPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPreferences.swift; sourceTree = "<group>"; };
+		FILE_017 /* StressAnalysisResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StressAnalysisResponse.swift; sourceTree = "<group>"; };
+		FILE_018 /* Practice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Practice.swift; sourceTree = "<group>"; };
+		FILE_019 /* NudgeType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NudgeType.swift; sourceTree = "<group>"; };
+		FILE_020 /* DismissalType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DismissalType.swift; sourceTree = "<group>"; };
+		FILE_021 /* APIKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyManager.swift; sourceTree = "<group>"; };
+		FILE_022 /* MonitoringService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringService.swift; sourceTree = "<group>"; };
+		FILE_023 /* NudgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NudgeView.swift; sourceTree = "<group>"; };
+		FILE_030 /* WeatherPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherPickerView.swift; sourceTree = "<group>"; };
+		FILE_031 /* CompletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionView.swift; sourceTree = "<group>"; };
+		FILE_032 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		FILE_040 /* DismissalLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DismissalLogger.swift; sourceTree = "<group>"; };
+		FILE_041 /* SmartSuppression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartSuppression.swift; sourceTree = "<group>"; };
+		FILE_050 /* BoxBreathingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxBreathingView.swift; sourceTree = "<group>"; };
+		FILE_051 /* GroundingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroundingView.swift; sourceTree = "<group>"; };
+		FILE_052 /* STOPTechniqueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STOPTechniqueView.swift; sourceTree = "<group>"; };
+		FILE_053 /* SelfCompassionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfCompassionView.swift; sourceTree = "<group>"; };
+		FILE_054 /* PracticeRouterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeRouterView.swift; sourceTree = "<group>"; };
+		FILE_055 /* PracticeCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeCatalog.swift; sourceTree = "<group>"; };
+		FILE_060 /* DaySummaryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaySummaryService.swift; sourceTree = "<group>"; };
+		FILE_061 /* PreferenceLearner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceLearner.swift; sourceTree = "<group>"; };
+		FILE_062 /* DaySummaryResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaySummaryResponse.swift; sourceTree = "<group>"; };
+		FILE_063 /* DaySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaySummaryView.swift; sourceTree = "<group>"; };
+		FILE_070 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		FILE_080 /* ExtendedExhaleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedExhaleView.swift; sourceTree = "<group>"; };
+		FILE_081 /* CoherentBreathingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoherentBreathingView.swift; sourceTree = "<group>"; };
+		FILE_082 /* ThoughtDefusionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtDefusionView.swift; sourceTree = "<group>"; };
+		FILE_083 /* WhatHelpedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatHelpedView.swift; sourceTree = "<group>"; };
+		FILE_090 /* DemoModeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoModeService.swift; sourceTree = "<group>"; };
+		FILE_100 /* EffortLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffortLevel.swift; sourceTree = "<group>"; };
+		FILE_101 /* EffortIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffortIndicatorView.swift; sourceTree = "<group>"; };
+		FILE_102 /* ThinkingStreamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThinkingStreamView.swift; sourceTree = "<group>"; };
+		FILE_110 /* SilenceDecision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilenceDecision.swift; sourceTree = "<group>"; };
+		FILE_120 /* StressGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StressGraphView.swift; sourceTree = "<group>"; };
+		FILE_130 /* SoundService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundService.swift; sourceTree = "<group>"; };
+		FILE_140 /* SecondChanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondChanceService.swift; sourceTree = "<group>"; };
+		FILE_150 /* GenericBreathingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericBreathingView.swift; sourceTree = "<group>"; };
+		FILE_151 /* GenericStepPracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericStepPracticeView.swift; sourceTree = "<group>"; };
+		FILE_160 /* TipService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipService.swift; sourceTree = "<group>"; };
+		FILE_170 /* RespiroConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RespiroConfig.swift; sourceTree = "<group>"; };
+		FILE_171 /* DeviceID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceID.swift; sourceTree = "<group>"; };
+		FILE_200 /* PlaytestModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestModels.swift; sourceTree = "<group>"; };
+		FILE_201 /* PlaytestCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestCatalog.swift; sourceTree = "<group>"; };
+ttttFILE_211 /* RegressionEntry.swift */,
+ttttFILE_212 /* ScenarioBankEntry.swift */,
+		FILE_202 /* ResultEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultEvaluator.swift; sourceTree = "<group>"; };
+		FILE_203 /* ScenarioRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioRunner.swift; sourceTree = "<group>"; };
+		FILE_204 /* ScenarioGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioGenerator.swift; sourceTree = "<group>"; };
+		FILE_205 /* PlaytestService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestService.swift; sourceTree = "<group>"; };
+ttttFILE_213 /* RegressionService.swift */,
+ttttFILE_214 /* ScenarioBankService.swift */,
+		FILE_206 /* PlaytestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestView.swift; sourceTree = "<group>"; };
+		FILE_207 /* ScenarioDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioDetailView.swift; sourceTree = "<group>"; };
+		FILE_208 /* PlaytestWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestWindowView.swift; sourceTree = "<group>"; };
+		FILE_209 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		FILE_210 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
+		FILE_B3F /* BehaviorMetricsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BehaviorMetricsCard.swift; sourceTree = "<group>"; };
+ttFILE_211 /* RegressionEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegressionEntry.swift; sourceTree = "<group>"; };
+ttFILE_212 /* ScenarioBankEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioBankEntry.swift; sourceTree = "<group>"; };
+ttFILE_213 /* RegressionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegressionService.swift; sourceTree = "<group>"; };
+ttFILE_214 /* ScenarioBankService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioBankService.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FRAMEWORKS_PHASE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		GROUP_COMPONENTS /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_101 /* EffortIndicatorView.swift */,
+				FILE_B3F /* BehaviorMetricsCard.swift */,
+				FILE_102 /* ThinkingStreamView.swift */,
+				FILE_120 /* StressGraphView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		GROUP_CORE /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_002 /* AppState.swift */,
+				FILE_021 /* APIKeyManager.swift */,
+				FILE_209 /* AppDelegate.swift */,
+				FILE_210 /* MenuBarController.swift */,
+				FILE_005 /* ScreenMonitor.swift */,
+				FILE_006 /* ClaudeVisionClient.swift */,
+				FILE_007 /* NudgeEngine.swift */,
+				FILE_008 /* PracticeManager.swift */,
+				FILE_022 /* MonitoringService.swift */,
+				FILE_040 /* DismissalLogger.swift */,
+				FILE_041 /* SmartSuppression.swift */,
+				FILE_060 /* DaySummaryService.swift */,
+				FILE_061 /* PreferenceLearner.swift */,
+				FILE_090 /* DemoModeService.swift */,
+				FILE_130 /* SoundService.swift */,
+				FILE_140 /* SecondChanceService.swift */,
+				FILE_160 /* TipService.swift */,
+				FILE_170 /* RespiroConfig.swift */,
+				FILE_171 /* DeviceID.swift */,
+				FILE_202 /* ResultEvaluator.swift */,
+				FILE_203 /* ScenarioRunner.swift */,
+				FILE_204 /* ScenarioGenerator.swift */,
+				FILE_205 /* PlaytestService.swift */,
+ttttFILE_213 /* RegressionService.swift */,
+ttttFILE_214 /* ScenarioBankService.swift */,
+				556118D7EB98B2705B4FA6DF /* BaselineService.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		GROUP_MENUBAR /* MenuBar */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_003 /* DashboardView.swift */,
+			);
+			path = MenuBar;
+			sourceTree = "<group>";
+		};
+		GROUP_MODELS /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_012 /* InnerWeather.swift */,
+				FILE_013 /* StressEntry.swift */,
+				FILE_014 /* PracticeSession.swift */,
+				FILE_015 /* DismissalEvent.swift */,
+				FILE_016 /* UserPreferences.swift */,
+				FILE_017 /* StressAnalysisResponse.swift */,
+				FILE_018 /* Practice.swift */,
+				FILE_019 /* NudgeType.swift */,
+				FILE_020 /* DismissalType.swift */,
+				FILE_062 /* DaySummaryResponse.swift */,
+				FILE_100 /* EffortLevel.swift */,
+				FILE_110 /* SilenceDecision.swift */,
+				FILE_200 /* PlaytestModels.swift */,
+				FILE_201 /* PlaytestCatalog.swift */,
+ttttFILE_211 /* RegressionEntry.swift */,
+ttttFILE_212 /* ScenarioBankEntry.swift */,
+				D71A08A2A9A41F4DBA611637 /* BehaviorMetrics.swift */,
+				D249B96740EFD06EF7A23531 /* SystemContext.swift */,
+				19D1B7DD1D97F84B04DBFA37 /* UserBaseline.swift */,
+				B6D410A75A6C1B0EA4D578C6 /* FalsePositivePattern.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		GROUP_NUDGE /* Nudge */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_023 /* NudgeView.swift */,
+			);
+			path = Nudge;
+			sourceTree = "<group>";
+		};
+		GROUP_ONBOARDING /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_032 /* OnboardingView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		GROUP_PLAYTEST /* Playtest */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_206 /* PlaytestView.swift */,
+				FILE_207 /* ScenarioDetailView.swift */,
+				FILE_208 /* PlaytestWindowView.swift */,
+			);
+			path = Playtest;
+			sourceTree = "<group>";
+		};
+		GROUP_PRACTICE /* Practice */ = {
+			isa = PBXGroup;
+			children = (
+				BBC1F2650C26A54BCF77961F /* BreathingPracticeView.swift */,
+				FILE_050 /* BoxBreathingView.swift */,
+				FILE_051 /* GroundingView.swift */,
+				FILE_052 /* STOPTechniqueView.swift */,
+				FILE_053 /* SelfCompassionView.swift */,
+				FILE_080 /* ExtendedExhaleView.swift */,
+				FILE_081 /* CoherentBreathingView.swift */,
+				FILE_082 /* ThoughtDefusionView.swift */,
+				FILE_054 /* PracticeRouterView.swift */,
+				FILE_030 /* WeatherPickerView.swift */,
+				FILE_031 /* CompletionView.swift */,
+				FILE_083 /* WhatHelpedView.swift */,
+				FILE_150 /* GenericBreathingView.swift */,
+				FILE_151 /* GenericStepPracticeView.swift */,
+			);
+			path = Practice;
+			sourceTree = "<group>";
+		};
+		GROUP_PRACTICES /* Practices */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_055 /* PracticeCatalog.swift */,
+			);
+			path = Practices;
+			sourceTree = "<group>";
+		};
+		GROUP_PRODUCTS /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				APP_PRODUCT /* RespiroDesktop.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		GROUP_RESOURCES /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_009 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		GROUP_RESPIRO /* RespiroDesktop */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_001 /* RespiroDesktopApp.swift */,
+				FILE_010 /* Info.plist */,
+				FILE_011 /* RespiroDesktop.entitlements */,
+				GROUP_CORE /* Core */,
+				GROUP_VIEWS /* Views */,
+				GROUP_MODELS /* Models */,
+				GROUP_PRACTICES /* Practices */,
+				GROUP_RESOURCES /* Resources */,
+			);
+			path = RespiroDesktop;
+			sourceTree = "<group>";
+		};
+		GROUP_SETTINGS /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_070 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		GROUP_SUMMARY /* Summary */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_063 /* DaySummaryView.swift */,
+			);
+			path = Summary;
+			sourceTree = "<group>";
+		};
+		GROUP_VIEWS /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				FILE_004 /* MainView.swift */,
+				GROUP_MENUBAR /* MenuBar */,
+				GROUP_ONBOARDING /* Onboarding */,
+				GROUP_NUDGE /* Nudge */,
+				GROUP_PRACTICE /* Practice */,
+				GROUP_COMPONENTS /* Components */,
+				GROUP_SETTINGS /* Settings */,
+				GROUP_SUMMARY /* Summary */,
+				GROUP_PLAYTEST /* Playtest */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		ROOT_GROUP = {
+			isa = PBXGroup;
+			children = (
+				GROUP_RESPIRO /* RespiroDesktop */,
+				GROUP_PRODUCTS /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		TARGET_APP /* RespiroDesktop */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CONFIG_LIST_TARGET /* Build configuration list for PBXNativeTarget "RespiroDesktop" */;
+			buildPhases = (
+				SOURCES_PHASE /* Sources */,
+				FRAMEWORKS_PHASE /* Frameworks */,
+				RESOURCES_PHASE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RespiroDesktop;
+			productName = RespiroDesktop;
+			productReference = APP_PRODUCT /* RespiroDesktop.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		ROOT_PROJECT /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					TARGET_APP = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = CONFIG_LIST_PROJECT /* Build configuration list for PBXProject "RespiroDesktop" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = ROOT_GROUP;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = GROUP_PRODUCTS /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				TARGET_APP /* RespiroDesktop */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		RESOURCES_PHASE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				APP_009 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		SOURCES_PHASE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				APP_001 /* RespiroDesktopApp.swift in Sources */,
+				APP_209 /* AppDelegate.swift in Sources */,
+				APP_210 /* MenuBarController.swift in Sources */,
+				APP_002 /* AppState.swift in Sources */,
+				APP_003 /* DashboardView.swift in Sources */,
+				APP_004 /* MainView.swift in Sources */,
+				APP_005 /* ScreenMonitor.swift in Sources */,
+				APP_006 /* ClaudeVisionClient.swift in Sources */,
+				APP_007 /* NudgeEngine.swift in Sources */,
+				APP_008 /* PracticeManager.swift in Sources */,
+				APP_010 /* InnerWeather.swift in Sources */,
+				APP_011 /* StressEntry.swift in Sources */,
+				APP_012 /* PracticeSession.swift in Sources */,
+				APP_013 /* DismissalEvent.swift in Sources */,
+				APP_014 /* UserPreferences.swift in Sources */,
+				APP_015 /* StressAnalysisResponse.swift in Sources */,
+				APP_016 /* Practice.swift in Sources */,
+				APP_017 /* NudgeType.swift in Sources */,
+				APP_018 /* DismissalType.swift in Sources */,
+				EDA8F7E436AF8ECC0A4755CB /* BreathingPracticeView.swift in Sources */,
+				APP_019 /* APIKeyManager.swift in Sources */,
+				APP_020 /* MonitoringService.swift in Sources */,
+				APP_021 /* NudgeView.swift in Sources */,
+				APP_030 /* WeatherPickerView.swift in Sources */,
+				APP_031 /* CompletionView.swift in Sources */,
+				APP_032 /* OnboardingView.swift in Sources */,
+				APP_040 /* DismissalLogger.swift in Sources */,
+				APP_041 /* SmartSuppression.swift in Sources */,
+				APP_050 /* BoxBreathingView.swift in Sources */,
+				APP_051 /* GroundingView.swift in Sources */,
+				APP_052 /* STOPTechniqueView.swift in Sources */,
+				APP_053 /* SelfCompassionView.swift in Sources */,
+				APP_054 /* PracticeRouterView.swift in Sources */,
+				APP_055 /* PracticeCatalog.swift in Sources */,
+				APP_070 /* SettingsView.swift in Sources */,
+				APP_060 /* DaySummaryService.swift in Sources */,
+				APP_061 /* PreferenceLearner.swift in Sources */,
+				APP_062 /* DaySummaryResponse.swift in Sources */,
+				APP_063 /* DaySummaryView.swift in Sources */,
+				APP_080 /* ExtendedExhaleView.swift in Sources */,
+				APP_081 /* CoherentBreathingView.swift in Sources */,
+				APP_082 /* ThoughtDefusionView.swift in Sources */,
+				APP_083 /* WhatHelpedView.swift in Sources */,
+				APP_090 /* DemoModeService.swift in Sources */,
+				APP_100 /* EffortLevel.swift in Sources */,
+				APP_101 /* EffortIndicatorView.swift in Sources */,
+				APP_73F /* BehaviorMetricsCard.swift in Sources */,
+				APP_110 /* SilenceDecision.swift in Sources */,
+				APP_102 /* ThinkingStreamView.swift in Sources */,
+				APP_120 /* StressGraphView.swift in Sources */,
+				APP_130 /* SoundService.swift in Sources */,
+				APP_140 /* SecondChanceService.swift in Sources */,
+				APP_150 /* GenericBreathingView.swift in Sources */,
+				APP_151 /* GenericStepPracticeView.swift in Sources */,
+				APP_160 /* TipService.swift in Sources */,
+				APP_170 /* RespiroConfig.swift in Sources */,
+				APP_171 /* DeviceID.swift in Sources */,
+				APP_200 /* PlaytestModels.swift in Sources */,
+				APP_201 /* PlaytestCatalog.swift in Sources */,
+				APP_202 /* ResultEvaluator.swift in Sources */,
+				APP_203 /* ScenarioRunner.swift in Sources */,
+				APP_204 /* ScenarioGenerator.swift in Sources */,
+				APP_205 /* PlaytestService.swift in Sources */,
+ttttAPP_211 /* RegressionEntry.swift in Sources */,
+ttttAPP_212 /* ScenarioBankEntry.swift in Sources */,
+ttttAPP_213 /* RegressionService.swift in Sources */,
+ttttAPP_214 /* ScenarioBankService.swift in Sources */,
+				APP_206 /* PlaytestView.swift in Sources */,
+				APP_207 /* ScenarioDetailView.swift in Sources */,
+				APP_208 /* PlaytestWindowView.swift in Sources */,
+				11FE8B69FA27180E636935D3 /* BehaviorMetrics.swift in Sources */,
+				BC80F08121FC2CBA888A3C22 /* SystemContext.swift in Sources */,
+				1EAB28003E65340170CDB8AC /* UserBaseline.swift in Sources */,
+				B8B46176CB15520707A3E097 /* FalsePositivePattern.swift in Sources */,
+				9554FE557331413887E4B05B /* BaselineService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		DEBUG_PROJECT /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		DEBUG_TARGET /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RespiroDesktop/RespiroDesktop.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = RespiroDesktop/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Respiro. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.respiro.desktop;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		RELEASE_PROJECT /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		RELEASE_TARGET /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RespiroDesktop/RespiroDesktop.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = RespiroDesktop/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Respiro. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.respiro.desktop;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CONFIG_LIST_PROJECT /* Build configuration list for PBXProject "RespiroDesktop" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DEBUG_PROJECT /* Debug */,
+				RELEASE_PROJECT /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CONFIG_LIST_TARGET /* Build configuration list for PBXNativeTarget "RespiroDesktop" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DEBUG_TARGET /* Debug */,
+				RELEASE_TARGET /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = ROOT_PROJECT /* Project object */;
+}

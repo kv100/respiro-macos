@@ -141,16 +141,25 @@ struct DashboardView: View {
     // MARK: - Zone B: Content Cards
 
     private var monitoringCard: some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(appState.isMonitoring ? Color(hex: "#10B981") : Color(hex: "#E0F4EE").opacity(0.30))
-                .frame(width: 8, height: 8)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 12) {
+                Circle()
+                    .fill(appState.isMonitoring ? Color(hex: "#10B981") : Color(hex: "#E0F4EE").opacity(0.30))
+                    .frame(width: 8, height: 8)
 
-            Text(appState.isMonitoring ? "Active — checking periodically" : "Paused — no screenshots being taken")
-                .font(.system(size: 13))
-                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
+                Text(appState.isMonitoring ? "Active — checking periodically" : "Paused — no screenshots being taken")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
 
-            Spacer()
+                Spacer()
+            }
+
+            // Live diagnostic
+            if appState.isMonitoring, !appState.monitoringDiagnostic.isEmpty {
+                Text(appState.monitoringDiagnostic)
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.45))
+            }
         }
         .padding(12)
         .background(Color(hex: "#C7E8DE").opacity(0.08))

@@ -57,6 +57,7 @@ final class AppState {
     private let longPauseThreshold: TimeInterval = 30 * 60  // 30 min
     var monitoringPausedAt: Date?
     var userReportedWeather: InnerWeather?
+    var monitoringDiagnostic: String = ""  // Live diagnostic shown in dashboard
 
     // MARK: - Day Summary Cache
 
