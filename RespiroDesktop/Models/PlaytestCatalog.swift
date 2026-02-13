@@ -1,6 +1,6 @@
 import Foundation
 
-// MARK: - Playtest Catalog (8 Seed Scenarios)
+// MARK: - Playtest Catalog (12 Scenarios: 8 Seed + 4 Behavioral)
 
 enum PlaytestCatalog {
     static let allScenarios: [PlaytestScenario] = [
@@ -12,6 +12,11 @@ enum PlaytestCatalog {
         sc6RapidStorms,
         sc7ManualPractice,
         sc8DailyLimit,
+        // NEW: Behavioral scenarios
+        sc9ContrastiveA,
+        sc10ContrastiveB,
+        sc11FalsePositive,
+        sc12BaselineSpike,
     ]
 
     // MARK: - SC-1: Sustained Focus
@@ -26,21 +31,75 @@ enum PlaytestCatalog {
                 description: "Clear, focused work",
                 mockAnalysis: .clear(confidence: 0.88, signals: ["single app focused", "clean desktop"]),
                 userAction: nil,
-                timeDelta: 0
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 0.8,
+                    sessionDuration: 1800,  // 30min
+                    applicationFocus: ["Xcode": 0.85, "Safari": 0.15],
+                    notificationAccumulation: 1,
+                    recentAppSequence: ["Xcode", "Xcode", "Safari", "Xcode", "Xcode"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Xcode",
+                    activeWindowTitle: "ViewController.swift",
+                    openWindowCount: 8,
+                    recentAppSwitches: ["Xcode", "Safari"],
+                    pendingNotificationCount: 0,
+                    isOnVideoCall: false,
+                    systemUptime: 3600,
+                    idleTime: 0
+                ),
+                baselineDeviation: 0.05  // 5% - normal
             ),
             ScenarioStep(
                 id: "1b",
                 description: "Still clear, coding",
                 mockAnalysis: .clear(confidence: 0.85, signals: ["code editor active", "steady typing"]),
                 userAction: nil,
-                timeDelta: 300
+                timeDelta: 300,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 0.6,
+                    sessionDuration: 2100,
+                    applicationFocus: ["Xcode": 0.90, "Safari": 0.10],
+                    notificationAccumulation: 1,
+                    recentAppSequence: ["Xcode", "Xcode", "Xcode", "Safari", "Xcode"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Xcode",
+                    activeWindowTitle: "ViewController.swift",
+                    openWindowCount: 8,
+                    recentAppSwitches: ["Xcode"],
+                    pendingNotificationCount: 0,
+                    isOnVideoCall: false,
+                    systemUptime: 3900,
+                    idleTime: 0
+                ),
+                baselineDeviation: 0.03  // 3% - normal
             ),
             ScenarioStep(
                 id: "1c",
                 description: "Clear, organized workspace",
                 mockAnalysis: .clear(confidence: 0.90, signals: ["organized tabs", "low notification count"]),
                 userAction: nil,
-                timeDelta: 300
+                timeDelta: 300,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 0.9,
+                    sessionDuration: 2400,
+                    applicationFocus: ["Xcode": 0.82, "Safari": 0.18],
+                    notificationAccumulation: 2,
+                    recentAppSequence: ["Xcode", "Xcode", "Safari", "Xcode", "Xcode"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Xcode",
+                    activeWindowTitle: "ViewController.swift",
+                    openWindowCount: 9,
+                    recentAppSwitches: ["Xcode", "Safari"],
+                    pendingNotificationCount: 1,
+                    isOnVideoCall: false,
+                    systemUptime: 4200,
+                    idleTime: 0
+                ),
+                baselineDeviation: 0.08  // 8% - still normal
             ),
         ],
         round: 1,
@@ -68,14 +127,50 @@ enum PlaytestCatalog {
                 description: "Clear morning",
                 mockAnalysis: .clear(confidence: 0.85, signals: ["clean inbox"]),
                 userAction: nil,
-                timeDelta: 0
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 1.0,
+                    sessionDuration: 600,
+                    applicationFocus: ["Mail": 0.60, "Calendar": 0.40],
+                    notificationAccumulation: 0,
+                    recentAppSequence: ["Mail", "Calendar", "Mail", "Mail"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Mail",
+                    activeWindowTitle: "Inbox",
+                    openWindowCount: 5,
+                    recentAppSwitches: ["Mail", "Calendar"],
+                    pendingNotificationCount: 0,
+                    isOnVideoCall: false,
+                    systemUptime: 1200,
+                    idleTime: 0
+                ),
+                baselineDeviation: 0.10  // 10% - normal start
             ),
             ScenarioStep(
                 id: "2b",
                 description: "Cloudy after meetings",
                 mockAnalysis: .cloudy(confidence: 0.72, signals: ["multiple tabs", "calendar full"]),
                 userAction: nil,
-                timeDelta: 600
+                timeDelta: 600,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 2.5,
+                    sessionDuration: 1200,
+                    applicationFocus: ["Safari": 0.40, "Zoom": 0.30, "Mail": 0.30],
+                    notificationAccumulation: 5,
+                    recentAppSequence: ["Zoom", "Mail", "Safari", "Zoom", "Mail"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Safari",
+                    activeWindowTitle: nil,
+                    openWindowCount: 12,
+                    recentAppSwitches: ["Zoom", "Mail", "Safari"],
+                    pendingNotificationCount: 3,
+                    isOnVideoCall: false,
+                    systemUptime: 1800,
+                    idleTime: 0
+                ),
+                baselineDeviation: 0.40  // 40% - moderate elevation
             ),
             ScenarioStep(
                 id: "2c",
@@ -88,7 +183,25 @@ enum PlaytestCatalog {
                     practiceID: "physiological-sigh"
                 ),
                 userAction: nil,
-                timeDelta: 600
+                timeDelta: 600,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 5.5,
+                    sessionDuration: 1800,
+                    applicationFocus: ["Slack": 0.35, "Mail": 0.35, "Safari": 0.30],
+                    notificationAccumulation: 12,
+                    recentAppSequence: ["Slack", "Mail", "Safari", "Slack", "Mail", "Slack"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Slack",
+                    activeWindowTitle: nil,
+                    openWindowCount: 18,
+                    recentAppSwitches: ["Slack", "Mail", "Safari", "Slack"],
+                    pendingNotificationCount: 8,
+                    isOnVideoCall: false,
+                    systemUptime: 2400,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.5  // 150% - high stress
             ),
         ],
         round: 1,
@@ -124,7 +237,25 @@ enum PlaytestCatalog {
                     practiceID: "box-breathing"
                 ),
                 userAction: nil,
-                timeDelta: 0
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 4.2,
+                    sessionDuration: 3600,
+                    applicationFocus: ["Terminal": 0.50, "Editor": 0.30, "Browser": 0.20],
+                    notificationAccumulation: 8,
+                    recentAppSequence: ["Terminal", "Editor", "Browser", "Terminal", "Editor"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Terminal",
+                    activeWindowTitle: "Error logs",
+                    openWindowCount: 15,
+                    recentAppSwitches: ["Terminal", "Editor", "Browser"],
+                    pendingNotificationCount: 5,
+                    isOnVideoCall: false,
+                    systemUptime: 3600,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.2  // 120% - stressed
             ),
             ScenarioStep(
                 id: "3b",
@@ -137,7 +268,25 @@ enum PlaytestCatalog {
                     practiceID: "body-scan"
                 ),
                 userAction: .dismissImFine,
-                timeDelta: 900
+                timeDelta: 900,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 4.8,
+                    sessionDuration: 4500,
+                    applicationFocus: ["Terminal": 0.45, "Editor": 0.35, "Browser": 0.20],
+                    notificationAccumulation: 10,
+                    recentAppSequence: ["Terminal", "Editor", "Terminal", "Browser", "Terminal"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Terminal",
+                    activeWindowTitle: nil,
+                    openWindowCount: 16,
+                    recentAppSwitches: ["Terminal", "Editor", "Browser", "Terminal"],
+                    pendingNotificationCount: 7,
+                    isOnVideoCall: false,
+                    systemUptime: 4500,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.4  // 140% - still stressed
             ),
             ScenarioStep(
                 id: "3c",
@@ -150,7 +299,25 @@ enum PlaytestCatalog {
                     practiceID: "five-senses"
                 ),
                 userAction: .dismissImFine,
-                timeDelta: 900
+                timeDelta: 900,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 5.0,
+                    sessionDuration: 5400,
+                    applicationFocus: ["Terminal": 0.40, "Editor": 0.30, "Browser": 0.30],
+                    notificationAccumulation: 15,
+                    recentAppSequence: ["Terminal", "Browser", "Editor", "Terminal", "Browser"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Browser",
+                    activeWindowTitle: nil,
+                    openWindowCount: 20,
+                    recentAppSwitches: ["Terminal", "Browser", "Editor", "Terminal"],
+                    pendingNotificationCount: 12,
+                    isOnVideoCall: false,
+                    systemUptime: 5400,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.5  // 150% - elevated
             ),
             ScenarioStep(
                 id: "3d",
@@ -163,7 +330,25 @@ enum PlaytestCatalog {
                     practiceID: "finger-tapping"
                 ),
                 userAction: .dismissImFine,
-                timeDelta: 900
+                timeDelta: 900,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 5.2,
+                    sessionDuration: 6300,
+                    applicationFocus: ["Terminal": 0.40, "Editor": 0.35, "Browser": 0.25],
+                    notificationAccumulation: 18,
+                    recentAppSequence: ["Terminal", "Editor", "Browser", "Terminal", "Editor"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Terminal",
+                    activeWindowTitle: nil,
+                    openWindowCount: 22,
+                    recentAppSwitches: ["Terminal", "Editor", "Browser"],
+                    pendingNotificationCount: 15,
+                    isOnVideoCall: false,
+                    systemUptime: 6300,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.6  // 160% - high
             ),
         ],
         round: 1,
@@ -200,7 +385,25 @@ enum PlaytestCatalog {
                     practiceID: "physiological-sigh"
                 ),
                 userAction: nil,
-                timeDelta: 0
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 6.0,
+                    sessionDuration: 2700,
+                    applicationFocus: ["Mail": 0.40, "Calendar": 0.30, "Slack": 0.30],
+                    notificationAccumulation: 20,
+                    recentAppSequence: ["Mail", "Slack", "Calendar", "Mail", "Slack", "Mail"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Mail",
+                    activeWindowTitle: "Inbox (47 unread)",
+                    openWindowCount: 18,
+                    recentAppSwitches: ["Mail", "Slack", "Calendar", "Mail"],
+                    pendingNotificationCount: 12,
+                    isOnVideoCall: false,
+                    systemUptime: 2700,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.8  // 180% - very stressed
             ),
             ScenarioStep(
                 id: "4b",
@@ -213,7 +416,25 @@ enum PlaytestCatalog {
                     practiceID: "box-breathing"
                 ),
                 userAction: .completePractice,
-                timeDelta: 600
+                timeDelta: 600,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 4.5,
+                    sessionDuration: 3300,
+                    applicationFocus: ["Mail": 0.45, "Calendar": 0.30, "Slack": 0.25],
+                    notificationAccumulation: 15,
+                    recentAppSequence: ["Mail", "Calendar", "Mail", "Slack", "Mail"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Mail",
+                    activeWindowTitle: nil,
+                    openWindowCount: 18,
+                    recentAppSwitches: ["Mail", "Calendar", "Slack"],
+                    pendingNotificationCount: 10,
+                    isOnVideoCall: false,
+                    systemUptime: 3300,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.3  // 130% - slightly reduced after practice
             ),
             ScenarioStep(
                 id: "4c",
@@ -226,7 +447,25 @@ enum PlaytestCatalog {
                     practiceID: "five-senses"
                 ),
                 userAction: nil,
-                timeDelta: 2400
+                timeDelta: 2400,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 5.0,
+                    sessionDuration: 5700,
+                    applicationFocus: ["Mail": 0.40, "Browser": 0.35, "Slack": 0.25],
+                    notificationAccumulation: 18,
+                    recentAppSequence: ["Mail", "Browser", "Slack", "Mail", "Browser"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Browser",
+                    activeWindowTitle: nil,
+                    openWindowCount: 20,
+                    recentAppSwitches: ["Mail", "Browser", "Slack"],
+                    pendingNotificationCount: 14,
+                    isOnVideoCall: false,
+                    systemUptime: 5700,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.5  // 150% - still elevated
             ),
         ],
         round: 1,
@@ -258,14 +497,50 @@ enum PlaytestCatalog {
                 description: "Cloudy during video call — AI suppresses nudge",
                 mockAnalysis: .cloudy(confidence: 0.70, signals: ["video call active", "multiple participants"]),
                 userAction: nil,
-                timeDelta: 0
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 1.5,
+                    sessionDuration: 1800,
+                    applicationFocus: ["Zoom": 0.85, "Slack": 0.15],
+                    notificationAccumulation: 3,
+                    recentAppSequence: ["Zoom", "Zoom", "Slack", "Zoom", "Zoom"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Zoom",
+                    activeWindowTitle: "Team Standup",
+                    openWindowCount: 10,
+                    recentAppSwitches: ["Zoom", "Slack"],
+                    pendingNotificationCount: 2,
+                    isOnVideoCall: true,
+                    systemUptime: 1800,
+                    idleTime: 0
+                ),
+                baselineDeviation: 0.20  // 20% - elevated but on video call
             ),
             ScenarioStep(
                 id: "5b",
                 description: "Cloudy during screen sharing — AI suppresses nudge",
                 mockAnalysis: .cloudy(confidence: 0.68, signals: ["screen sharing", "presentation mode"]),
                 userAction: nil,
-                timeDelta: 600
+                timeDelta: 600,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 0.8,
+                    sessionDuration: 2400,
+                    applicationFocus: ["Zoom": 0.90, "Keynote": 0.10],
+                    notificationAccumulation: 5,
+                    recentAppSequence: ["Zoom", "Zoom", "Keynote", "Zoom", "Zoom"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Zoom",
+                    activeWindowTitle: "Presenting...",
+                    openWindowCount: 12,
+                    recentAppSwitches: ["Zoom", "Keynote"],
+                    pendingNotificationCount: 4,
+                    isOnVideoCall: true,
+                    systemUptime: 2400,
+                    idleTime: 0
+                ),
+                baselineDeviation: 0.10  // 10% - low during presentation
             ),
             ScenarioStep(
                 id: "5c",
@@ -278,7 +553,25 @@ enum PlaytestCatalog {
                     practiceID: "body-scan"
                 ),
                 userAction: nil,
-                timeDelta: 1200
+                timeDelta: 1200,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 4.0,
+                    sessionDuration: 3600,
+                    applicationFocus: ["Mail": 0.35, "Slack": 0.35, "Browser": 0.30],
+                    notificationAccumulation: 15,
+                    recentAppSequence: ["Mail", "Slack", "Browser", "Mail", "Slack", "Mail"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Mail",
+                    activeWindowTitle: nil,
+                    openWindowCount: 16,
+                    recentAppSwitches: ["Mail", "Slack", "Browser", "Mail"],
+                    pendingNotificationCount: 10,
+                    isOnVideoCall: false,
+                    systemUptime: 3600,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.2  // 120% - post-meeting spike
             ),
         ],
         round: 1,
@@ -314,7 +607,25 @@ enum PlaytestCatalog {
                     practiceID: "physiological-sigh"
                 ),
                 userAction: nil,
-                timeDelta: 0
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 7.5,
+                    sessionDuration: 2400,
+                    applicationFocus: ["Terminal": 0.55, "Editor": 0.30, "Browser": 0.15],
+                    notificationAccumulation: 10,
+                    recentAppSequence: ["Terminal", "Editor", "Browser", "Terminal", "Editor", "Terminal"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Terminal",
+                    activeWindowTitle: "Error: Segmentation fault",
+                    openWindowCount: 12,
+                    recentAppSwitches: ["Terminal", "Editor", "Browser", "Terminal"],
+                    pendingNotificationCount: 8,
+                    isOnVideoCall: false,
+                    systemUptime: 2400,
+                    idleTime: 0
+                ),
+                baselineDeviation: 2.5  // 250% - very high, frantic
             ),
             ScenarioStep(
                 id: "6b",
@@ -327,7 +638,25 @@ enum PlaytestCatalog {
                     practiceID: "box-breathing"
                 ),
                 userAction: nil,
-                timeDelta: 600
+                timeDelta: 600,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 8.0,
+                    sessionDuration: 3000,
+                    applicationFocus: ["Browser": 0.50, "Terminal": 0.35, "Editor": 0.15],
+                    notificationAccumulation: 12,
+                    recentAppSequence: ["Browser", "Terminal", "Browser", "Terminal", "Browser", "Terminal"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Browser",
+                    activeWindowTitle: "Stack Overflow - Debugging...",
+                    openWindowCount: 15,
+                    recentAppSwitches: ["Browser", "Terminal", "Browser", "Terminal"],
+                    pendingNotificationCount: 10,
+                    isOnVideoCall: false,
+                    systemUptime: 3000,
+                    idleTime: 0
+                ),
+                baselineDeviation: 2.8  // 280% - even higher, still stuck
             ),
         ],
         round: 1,
@@ -356,21 +685,75 @@ enum PlaytestCatalog {
                 description: "Clear weather, user starts practice manually",
                 mockAnalysis: .clear(confidence: 0.90, signals: ["relaxed workspace", "few tabs"]),
                 userAction: .startPractice,
-                timeDelta: 0
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 0.5,
+                    sessionDuration: 900,
+                    applicationFocus: ["Music": 0.60, "Notes": 0.40],
+                    notificationAccumulation: 0,
+                    recentAppSequence: ["Music", "Notes", "Music", "Notes", "Music"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Music",
+                    activeWindowTitle: "Meditation Playlist",
+                    openWindowCount: 5,
+                    recentAppSwitches: ["Music", "Notes"],
+                    pendingNotificationCount: 0,
+                    isOnVideoCall: false,
+                    systemUptime: 900,
+                    idleTime: 0
+                ),
+                baselineDeviation: 0.02  // 2% - very calm
             ),
             ScenarioStep(
                 id: "7b",
                 description: "Clear weather, user completes practice",
                 mockAnalysis: .clear(confidence: 0.92, signals: ["calm environment"]),
                 userAction: .completePractice,
-                timeDelta: 60
+                timeDelta: 60,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 0.2,
+                    sessionDuration: 960,
+                    applicationFocus: ["Music": 0.80, "Notes": 0.20],
+                    notificationAccumulation: 0,
+                    recentAppSequence: ["Music", "Music", "Music", "Music", "Notes"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Music",
+                    activeWindowTitle: "Meditation Playlist",
+                    openWindowCount: 5,
+                    recentAppSwitches: ["Music"],
+                    pendingNotificationCount: 0,
+                    isOnVideoCall: false,
+                    systemUptime: 960,
+                    idleTime: 0
+                ),
+                baselineDeviation: 0.01  // 1% - very relaxed
             ),
             ScenarioStep(
                 id: "7c",
                 description: "Clear weather, back to work",
                 mockAnalysis: .clear(confidence: 0.88, signals: ["focused work resumed"]),
                 userAction: nil,
-                timeDelta: 300
+                timeDelta: 300,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 1.0,
+                    sessionDuration: 1260,
+                    applicationFocus: ["Xcode": 0.85, "Safari": 0.15],
+                    notificationAccumulation: 1,
+                    recentAppSequence: ["Xcode", "Xcode", "Safari", "Xcode", "Xcode"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Xcode",
+                    activeWindowTitle: "ContentView.swift",
+                    openWindowCount: 7,
+                    recentAppSwitches: ["Xcode", "Safari"],
+                    pendingNotificationCount: 0,
+                    isOnVideoCall: false,
+                    systemUptime: 1260,
+                    idleTime: 0
+                ),
+                baselineDeviation: 0.08  // 8% - normal focused work
             ),
         ],
         round: 1,
@@ -403,7 +786,25 @@ enum PlaytestCatalog {
                     practiceID: "physiological-sigh"
                 ),
                 userAction: nil,
-                timeDelta: 0
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 5.0,
+                    sessionDuration: 900,
+                    applicationFocus: ["Mail": 0.50, "Calendar": 0.30, "Slack": 0.20],
+                    notificationAccumulation: 10,
+                    recentAppSequence: ["Mail", "Calendar", "Slack", "Mail", "Calendar"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Mail",
+                    activeWindowTitle: nil,
+                    openWindowCount: 12,
+                    recentAppSwitches: ["Mail", "Calendar", "Slack"],
+                    pendingNotificationCount: 8,
+                    isOnVideoCall: false,
+                    systemUptime: 900,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.5  // 150%
             ),
             ScenarioStep(
                 id: "8b",
@@ -414,7 +815,25 @@ enum PlaytestCatalog {
                     practiceID: "box-breathing"
                 ),
                 userAction: nil,
-                timeDelta: 1801
+                timeDelta: 1801,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 3.5,
+                    sessionDuration: 2701,
+                    applicationFocus: ["Zoom": 0.70, "Slack": 0.20, "Notes": 0.10],
+                    notificationAccumulation: 8,
+                    recentAppSequence: ["Zoom", "Slack", "Zoom", "Zoom", "Notes"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Zoom",
+                    activeWindowTitle: nil,
+                    openWindowCount: 10,
+                    recentAppSwitches: ["Zoom", "Slack"],
+                    pendingNotificationCount: 6,
+                    isOnVideoCall: false,
+                    systemUptime: 2701,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.0  // 100%
             ),
             ScenarioStep(
                 id: "8c",
@@ -425,7 +844,25 @@ enum PlaytestCatalog {
                     practiceID: "five-senses"
                 ),
                 userAction: nil,
-                timeDelta: 1801
+                timeDelta: 1801,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 6.0,
+                    sessionDuration: 4502,
+                    applicationFocus: ["Slack": 0.55, "Mail": 0.30, "Browser": 0.15],
+                    notificationAccumulation: 15,
+                    recentAppSequence: ["Slack", "Mail", "Slack", "Browser", "Slack", "Mail"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Slack",
+                    activeWindowTitle: nil,
+                    openWindowCount: 15,
+                    recentAppSwitches: ["Slack", "Mail", "Browser"],
+                    pendingNotificationCount: 12,
+                    isOnVideoCall: false,
+                    systemUptime: 4502,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.8  // 180%
             ),
             ScenarioStep(
                 id: "8d",
@@ -436,7 +873,25 @@ enum PlaytestCatalog {
                     practiceID: "body-scan"
                 ),
                 userAction: nil,
-                timeDelta: 1801
+                timeDelta: 1801,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 5.5,
+                    sessionDuration: 6303,
+                    applicationFocus: ["Xcode": 0.45, "Terminal": 0.30, "Browser": 0.25],
+                    notificationAccumulation: 10,
+                    recentAppSequence: ["Xcode", "Terminal", "Browser", "Xcode", "Terminal"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Xcode",
+                    activeWindowTitle: nil,
+                    openWindowCount: 18,
+                    recentAppSwitches: ["Xcode", "Terminal", "Browser"],
+                    pendingNotificationCount: 8,
+                    isOnVideoCall: false,
+                    systemUptime: 6303,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.6  // 160%
             ),
             ScenarioStep(
                 id: "8e",
@@ -447,7 +902,25 @@ enum PlaytestCatalog {
                     practiceID: "finger-tapping"
                 ),
                 userAction: nil,
-                timeDelta: 1801
+                timeDelta: 1801,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 7.0,
+                    sessionDuration: 8104,
+                    applicationFocus: ["Terminal": 0.50, "Editor": 0.30, "Browser": 0.20],
+                    notificationAccumulation: 12,
+                    recentAppSequence: ["Terminal", "Editor", "Terminal", "Browser", "Terminal", "Editor"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Terminal",
+                    activeWindowTitle: "Errors",
+                    openWindowCount: 20,
+                    recentAppSwitches: ["Terminal", "Editor", "Browser", "Terminal"],
+                    pendingNotificationCount: 10,
+                    isOnVideoCall: false,
+                    systemUptime: 8104,
+                    idleTime: 0
+                ),
+                baselineDeviation: 2.2  // 220%
             ),
             ScenarioStep(
                 id: "8f",
@@ -458,7 +931,25 @@ enum PlaytestCatalog {
                     practiceID: "4-7-8-breathing"
                 ),
                 userAction: nil,
-                timeDelta: 1801
+                timeDelta: 1801,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 4.5,
+                    sessionDuration: 9905,
+                    applicationFocus: ["Mail": 0.40, "Slack": 0.35, "Calendar": 0.25],
+                    notificationAccumulation: 18,
+                    recentAppSequence: ["Mail", "Slack", "Calendar", "Mail", "Slack"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Mail",
+                    activeWindowTitle: nil,
+                    openWindowCount: 16,
+                    recentAppSwitches: ["Mail", "Slack", "Calendar"],
+                    pendingNotificationCount: 15,
+                    isOnVideoCall: false,
+                    systemUptime: 9905,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.3  // 130%
             ),
             ScenarioStep(
                 id: "8g",
@@ -469,7 +960,25 @@ enum PlaytestCatalog {
                     practiceID: "physiological-sigh"
                 ),
                 userAction: nil,
-                timeDelta: 1801
+                timeDelta: 1801,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 5.0,
+                    sessionDuration: 11706,
+                    applicationFocus: ["Mail": 0.35, "Slack": 0.35, "Browser": 0.30],
+                    notificationAccumulation: 20,
+                    recentAppSequence: ["Mail", "Slack", "Browser", "Mail", "Slack", "Mail"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Slack",
+                    activeWindowTitle: nil,
+                    openWindowCount: 18,
+                    recentAppSwitches: ["Mail", "Slack", "Browser"],
+                    pendingNotificationCount: 18,
+                    isOnVideoCall: false,
+                    systemUptime: 11706,
+                    idleTime: 0
+                ),
+                baselineDeviation: 1.5  // 150%
             ),
         ],
         round: 1,
@@ -488,6 +997,200 @@ enum PlaytestCatalog {
             PlaytestAssertion(stepID: "8f", field: .nudgeShouldShow, expected: "true"),
             PlaytestAssertion(stepID: "8g", field: .nudgeShouldShow, expected: "false"),
             PlaytestAssertion(stepID: "8g", field: .cooldownActive, expected: "true"),
+        ]
+    )
+
+    // MARK: - SC-9: Contrastive Pair A - Calm Behavior
+
+    static let sc9ContrastiveA = PlaytestScenario(
+        id: "sc-9",
+        name: "Contrastive A: Same Screen, Calm Behavior",
+        description: "20 tabs, Slack open, notifications BUT calm behavior (low switches, focused). Should NOT trigger nudge.",
+        steps: [
+            ScenarioStep(
+                id: "9a",
+                description: "Busy screen but organized work",
+                mockAnalysis: .cloudy(confidence: 0.65, signals: ["20 tabs", "Slack active", "5 notifications"]),
+                userAction: nil,
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 0.4,  // LOW - focused
+                    sessionDuration: 1800,           // 30min
+                    applicationFocus: ["Xcode": 0.85, "Slack": 0.10, "Safari": 0.05],
+                    notificationAccumulation: 5,
+                    recentAppSequence: ["Xcode", "Xcode", "Xcode", "Slack", "Xcode"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Xcode",
+                    activeWindowTitle: nil,
+                    openWindowCount: 20,
+                    recentAppSwitches: ["Xcode", "Slack"],
+                    pendingNotificationCount: 5,
+                    isOnVideoCall: false,
+                    systemUptime: 7200,
+                    idleTime: 0
+                ),
+                baselineDeviation: 0.05  // 5% - normal for this user
+            )
+        ],
+        round: 2,
+        expectedBehavior: [
+            "No practice nudge despite visual clutter",
+            "Behavioral context shows focused work",
+            "Baseline deviation low (5%)",
+        ],
+        hypothesis: "Visual chaos + calm behavior = no nudge (test behavioral override)",
+        assertions: [
+            PlaytestAssertion(stepID: "9a", field: .nudgeShouldShow, expected: "false"),
+            PlaytestAssertion(stepID: "9a", field: .behavioralContextUsed, expected: "true"),
+        ]
+    )
+
+    // MARK: - SC-10: Contrastive Pair B - Frantic Behavior
+
+    static let sc10ContrastiveB = PlaytestScenario(
+        id: "sc-10",
+        name: "Contrastive B: Same Screen, Frantic Behavior",
+        description: "20 tabs, Slack open, notifications AND frantic behavior (high switches, fragmented). SHOULD trigger nudge.",
+        steps: [
+            ScenarioStep(
+                id: "10a",
+                description: "Same busy screen but stressed behavior",
+                mockAnalysis: .cloudy(confidence: 0.65, signals: ["20 tabs", "Slack active", "5 notifications"]),  // SAME as SC-9
+                userAction: nil,
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 6.5,  // HIGH - frantic
+                    sessionDuration: 9000,           // 2.5h no break
+                    applicationFocus: ["Xcode": 0.30, "Slack": 0.35, "Safari": 0.35],  // fragmented
+                    notificationAccumulation: 15,
+                    recentAppSequence: ["Xcode", "Slack", "Safari", "Slack", "Xcode", "Slack"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Slack",
+                    activeWindowTitle: nil,
+                    openWindowCount: 20,
+                    recentAppSwitches: ["Xcode", "Slack", "Safari", "Slack", "Xcode"],
+                    pendingNotificationCount: 15,
+                    isOnVideoCall: false,
+                    systemUptime: 9000,
+                    idleTime: 0
+                ),
+                baselineDeviation: 2.8  // 280% - VERY HIGH
+            )
+        ],
+        round: 2,
+        expectedBehavior: [
+            "Practice nudge shown despite same visual",
+            "Behavioral context shows stress (6.5 switches/min, 280% deviation)",
+            "Demonstrates behavioral analysis works",
+        ],
+        hypothesis: "Same visual + frantic behavior = nudge (test behavioral detection)",
+        assertions: [
+            PlaytestAssertion(stepID: "10a", field: .nudgeShouldShow, expected: "true"),
+            PlaytestAssertion(stepID: "10a", field: .nudgeType, expected: "practice"),
+            PlaytestAssertion(stepID: "10a", field: .behavioralContextUsed, expected: "true"),
+            PlaytestAssertion(stepID: "10a", field: .baselineDeviationConsidered, expected: "true"),
+        ]
+    )
+
+    // MARK: - SC-11: False Positive Pattern
+
+    static let sc11FalsePositive = PlaytestScenario(
+        id: "sc-11",
+        name: "False Positive: Code Review Pattern",
+        description: "Visual chaos (many tabs, GitHub PR, errors) but user has dismissed 5x during code reviews. Should have lower confidence or no nudge.",
+        steps: [
+            ScenarioStep(
+                id: "11a",
+                description: "Code review — looks stressful but normal for user",
+                mockAnalysis: .stormy(
+                    confidence: 0.70,
+                    signals: ["GitHub PR open", "terminal with errors", "15 tabs"],
+                    nudge: .practice,
+                    message: "Looks intense...",
+                    practiceID: "physiological-sigh"
+                ),
+                userAction: nil,
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 4.0,
+                    sessionDuration: 3600,
+                    applicationFocus: ["Browser": 0.50, "Terminal": 0.30, "Editor": 0.20],
+                    notificationAccumulation: 3,
+                    recentAppSequence: ["Browser", "Terminal", "Browser", "Editor", "Browser"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "Safari",
+                    activeWindowTitle: "Pull Request #123",
+                    openWindowCount: 15,
+                    recentAppSwitches: ["Safari", "Terminal"],
+                    pendingNotificationCount: 0,
+                    isOnVideoCall: false,
+                    systemUptime: 3600,
+                    idleTime: 0
+                ),
+                baselineDeviation: 0.8  // 80% - elevated but not extreme
+            )
+        ],
+        round: 2,
+        expectedBehavior: [
+            "Lower confidence due to learned false positive pattern",
+            "User dismissed this context 5 times before",
+            "AI should mention false positive history",
+        ],
+        hypothesis: "Visual stress + learned FP pattern = lower confidence (test FP learning)",
+        assertions: [
+            // This one is tricky - might show nudge but with lower confidence
+            // Or might not show nudge at all
+            // Leave flexible for evaluation
+        ]
+    )
+
+    // MARK: - SC-12: Baseline Deviation Spike
+
+    static let sc12BaselineSpike = PlaytestScenario(
+        id: "sc-12",
+        name: "Baseline Deviation Spike",
+        description: "Moderate visual activity but HUGE behavioral spike (8/min vs 2/min baseline = 300%). Should detect via baseline.",
+        steps: [
+            ScenarioStep(
+                id: "12a",
+                description: "Moderate tabs but frantic switching",
+                mockAnalysis: .cloudy(confidence: 0.60, signals: ["10 tabs", "multiple apps"]),
+                userAction: nil,
+                timeDelta: 0,
+                behaviorMetrics: BehaviorMetrics(
+                    contextSwitchesPerMinute: 8.0,  // VERY HIGH
+                    sessionDuration: 1800,
+                    applicationFocus: ["App1": 0.25, "App2": 0.25, "App3": 0.25, "App4": 0.25],
+                    notificationAccumulation: 8,
+                    recentAppSequence: ["App1", "App2", "App3", "App4", "App1", "App2"]
+                ),
+                systemContext: SystemContext(
+                    activeApp: "App1",
+                    activeWindowTitle: nil,
+                    openWindowCount: 10,
+                    recentAppSwitches: ["App1", "App2", "App3", "App4"],
+                    pendingNotificationCount: 8,
+                    isOnVideoCall: false,
+                    systemUptime: 1800,
+                    idleTime: 0
+                ),
+                baselineDeviation: 3.0  // 300% - EXTREME spike
+            )
+        ],
+        round: 2,
+        expectedBehavior: [
+            "Practice nudge due to extreme baseline deviation",
+            "AI should mention '300% above baseline' or similar",
+            "Context switching rate flagged",
+        ],
+        hypothesis: "Moderate visual + 300% baseline spike = nudge (test baseline detection)",
+        assertions: [
+            PlaytestAssertion(stepID: "12a", field: .nudgeShouldShow, expected: "true"),
+            PlaytestAssertion(stepID: "12a", field: .nudgeType, expected: "practice"),
+            PlaytestAssertion(stepID: "12a", field: .baselineDeviationConsidered, expected: "true"),
         ]
     )
 }

@@ -8,6 +8,11 @@ struct ScenarioStep: Sendable, Identifiable {
     let mockAnalysis: StressAnalysisResponse
     let userAction: PlaytestUserAction?
     let timeDelta: TimeInterval
+
+    // NEW: Behavioral context for this step
+    let behaviorMetrics: BehaviorMetrics?
+    let systemContext: SystemContext?
+    let baselineDeviation: Double?
 }
 
 enum PlaytestUserAction: String, Sendable, Codable {
@@ -39,6 +44,11 @@ struct PlaytestAssertion: Sendable {
         case nudgeShouldShow
         case nudgeType
         case cooldownActive
+
+        // NEW: Behavioral assertions
+        case behavioralContextUsed
+        case baselineDeviationConsidered
+        case contextSwitchRateCorrect
     }
 }
 
@@ -54,6 +64,10 @@ struct PlaytestResult: Sendable {
         let nudgeDecision: NudgeDecision
         let cooldownState: CooldownSnapshot
         let timestamp: Date
+
+        // NEW: Store behavioral data from test
+        let behaviorMetrics: BehaviorMetrics?
+        let baselineDeviation: Double?
     }
 
     struct CooldownSnapshot: Sendable {
@@ -76,11 +90,17 @@ struct ScenarioEvaluation: Codable, Sendable {
     let suggestions: [String]
     let thinkingText: String?
 
+    // NEW: Behavioral evaluation metrics
+    let behavioralReasoningQuality: Double?  // 0-1
+    let usedBehavioralContext: Bool
+
     static func error(scenarioID: String, message: String) -> ScenarioEvaluation {
         ScenarioEvaluation(
             scenarioID: scenarioID, passed: false, confidence: 0,
             reasoning: "Error: \(message)", mismatches: [], suggestions: [],
-            thinkingText: nil
+            thinkingText: nil,
+            behavioralReasoningQuality: nil,
+            usedBehavioralContext: false
         )
     }
 }

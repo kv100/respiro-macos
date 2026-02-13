@@ -280,6 +280,50 @@ struct ScenarioDetailView: View {
                     .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(textTertiary)
             }
+
+            // Behavioral context
+            if let metrics = step.behaviorMetrics {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Behavioral Context")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(textTertiary)
+
+                    HStack(spacing: 16) {
+                        MetricBadge(
+                            icon: "arrow.triangle.2.circlepath",
+                            label: "Switches",
+                            value: String(format: "%.1f/min", metrics.contextSwitchesPerMinute),
+                            color: switchColor(metrics.contextSwitchesPerMinute)
+                        )
+
+                        MetricBadge(
+                            icon: "clock",
+                            label: "Session",
+                            value: "\(Int(metrics.sessionDuration / 60))m",
+                            color: durationColor(metrics.sessionDuration)
+                        )
+
+                        MetricBadge(
+                            icon: "chart.pie",
+                            label: "Focus",
+                            value: "\(Int((metrics.applicationFocus.values.max() ?? 0) * 100))%",
+                            color: focusColor(metrics.applicationFocus)
+                        )
+                    }
+                }
+                .padding(.top, 8)
+            }
+
+            if let deviation = step.baselineDeviation {
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 10))
+                    Text("Baseline: +\(Int(deviation * 100))% above normal")
+                        .font(.system(size: 10))
+                }
+                .foregroundColor(deviationColor(deviation))
+                .padding(.top, 4)
+            }
         }
         .padding(.vertical, 4)
         .padding(.bottom, 4)
@@ -316,6 +360,34 @@ struct ScenarioDetailView: View {
                 Text("\(Int(eval.confidence * 100))%")
                     .font(.system(size: 13, weight: .bold))
                     .foregroundStyle(confidenceColor(eval.confidence))
+            }
+
+            // Behavioral context usage
+            if eval.usedBehavioralContext {
+                HStack(spacing: 4) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(Color(hex: "#10B981"))
+                    Text("Used Behavioral Context")
+                        .font(.system(size: 11))
+                }
+            } else {
+                HStack(spacing: 4) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(Color(hex: "#EF4444"))
+                    Text("Ignored Behavioral Context")
+                        .font(.system(size: 11))
+                }
+            }
+
+            if let quality = eval.behavioralReasoningQuality {
+                HStack(spacing: 4) {
+                    Text("Behavioral Reasoning Quality:")
+                        .font(.system(size: 11))
+                        .foregroundColor(textTertiary)
+                    Text("\(Int(quality * 100))%")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(qualityColor(quality))
+                }
             }
 
             // Mismatches
@@ -420,6 +492,12 @@ struct ScenarioDetailView: View {
         return goldAccent
     }
 
+    private func qualityColor(_ quality: Double) -> Color {
+        if quality > 0.7 { return Color(hex: "#10B981") }
+        if quality > 0.4 { return Color(hex: "#EAB308") }
+        return Color(hex: "#EF4444")
+    }
+
     private func weatherColor(_ weather: String) -> Color {
         switch weather.lowercased() {
         case "clear": return jadePrimary
@@ -435,6 +513,58 @@ struct ScenarioDetailView: View {
         case .dismissLater: return "Dismiss (Later)"
         case .startPractice: return "Start Practice"
         case .completePractice: return "Complete Practice"
+        }
+    }
+
+    // MARK: - Behavioral Metrics Color Helpers
+
+    private func switchColor(_ rate: Double) -> Color {
+        if rate < 2.0 { return Color(hex: "#10B981") }
+        if rate < 5.0 { return Color(hex: "#EAB308") }
+        return Color(hex: "#A855F7")
+    }
+
+    private func durationColor(_ duration: TimeInterval) -> Color {
+        if duration < 3600 { return Color(hex: "#10B981") }
+        if duration < 7200 { return Color(hex: "#EAB308") }
+        return Color(hex: "#A855F7")
+    }
+
+    private func focusColor(_ focus: [String: Double]) -> Color {
+        let max = focus.values.max() ?? 0
+        if max > 0.7 { return Color(hex: "#10B981") }
+        if max > 0.4 { return Color(hex: "#EAB308") }
+        return Color(hex: "#A855F7")
+    }
+
+    private func deviationColor(_ deviation: Double) -> Color {
+        if deviation < 0.5 { return Color(hex: "#10B981") }
+        if deviation < 1.5 { return Color(hex: "#EAB308") }
+        return Color(hex: "#A855F7")
+    }
+}
+
+// MARK: - MetricBadge Helper View
+
+struct MetricBadge: View {
+    let icon: String
+    let label: String
+    let value: String
+    let color: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 9))
+                Text(label)
+                    .font(.system(size: 9))
+            }
+            .foregroundColor(Color(hex: "#E0F4EE").opacity(0.60))
+
+            Text(value)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(color)
         }
     }
 }

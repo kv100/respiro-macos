@@ -16,7 +16,7 @@ struct ResultEvaluator: Sendable {
         let response = try await callClaude(
             systemPrompt: "You are an AI app behavior evaluator. Analyze test results and respond with JSON only.",
             userPrompt: prompt,
-            thinkingBudget: 4096,
+            thinkingBudget: 10000,  // High budget for deep evaluation
             maxTokens: 2048
         )
         return parseEvaluation(response, scenarioID: scenario.id)
@@ -68,6 +68,18 @@ struct ResultEvaluator: Sendable {
               - Consecutive dismissals: \(stepResult.cooldownState.consecutiveDismissals)
               - Daily nudge count: \(stepResult.cooldownState.dailyNudgeCount)
             """
+
+            // Add behavioral context if present
+            if let behaviorMetrics = stepResult.behaviorMetrics,
+               let baselineDeviation = stepResult.baselineDeviation {
+                prompt += """
+                \n    Behavioral context:
+                  - Context switches/min: \(String(format: "%.1f", behaviorMetrics.contextSwitchesPerMinute))
+                  - Baseline deviation: \(String(format: "%.0f%%", baselineDeviation * 100))
+                  - Session duration: \(Int(behaviorMetrics.sessionDuration))s
+                  - Recent app switches: \(behaviorMetrics.recentAppSequence.joined(separator: " → "))
+                """
+            }
         }
 
         prompt += """
@@ -79,13 +91,51 @@ struct ResultEvaluator: Sendable {
         3. Would this behavior feel natural to a user?
         4. Are there edge cases or subtle bugs?
 
+        BEHAVIORAL ANALYSIS EVALUATION:
+
+        For steps with behavioral context (behaviorMetrics, baselineDeviation):
+
+        1. CHECK BEHAVIORAL REASONING:
+           - Did AI mention context switches in reasoning?
+           - Did AI consider baseline deviation?
+           - Did AI reference behavioral patterns (session duration, app focus)?
+
+        2. ASSESS QUALITY (0-1 score):
+           - 1.0 = Excellent behavioral reasoning (mentioned all relevant factors)
+           - 0.7 = Good (mentioned some behavioral factors)
+           - 0.4 = Weak (barely mentioned behavior)
+           - 0.0 = Ignored behavioral context entirely
+
+        3. IDENTIFY MISMATCHES:
+           - High baseline deviation (>150%) but AI didn't mention it
+           - High context switches (>5/min) but AI didn't reference it
+           - Fragmented app focus but AI said "focused work"
+
+        BEHAVIORAL EVALUATION OUTPUT:
+        Return these additional fields:
+        - usedBehavioralContext: bool (true if ANY behavioral factor mentioned)
+        - behavioralReasoningQuality: 0-1 (how well AI used behavioral data)
+
+        Example:
+        Step has: 6.5 switches/min, 280% baseline deviation
+        AI reasoning: "High context switching indicates stress. User's activity is 280% above their normal baseline."
+        → usedBehavioralContext: true
+        → behavioralReasoningQuality: 1.0
+
+        Step has: 6.5 switches/min, 280% baseline deviation
+        AI reasoning: "Many tabs and notifications suggest stress."
+        → usedBehavioralContext: false
+        → behavioralReasoningQuality: 0.0
+
         Respond with JSON ONLY (no markdown, no code blocks):
         {
           "passed": true/false,
           "confidence": 0.0-1.0,
           "reasoning": "plain English analysis",
           "mismatches": ["specific difference 1", ...],
-          "suggestions": ["improvement idea 1", ...]
+          "suggestions": ["improvement idea 1", ...],
+          "usedBehavioralContext": true/false,
+          "behavioralReasoningQuality": 0.0-1.0
         }
         """
         return prompt
@@ -262,6 +312,10 @@ struct ResultEvaluator: Sendable {
         let mismatches = json["mismatches"] as? [String] ?? []
         let suggestions = json["suggestions"] as? [String] ?? []
 
+        // Parse behavioral evaluation fields
+        let usedBehavioralContext = json["usedBehavioralContext"] as? Bool ?? false
+        let behavioralReasoningQuality = json["behavioralReasoningQuality"] as? Double
+
         return ScenarioEvaluation(
             scenarioID: scenarioID,
             passed: passed,
@@ -269,7 +323,9 @@ struct ResultEvaluator: Sendable {
             reasoning: reasoning,
             mismatches: mismatches,
             suggestions: suggestions,
-            thinkingText: response.thinking
+            thinkingText: response.thinking,
+            behavioralReasoningQuality: behavioralReasoningQuality,
+            usedBehavioralContext: usedBehavioralContext
         )
     }
 

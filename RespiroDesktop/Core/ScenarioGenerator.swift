@@ -43,6 +43,53 @@ struct ScenarioGenerator: Sendable {
         - Nudge types: practice, encouragement, acknowledgment
         - Available user actions: dismiss_im_fine, dismiss_later, start_practice, complete_practice
 
+        GENERATE TEST SCENARIOS WITH BEHAVIORAL VARIATIONS:
+
+        Your goal: Create scenarios that test behavioral stress detection edge cases.
+
+        SCENARIO TYPES TO GENERATE:
+
+        1. CONTRASTIVE PAIRS (high priority):
+           Same mockAnalysis (visual) but different behaviorMetrics
+           - Pair A: Visual chaos + calm behavior (low switches, focused)
+           - Pair B: Visual chaos + frantic behavior (high switches, fragmented)
+           Test: Does AI differentiate based on behavior alone?
+
+        2. BASELINE EDGE CASES:
+           - Normal visual + HUGE baseline spike (300%+)
+           - Chaotic visual + baseline match (0-10% deviation)
+           Test: Does AI correctly weight baseline deviation?
+
+        3. FALSE POSITIVE PATTERNS:
+           - Code review scenario (GitHub PR, terminal errors) but learned FP
+           - Friday afternoon (looks busy but user always dismisses)
+           - Morning ramp-up (many apps opening but normal pattern)
+           Test: Does AI learn from dismissal history?
+
+        4. BEHAVIORAL VELOCITY TESTS:
+           - Context switches: test 0.5/min vs 5/min vs 10/min thresholds
+           - Session duration: test 30min vs 2h vs 4h without break
+           - App focus: test 90% focused vs 30% fragmented
+           Test: Does AI detect behavioral stress signals?
+
+        5. PROGRESSIVE DETERIORATION:
+           - 3-step scenario: behavior worsens each step
+           - Step 1: 2 switches/min, 60min session
+           - Step 2: 4 switches/min, 120min session
+           - Step 3: 8 switches/min, 180min session
+           Test: Does AI detect escalation?
+
+        FOR EACH GENERATED SCENARIO:
+
+        Include complete behavioral data:
+        - behaviorMetrics: {contextSwitchesPerMinute, sessionDuration, applicationFocus, notificationAccumulation, recentAppSequence}
+        - systemContext: {activeApp, openWindowCount, isOnVideoCall, ...}
+        - baselineDeviation: Double (if testing baseline)
+
+        Set hypothesis field explaining what behavioral feature is being tested.
+
+        Generate realistic, diverse scenarios that explore edge cases not covered by seed scenarios SC-1 to SC-12.
+
         SCENARIOS TESTED SO FAR:
         """
 
@@ -76,6 +123,7 @@ struct ScenarioGenerator: Sendable {
         3. Probe areas where confidence was LOW
         4. Explore SEQUENCES not covered
         5. Each scenario MUST have a HYPOTHESIS explaining why it might reveal a bug
+        6. Test BEHAVIORAL edge cases (contrastive pairs, baseline deviations, behavioral velocity)
 
         Start scenario IDs from "sc-\(nextID)".
 
@@ -83,6 +131,11 @@ struct ScenarioGenerator: Sendable {
         - "clear" -> no nudge (nudge_type null)
         - "cloudy" -> usually no nudge unless confidence is high
         - "stormy" -> can have nudge_type "practice" or "encouragement" with appropriate message and practice_id
+
+        IMPORTANT: Include behavioral data in steps to test behavioral stress detection:
+        - behaviorMetrics: {contextSwitchesPerMinute (double), sessionDuration (seconds), applicationFocus (0.0-1.0), notificationAccumulation (int), recentAppSequence (array of strings)}
+        - systemContext: {activeApp (string), openWindowCount (int), isOnVideoCall (bool), isScreenSharing (bool), batteryLevel (double), timeOfDay (string)}
+        - baselineDeviation (double, e.g., 0.0 = no change, 2.5 = 250% above baseline)
 
         Respond with JSON ONLY (no markdown, no code blocks):
         {
@@ -103,7 +156,23 @@ struct ScenarioGenerator: Sendable {
                   "nudge_message": "message or null",
                   "practice_id": "id or null",
                   "user_action": "dismiss_im_fine|dismiss_later|start_practice|complete_practice|null",
-                  "time_delta": seconds_since_last_step
+                  "time_delta": seconds_since_last_step,
+                  "behavior_metrics": {
+                    "context_switches_per_minute": 0.0,
+                    "session_duration": 0,
+                    "application_focus": 0.0,
+                    "notification_accumulation": 0,
+                    "recent_app_sequence": []
+                  },
+                  "system_context": {
+                    "active_app": "AppName",
+                    "open_window_count": 0,
+                    "is_on_video_call": false,
+                    "is_screen_sharing": false,
+                    "battery_level": 0.0,
+                    "time_of_day": "morning|afternoon|evening"
+                  },
+                  "baseline_deviation": 0.0
                 }
               ],
               "expected_behavior": ["expected outcome 1", ...]
@@ -150,7 +219,7 @@ struct ScenarioGenerator: Sendable {
             ]],
             "thinking": [
                 "type": "enabled",
-                "budget_tokens": thinkingBudget
+                "budget_tokens": 15000  // High budget for creative behavioral scenario generation
             ]
         ]
 
@@ -240,7 +309,7 @@ struct ScenarioGenerator: Sendable {
 
             let hypothesis = scenarioJSON["hypothesis"] as? String
 
-            let steps: [ScenarioStep] = stepsArray.compactMap { stepJSON in
+            let steps: [ScenarioStep] = stepsArray.compactMap { stepJSON -> ScenarioStep? in
                 // Accept both String and numeric id from JSON
                 let stepIDStr: String
                 if let strID = stepJSON["id"] as? String {
@@ -278,12 +347,43 @@ struct ScenarioGenerator: Sendable {
                     mockAnalysis = .clear(confidence: confidence, signals: signals)
                 }
 
+                // Parse behavioral data
+                var behaviorMetrics: BehaviorMetrics?
+                if let behaviorJSON = stepJSON["behavior_metrics"] as? [String: Any] {
+                    behaviorMetrics = BehaviorMetrics(
+                        contextSwitchesPerMinute: behaviorJSON["context_switches_per_minute"] as? Double ?? 0.0,
+                        sessionDuration: behaviorJSON["session_duration"] as? TimeInterval ?? 0,
+                        applicationFocus: behaviorJSON["application_focus"] as? [String: Double] ?? [:],
+                        notificationAccumulation: behaviorJSON["notification_accumulation"] as? Int ?? 0,
+                        recentAppSequence: behaviorJSON["recent_app_sequence"] as? [String] ?? []
+                    )
+                }
+
+                var systemContext: SystemContext?
+                if let contextJSON = stepJSON["system_context"] as? [String: Any] {
+                    systemContext = SystemContext(
+                        activeApp: contextJSON["active_app"] as? String ?? "Unknown",
+                        activeWindowTitle: contextJSON["active_window_title"] as? String,
+                        openWindowCount: contextJSON["open_window_count"] as? Int ?? 0,
+                        recentAppSwitches: contextJSON["recent_app_switches"] as? [String] ?? [],
+                        pendingNotificationCount: contextJSON["pending_notification_count"] as? Int ?? 0,
+                        isOnVideoCall: contextJSON["is_on_video_call"] as? Bool ?? false,
+                        systemUptime: contextJSON["system_uptime"] as? TimeInterval ?? 0,
+                        idleTime: contextJSON["idle_time"] as? TimeInterval ?? 0
+                    )
+                }
+
+                let baselineDeviation = stepJSON["baseline_deviation"] as? Double
+
                 return ScenarioStep(
                     id: stepIDStr,
                     description: stepDescription,
                     mockAnalysis: mockAnalysis,
                     userAction: mapUserAction(userActionStr),
-                    timeDelta: timeDelta
+                    timeDelta: timeDelta,
+                    behaviorMetrics: behaviorMetrics,
+                    systemContext: systemContext,
+                    baselineDeviation: baselineDeviation
                 )
             }
 

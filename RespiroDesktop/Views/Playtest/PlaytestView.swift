@@ -185,6 +185,21 @@ struct PlaytestView: View {
 
                 Spacer()
 
+                // Behavioral complexity badge
+                if hasBehavioralData(scenario) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "waveform.path.ecg")
+                            .font(.system(size: 10))
+                        Text(behavioralSummary(scenario))
+                            .font(.system(size: 10))
+                    }
+                    .foregroundColor(behavioralColor(scenario))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(behavioralColor(scenario).opacity(0.2))
+                    .cornerRadius(4)
+                }
+
                 if let eval = eval {
                     confidenceLabel(eval.confidence)
                 }
@@ -249,6 +264,32 @@ struct PlaytestView: View {
         } else {
             return Color(hex: "#D4AF37")
         }
+    }
+
+    // MARK: - Behavioral Metrics
+
+    private func hasBehavioralData(_ scenario: PlaytestScenario) -> Bool {
+        scenario.steps.contains { $0.behaviorMetrics != nil }
+    }
+
+    private func behavioralSummary(_ scenario: PlaytestScenario) -> String {
+        guard let firstMetrics = scenario.steps.first(where: { $0.behaviorMetrics != nil })?.behaviorMetrics else {
+            return ""
+        }
+        return String(format: "%.1f/min", firstMetrics.contextSwitchesPerMinute)
+    }
+
+    private func behavioralColor(_ scenario: PlaytestScenario) -> Color {
+        guard let metrics = scenario.steps.first(where: { $0.behaviorMetrics != nil })?.behaviorMetrics else {
+            return Color(hex: "#8BA4B0")
+        }
+        if metrics.contextSwitchesPerMinute > 5.0 {
+            return Color(hex: "#A855F7") // purple
+        }
+        if metrics.contextSwitchesPerMinute > 2.0 {
+            return Color(hex: "#EAB308") // gold
+        }
+        return Color(hex: "#10B981") // jade
     }
 
     // MARK: - Progress
