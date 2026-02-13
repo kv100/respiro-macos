@@ -9,7 +9,7 @@ struct BehaviorMetricsCard: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Current Context")
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(Color(hex: "#E0F4EE").opacity(0.60))
+                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
 
             if let behavior = behaviorMetrics, systemContext != nil {
                 HStack(spacing: 16) {
@@ -42,13 +42,13 @@ struct BehaviorMetricsCard: View {
                         Text("Baseline: +\(Int(deviation * 100))% above normal")
                             .font(.system(size: 10))
                     }
-                    .foregroundColor(deviationColor(deviation))
+                    .foregroundStyle(deviationColor(deviation))
                     .padding(.top, 4)
                 }
             } else {
                 Text("No behavioral data available")
                     .font(.system(size: 12))
-                    .foregroundColor(Color(hex: "#E0F4EE").opacity(0.60))
+                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
             }
         }
         .padding(12)
@@ -108,11 +108,11 @@ struct MetricItem: View {
                 Text(label)
                     .font(.system(size: 10))
             }
-            .foregroundColor(Color(hex: "#E0F4EE").opacity(0.60))
+            .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
 
             Text(value)
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(color)
+                .foregroundStyle(color)
         }
     }
 }

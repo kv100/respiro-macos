@@ -4,6 +4,14 @@ struct StressGraphView: View {
     let entries: [StressEntry]
     @State private var lineProgress: CGFloat = 0
 
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "ha"
+        formatter.amSymbol = "am"
+        formatter.pmSymbol = "pm"
+        return formatter
+    }()
+
     private var dataPoints: [(date: Date, weather: InnerWeather)] {
         entries.compactMap { entry in
             guard let weather = InnerWeather(rawValue: entry.weather) else { return nil }
@@ -141,17 +149,10 @@ struct StressGraphView: View {
             let points = calculatePoints(in: CGSize(width: geometry.size.width, height: 56))
             let labelCount = min(dataPoints.count, maxVisibleLabels(width: geometry.size.width))
             let step = max(1, dataPoints.count / labelCount)
-            let formatter = DateFormatter()
-
             ZStack {
                 ForEach(Array(stride(from: 0, to: dataPoints.count, by: step)), id: \.self) { index in
                     let safeIndex = min(index, points.count - 1)
-                    let _ = {
-                        formatter.dateFormat = "ha"
-                        formatter.amSymbol = "am"
-                        formatter.pmSymbol = "pm"
-                    }()
-                    Text(formatter.string(from: dataPoints[index].date).lowercased())
+                    Text(Self.timeFormatter.string(from: dataPoints[index].date).lowercased())
                         .font(.system(size: 9))
                         .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
                         .position(x: safeIndex < points.count ? points[safeIndex].x : 0, y: 6)

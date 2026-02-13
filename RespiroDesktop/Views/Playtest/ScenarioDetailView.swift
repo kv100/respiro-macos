@@ -286,7 +286,7 @@ struct ScenarioDetailView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Behavioral Context")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(textTertiary)
+                        .foregroundStyle(textTertiary)
 
                     HStack(spacing: 16) {
                         MetricBadge(
@@ -321,7 +321,7 @@ struct ScenarioDetailView: View {
                     Text("Baseline: +\(Int(deviation * 100))% above normal")
                         .font(.system(size: 10))
                 }
-                .foregroundColor(deviationColor(deviation))
+                .foregroundStyle(deviationColor(deviation))
                 .padding(.top, 4)
             }
         }
@@ -366,14 +366,14 @@ struct ScenarioDetailView: View {
             if eval.usedBehavioralContext {
                 HStack(spacing: 4) {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(Color(hex: "#10B981"))
+                        .foregroundStyle(Color(hex: "#10B981"))
                     Text("Used Behavioral Context")
                         .font(.system(size: 11))
                 }
             } else {
                 HStack(spacing: 4) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(Color(hex: "#EF4444"))
+                        .foregroundStyle(Color(hex: "#EF4444"))
                     Text("Ignored Behavioral Context")
                         .font(.system(size: 11))
                 }
@@ -383,10 +383,10 @@ struct ScenarioDetailView: View {
                 HStack(spacing: 4) {
                     Text("Behavioral Reasoning Quality:")
                         .font(.system(size: 11))
-                        .foregroundColor(textTertiary)
+                        .foregroundStyle(textTertiary)
                     Text("\(Int(quality * 100))%")
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(qualityColor(quality))
+                        .foregroundStyle(qualityColor(quality))
                 }
             }
 
@@ -560,11 +560,11 @@ struct MetricBadge: View {
                 Text(label)
                     .font(.system(size: 9))
             }
-            .foregroundColor(Color(hex: "#E0F4EE").opacity(0.60))
+            .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
 
             Text(value)
                 .font(.system(size: 11, weight: .medium))
-                .foregroundColor(color)
+                .foregroundStyle(color)
         }
     }
 }

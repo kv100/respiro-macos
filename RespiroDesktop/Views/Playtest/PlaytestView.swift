@@ -193,7 +193,7 @@ struct PlaytestView: View {
                         Text(behavioralSummary(scenario))
                             .font(.system(size: 10))
                     }
-                    .foregroundColor(behavioralColor(scenario))
+                    .foregroundStyle(behavioralColor(scenario))
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
                     .background(behavioralColor(scenario).opacity(0.2))
@@ -298,6 +298,15 @@ struct PlaytestView: View {
         let completed = service.totalCount
         let total = service.allScenarios.count
 
+        // Calculate current index if a scenario is running
+        let currentIndex: Int? = {
+            guard let currentID = service.currentScenarioID else { return nil }
+            return service.allScenarios.firstIndex(where: { $0.id == currentID })
+        }()
+
+        // Progress for bar: completed + (currently running ? 0.5 : 0)
+        let progressCount = Double(completed) + (currentIndex != nil ? 0.5 : 0.0)
+
         return VStack(spacing: 8) {
             Text(service.progressMessage)
                 .font(.system(size: 12))
@@ -315,18 +324,25 @@ struct PlaytestView: View {
                         .fill(Color(hex: "#10B981"))
                         .frame(
                             width: total > 0
-                                ? geo.size.width * CGFloat(completed) / CGFloat(total)
+                                ? geo.size.width * CGFloat(progressCount) / CGFloat(total)
                                 : 0,
                             height: 6
                         )
-                        .animation(.easeInOut(duration: 0.3), value: completed)
+                        .animation(.easeInOut(duration: 0.3), value: progressCount)
                 }
             }
             .frame(height: 6)
 
-            Text("\(completed)/\(total)")
-                .font(.system(size: 11, design: .monospaced))
-                .foregroundStyle(Color.white.opacity(0.45))
+            // Show current running index or completed count
+            if let index = currentIndex {
+                Text("Running \(index + 1)/\(total)")
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundStyle(Color(hex: "#10B981"))
+            } else {
+                Text("\(completed)/\(total)")
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundStyle(Color.white.opacity(0.45))
+            }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)

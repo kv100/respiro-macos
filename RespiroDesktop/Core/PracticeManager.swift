@@ -756,8 +756,7 @@ final class PracticeManager {
 
             // Update remaining seconds every full second
             if tick > 0 && tick % 10 == 0 {
-                let elapsed = totalDuration - remainingSeconds + 1
-                remainingSeconds = max(0, totalDuration - elapsed)
+                remainingSeconds = max(0, remainingSeconds - 1)
             }
         }
         return Task.isCancelled

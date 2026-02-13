@@ -523,7 +523,8 @@ struct SettingsView: View {
             showSavedIndicator = true
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
             withAnimation {
                 showSavedIndicator = false
             }

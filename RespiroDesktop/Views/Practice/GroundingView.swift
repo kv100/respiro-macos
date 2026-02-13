@@ -3,7 +3,6 @@ import SwiftUI
 struct GroundingView: View {
     @Environment(AppState.self) private var appState
     @State private var practiceManager = PracticeManager()
-    @State private var tapScale: CGFloat = 1.0
 
     private let accentColor = Color(hex: "#8BA4B0")
 

@@ -1,8 +1,10 @@
 import Foundation
+import OSLog
 
 @MainActor
 @Observable
 final class PlaytestService {
+    private let logger = Logger(subsystem: "com.respiro.desktop", category: "Playtest")
     // MARK: - Exploration Bounds
     private enum Bounds {
         static let maxRounds = 3
@@ -164,18 +166,34 @@ final class PlaytestService {
     private func runRound(scenarios: [PlaytestScenario], roundNumber: Int) async -> PlaytestRound {
         var evaluations: [ScenarioEvaluation] = []
 
-        for scenario in scenarios {
+        for (scenarioIndex, scenario) in scenarios.enumerated() {
             guard !Task.isCancelled else { break }
             currentScenarioID = scenario.id
-            progressMessage = "Round \(roundNumber): Running \(scenario.name)..."
+            let scenarioNum = scenarioIndex + 1
+            let totalScenarios = scenarios.count
 
-            let result = await runner.execute(scenario: scenario)
+            logger.info("📋 [Round \(roundNumber)] Scenario \(scenarioNum)/\(totalScenarios): \(scenario.id) \"\(scenario.name)\"")
+            progressMessage = "Round \(roundNumber): \(scenario.name) (scenario \(scenarioNum)/\(totalScenarios))"
+
+            // Execute with step-by-step progress
+            let result = await runner.execute(scenario: scenario) { [weak self] stepNum, totalSteps in
+                guard let self = self else { return }
+                await MainActor.run {
+                    self.progressMessage = "Round \(roundNumber): \(scenario.name) — Step \(stepNum)/\(totalSteps)"
+                }
+            }
+
+            logger.info("✅ [Round \(roundNumber)] Scenario \(scenario.id) executed (\(result.stepResults.count) steps)")
 
             progressMessage = "Round \(roundNumber): Evaluating \(scenario.name)..."
+            logger.debug("🔍 [Round \(roundNumber)] Evaluating \(scenario.id)...")
+
             do {
                 let evaluation = try await evaluator.evaluate(scenario: scenario, result: result)
+                logger.info("📊 [Round \(roundNumber)] Evaluation: \(scenario.id) - passed: \(evaluation.passed), confidence: \(String(format: "%.1f%%", evaluation.confidence * 100))")
                 evaluations.append(evaluation)
             } catch {
+                logger.error("❌ [Round \(roundNumber)] Evaluation FAILED: \(scenario.id) - \(error.localizedDescription)")
                 evaluations.append(.error(scenarioID: scenario.id, message: error.localizedDescription))
             }
         }

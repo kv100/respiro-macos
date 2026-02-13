@@ -15,7 +15,7 @@ struct ScenarioGenerator: Sendable {
             systemPrompt: "You are an AI testing specialist. Generate new test scenarios as JSON.",
             userPrompt: prompt,
             thinkingBudget: 10240,
-            maxTokens: 4096
+            maxTokens: 16384  // Must be > thinkingBudget (10240)
         )
         let generated = parseGeneratedScenarios(response.text, roundNumber: roundNumber)
         return generated.filter { isValid($0) }

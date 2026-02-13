@@ -1,14 +1,27 @@
 import Foundation
+import OSLog
 
 actor ScenarioRunner {
+    private let logger = Logger(subsystem: "com.respiro.desktop", category: "Playtest")
 
     // MARK: - Execution
 
-    func execute(scenario: PlaytestScenario) async -> PlaytestResult {
+    func execute(
+        scenario: PlaytestScenario,
+        onStepProgress: (@Sendable (Int, Int) async -> Void)? = nil
+    ) async -> PlaytestResult {
         let engine = NudgeEngine()
         var stepResults: [PlaytestResult.StepResult] = []
+        let totalSteps = scenario.steps.count
 
-        for step in scenario.steps {
+        logger.info("🧪 [Scenario] Starting: \(scenario.id) \"\(scenario.name)\" (\(totalSteps) steps)")
+
+        for (stepIndex, step) in scenario.steps.enumerated() {
+            let stepNum = stepIndex + 1
+            logger.debug("  → Step \(stepNum)/\(totalSteps): \(step.id) - \(step.description)")
+
+            // Notify progress
+            await onStepProgress?(stepNum, totalSteps)
             // 1. Advance simulated time
             if step.timeDelta > 0 {
                 await engine.advanceTime(by: step.timeDelta)
