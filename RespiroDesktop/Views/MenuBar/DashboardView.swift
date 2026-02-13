@@ -8,6 +8,8 @@ struct DashboardView: View {
     @State private var silenceCardExpanded: Bool = false
     @State private var silenceCardVisible: Bool = false
     @State private var currentTip: WellnessTip?
+    @State private var now: Date = Date()  // live-updating clock for "X min ago"
+    private let minuteTimer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
 
     private var todayEntries: [StressEntry] {
         let start = Calendar.current.startOfDay(for: Date())
@@ -72,6 +74,9 @@ struct DashboardView: View {
                 if newScreen == .dashboard {
                     refreshTip()
                 }
+            }
+            .onReceive(minuteTimer) { _ in
+                now = Date()
             }
 
             Divider()
@@ -205,7 +210,7 @@ struct DashboardView: View {
     }
 
     private func timeAgo(_ date: Date) -> String {
-        let seconds = Int(Date().timeIntervalSince(date))
+        let seconds = Int(now.timeIntervalSince(date))
         if seconds < 60 { return "Just now" }
         let minutes = seconds / 60
         if minutes == 1 { return "1 min ago" }

@@ -273,9 +273,15 @@ actor MonitoringService {
     // MARK: - Private
 
     private func monitorLoop() async {
-        // Initial delay: wait before first screenshot (let user settle in)
-        let initialDelay: UInt64 = 60 * 1_000_000_000 // 60 seconds
-        try? await Task.sleep(nanoseconds: initialDelay)
+        // On resume after recent screenshot, skip to sleep. On fresh start, short delay.
+        if let last = lastScreenshotTime, Date().timeIntervalSince(last) < currentInterval {
+            // Resume: wait remaining time from last screenshot
+            let remaining = currentInterval - Date().timeIntervalSince(last)
+            try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
+        } else if lastScreenshotTime == nil {
+            // Very first screenshot of session: brief 10s delay
+            try? await Task.sleep(nanoseconds: 10_000_000_000)
+        }
 
         while !Task.isCancelled && isRunning {
             do {
