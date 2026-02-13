@@ -13,15 +13,14 @@ struct WeatherPickerView: View {
         VStack(spacing: 0) {
             // Header with back button
             header
-                .padding(.top, 16)
-
-            Spacer(minLength: 40)
+                .padding(.top, 12)
+                .padding(.bottom, 8)
 
             // Title
             Text(title)
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
-                .padding(.bottom, 32)
+                .padding(.bottom, 16)
 
             // Weather cards row
             HStack(spacing: 16) {
@@ -34,7 +33,7 @@ struct WeatherPickerView: View {
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 0)
 
             // Keyboard hint
             Text("Press 1, 2, or 3 to select")

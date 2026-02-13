@@ -9,7 +9,7 @@ enum InnerWeather: String, Codable, Sendable, CaseIterable {
         switch self {
         case .clear: return "sun.max"
         case .cloudy: return "cloud"
-        case .stormy: return "cloud.bolt.rain"
+        case .stormy: return "cloud.bolt"
         }
     }
 

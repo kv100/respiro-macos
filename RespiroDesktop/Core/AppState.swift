@@ -1,10 +1,13 @@
 import SwiftUI
 import SwiftData
 import AppKit
+import OSLog
+import UserNotifications
 
 @MainActor
 @Observable
 final class AppState {
+    private let logger = Logger(subsystem: "com.respiro.desktop", category: "AppState")
     enum Screen: Sendable, Equatable {
         case dashboard
         case nudge
@@ -49,6 +52,49 @@ final class AppState {
     var selectedPracticeID: String?
     var lastSilenceDecision: SilenceDecision?
     var secondChancePractice: Practice?
+    var lastCompletedPracticeID: String?
+
+    // MARK: - Smart Practice Selection
+
+    /// Picks the best practice for internal/emotional stress (user-reported stormy, but screen looks calm).
+    /// Avoids the last completed practice and rotates through grounding-focused options.
+    /// For first-time users (no history), defaults to physiological-sigh (quick, 30s, evidence-based).
+    func pickPracticeForInternalStress() -> (id: String, message: String) {
+        // Grounding-focused practices: breathing + body practices best for internal stress
+        let candidates: [(id: String, message: String)] = [
+            ("physiological-sigh", "A quick double-inhale to reset your stress response."),
+            ("box-breathing", "A rhythmic breathing pattern to calm your nervous system."),
+            ("grounding-54321", "Ground yourself by noticing what you can see, hear, touch, smell, and taste."),
+            ("body-scan", "A gentle scan from head to toe to release held tension."),
+            ("extended-exhale", "Long exhales activate your parasympathetic nervous system."),
+            ("grounding-feet", "Feel your feet on the floor and reconnect with the present moment."),
+            ("stop-technique", "Stop, breathe, observe, and proceed with awareness."),
+            ("self-compassion", "A moment of kindness toward yourself when things feel rough."),
+        ]
+
+        // Filter out last completed practice to avoid repetition
+        let available: [(id: String, message: String)]
+        if let lastID = lastCompletedPracticeID {
+            let filtered = candidates.filter { $0.id != lastID }
+            available = filtered.isEmpty ? candidates : filtered
+        } else {
+            available = candidates
+        }
+
+        // First-time user: no practice history at all -- pick physiological-sigh
+        // (quickest at 60s, scientifically proven, great first experience)
+        if lastCompletedPracticeID == nil && completedPracticeCount == 0 {
+            return available.first { $0.id == "physiological-sigh" }
+                ?? available[0]
+        }
+
+        // Rotate based on hour-of-day + day-of-week for variety across sessions
+        let calendar = Calendar.current
+        let hour = calendar.component(.hour, from: Date())
+        let day = calendar.component(.weekday, from: Date())
+        let rotationIndex = (hour + day) % available.count
+        return available[rotationIndex]
+    }
 
     // MARK: - Weather Check-In
 
@@ -61,6 +107,12 @@ final class AppState {
     var monitoringDiagnostic: String = ""  // Live diagnostic shown in dashboard
     private var checkInWindow: NSPanel?
     private var checkInCloseObserver: Any?
+
+    // MARK: - Weather Floor (user-reported minimum for 30 min)
+
+    private var weatherFloor: InnerWeather?
+    private var weatherFloorExpiry: Date?
+    private let weatherFloorDuration: TimeInterval = 30 * 60  // 30 min
 
     // MARK: - Day Summary Cache
 
@@ -149,6 +201,7 @@ final class AppState {
 
     func requestStartMonitoring() {
         let now = Date()
+        logger.fault("🟢 requestStartMonitoring called. lastCheckIn=\(self.lastCheckInTime?.description ?? "nil"), monitoringService=\(self.monitoringService != nil ? "YES" : "NIL")")
 
         // Always start monitoring immediately (don't gate on check-in)
         Task { await startMonitoringDirectly() }
@@ -170,8 +223,11 @@ final class AppState {
         }
 
         if needsCheckIn {
+            logger.fault("🟡 Showing check-in window")
             showWeatherCheckIn = true
             showCheckInWindow()
+        } else {
+            logger.fault("🔵 No check-in needed, starting directly")
         }
     }
 
@@ -180,6 +236,35 @@ final class AppState {
         dismissCheckInWindow()
         lastCheckInTime = Date()
         userReportedWeather = weather
+
+        // Set weather floor -- AI can't rate below this for 30 min
+        if weather == .stormy || weather == .cloudy {
+            weatherFloor = weather
+            weatherFloorExpiry = Date().addingTimeInterval(weatherFloorDuration)
+        } else {
+            // Clear: no floor needed
+            weatherFloor = nil
+            weatherFloorExpiry = nil
+        }
+
+        // Update menu bar icon to match reported weather
+        currentWeather = weather
+
+        // If user reported stormy -- offer practice immediately
+        if weather == .stormy {
+            let practice = pickPracticeForInternalStress()
+            let nudgeMessage = "You said things are rough. \(practice.message)"
+            pendingNudge = NudgeDecision(
+                shouldShow: true,
+                nudgeType: .practice,
+                message: nudgeMessage,
+                suggestedPracticeID: practice.id,
+                reason: "user_reported_stormy"
+            )
+            showNudge()
+            sendNudgeNotification(message: nudgeMessage, isInternalStress: true)
+        }
+
         Task { await startMonitoringDirectly() }
     }
 
@@ -257,6 +342,7 @@ final class AppState {
     }
 
     private func startMonitoringDirectly() async {
+        logger.fault("🚀 startMonitoringDirectly. monitoringService=\(self.monitoringService != nil ? "YES" : "NIL"), isDemoMode=\(self.isDemoMode)")
         isMonitoring = true
         monitoringPausedAt = nil
 
@@ -302,7 +388,32 @@ final class AppState {
 
     /// Called from MonitoringService callback when new analysis arrives.
     func updateWeather(_ weather: InnerWeather, analysis: StressAnalysisResponse) {
-        currentWeather = weather
+        // Apply weather floor from user check-in
+        var effectiveWeather = weather
+        let floorOverridden: Bool
+        if let floor = weatherFloor, let expiry = weatherFloorExpiry {
+            if Date() < expiry {
+                // Floor active: use the worse of (AI weather, user-reported floor)
+                let weatherRank: [InnerWeather: Int] = [.clear: 0, .cloudy: 1, .stormy: 2]
+                let aiRank = weatherRank[weather] ?? 0
+                let floorRank = weatherRank[floor] ?? 0
+                if floorRank > aiRank {
+                    effectiveWeather = floor
+                    floorOverridden = true
+                } else {
+                    floorOverridden = false
+                }
+            } else {
+                // Floor expired
+                weatherFloor = nil
+                weatherFloorExpiry = nil
+                floorOverridden = false
+            }
+        } else {
+            floorOverridden = false
+        }
+
+        currentWeather = effectiveWeather
         lastAnalysis = analysis
 
         // Persist StressEntry to SwiftData
@@ -321,14 +432,19 @@ final class AppState {
             try? ctx.save()
         }
 
-        // Demo mode: bypass NudgeEngine cooldowns — create decisions directly from analysis
+        // Demo mode: bypass NudgeEngine cooldowns -- create decisions directly from analysis
         if isDemoMode {
             if let nudgeTypeRaw = analysis.nudgeType,
                let nudgeType = NudgeType(rawValue: nudgeTypeRaw) {
+                var nudgeMessage = analysis.nudgeMessage
+                // If floor overrode AI, acknowledge internal stress
+                if floorOverridden {
+                    nudgeMessage = "Your screen looks calm, but you mentioned feeling rough. A grounding exercise might help."
+                }
                 let decision = NudgeDecision(
                     shouldShow: true,
                     nudgeType: nudgeType,
-                    message: analysis.nudgeMessage,
+                    message: nudgeMessage,
                     suggestedPracticeID: analysis.suggestedPracticeID,
                     reason: "demo",
                     thinkingText: analysis.thinkingText,
@@ -336,12 +452,32 @@ final class AppState {
                 )
                 pendingNudge = decision
                 showNudge()
+                sendNudgeNotification(
+                    message: nudgeMessage ?? "Time for a break?",
+                    isInternalStress: floorOverridden
+                )
+            } else if floorOverridden {
+                // AI said no nudge but floor is active -- create a nudge for internal stress
+                let practice = pickPracticeForInternalStress()
+                let nudgeMessage = "Your screen looks calm, but you mentioned feeling rough. \(practice.message)"
+                let decision = NudgeDecision(
+                    shouldShow: true,
+                    nudgeType: .practice,
+                    message: nudgeMessage,
+                    suggestedPracticeID: practice.id,
+                    reason: "weather_floor_override",
+                    thinkingText: analysis.thinkingText,
+                    effortLevel: analysis.effortLevel
+                )
+                pendingNudge = decision
+                showNudge()
+                sendNudgeNotification(message: nudgeMessage, isInternalStress: true)
             } else {
                 pendingNudge = NudgeDecision(
                     shouldShow: false, nudgeType: nil, message: nil,
                     suggestedPracticeID: nil, reason: "demo_no_nudge"
                 )
-                // Don't call captureSilenceDecision — demo service handles silence via its own callback
+                // Don't call captureSilenceDecision -- demo service handles silence via its own callback
             }
             return
         }
@@ -370,11 +506,42 @@ final class AppState {
                     systemContext: analysis.systemContext
                 )
             }
-            let decision = await engine.shouldNudge(for: analysis, behavioral: behavioralCtx)
+            var decision = await engine.shouldNudge(for: analysis, behavioral: behavioralCtx)
+
+            // If floor overrode AI and engine decided not to nudge, force a nudge
+            if floorOverridden && !decision.shouldShow {
+                let practice = self.pickPracticeForInternalStress()
+                let nudgeMessage = "Your screen looks calm, but you mentioned feeling rough. \(practice.message)"
+                decision = NudgeDecision(
+                    shouldShow: true,
+                    nudgeType: .practice,
+                    message: nudgeMessage,
+                    suggestedPracticeID: practice.id,
+                    reason: "weather_floor_override"
+                )
+            } else if floorOverridden, decision.shouldShow {
+                // Override message to acknowledge internal stress
+                let practice = self.pickPracticeForInternalStress()
+                let nudgeMessage = "Your screen looks calm, but you mentioned feeling rough. \(practice.message)"
+                decision = NudgeDecision(
+                    shouldShow: true,
+                    nudgeType: decision.nudgeType,
+                    message: nudgeMessage,
+                    suggestedPracticeID: practice.id,
+                    reason: decision.reason,
+                    thinkingText: decision.thinkingText,
+                    effortLevel: decision.effortLevel
+                )
+            }
+
             self.pendingNudge = decision
             if decision.shouldShow, let nudgeType = decision.nudgeType {
                 await engine.recordNudgeShown(type: nudgeType)
                 self.showNudge()
+                self.sendNudgeNotification(
+                    message: decision.message ?? "Time for a break?",
+                    isInternalStress: floorOverridden
+                )
             } else if !decision.shouldShow {
                 self.captureSilenceDecision(analysis: analysis, reason: decision.reason)
             }
@@ -399,6 +566,10 @@ final class AppState {
     }
 
     func notifyPracticeCompleted() async {
+        // Track last completed practice for smart rotation
+        if let practiceID = selectedPracticeID {
+            lastCompletedPracticeID = practiceID
+        }
         await monitoringService?.onPracticeCompleted()
         await nudgeEngine?.recordPracticeCompleted()
     }
@@ -482,5 +653,22 @@ final class AppState {
 
     func showPracticeLibrary() {
         currentScreen = .practiceLibrary
+    }
+
+    // MARK: - macOS Notifications
+
+    private func sendNudgeNotification(message: String, isInternalStress: Bool) {
+        let content = UNMutableNotificationContent()
+        content.title = isInternalStress ? "Respiro -- checking in" : "Respiro"
+        content.body = message
+        content.sound = .default
+        content.categoryIdentifier = "NUDGE"
+
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: nil  // immediate
+        )
+        UNUserNotificationCenter.current().add(request)
     }
 }

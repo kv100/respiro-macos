@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import AppKit
+import UserNotifications
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
@@ -18,10 +19,39 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // Create MenuBarController
         menuBarController = MenuBarController(appState: appState, modelContainer: modelContainer)
 
+        // Setup notifications
+        setupNotifications()
+
         // Setup monitoring
         Task {
             await setupMonitoring(appState: appState, modelContainer: modelContainer)
         }
+    }
+
+    private func setupNotifications() {
+        let center = UNUserNotificationCenter.current()
+        center.delegate = self
+
+        // Request permission
+        center.requestAuthorization(options: [.alert, .sound]) { _, _ in }
+
+        // Register notification actions
+        let startPracticeAction = UNNotificationAction(
+            identifier: "START_PRACTICE",
+            title: "Start Practice",
+            options: [.foreground]
+        )
+        let dismissAction = UNNotificationAction(
+            identifier: "DISMISS",
+            title: "I'm Fine",
+            options: []
+        )
+        let nudgeCategory = UNNotificationCategory(
+            identifier: "NUDGE",
+            actions: [startPracticeAction, dismissAction],
+            intentIdentifiers: []
+        )
+        center.setNotificationCategories([nudgeCategory])
     }
 
     private func setupMonitoring(appState: AppState, modelContainer: ModelContainer) async {
@@ -130,5 +160,38 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 await service.triggerImmediateCheck()
             }
         }
+    }
+}
+
+// MARK: - Notification Delegate
+
+extension AppDelegate: UNUserNotificationCenterDelegate {
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let actionID = response.actionIdentifier
+        Task { @MainActor [weak self] in
+            guard let appState = self?.appState else { return }
+            switch actionID {
+            case "START_PRACTICE":
+                appState.showPractice()
+            case "DISMISS":
+                await appState.notifyDismissal(type: .imFine)
+            default:
+                // User tapped the notification itself -- open the app
+                appState.showNudge()
+            }
+        }
+        completionHandler()
+    }
+
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound])
     }
 }

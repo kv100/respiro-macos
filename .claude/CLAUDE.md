@@ -181,6 +181,15 @@ RespiroDesktop/
 - ✅ Monitoring debounce (60s min between screenshots, no spam)
 - ✅ 60s initial delay before first screenshot (let user settle)
 - ✅ Day Summary: min 3 entries, cache, manual Refresh button
+- ✅ Weather floor: user-reported weather = minimum for 30 min
+- ✅ Internal stress detection: stormy check-in + clear screen → grounding practice
+- ✅ macOS notifications: nudges visible even when app not active (with action buttons)
+- ✅ Smart practice selection: rotation + avoid repeats + new user default (physiological sigh)
+- ✅ Floating check-in window (NSPanel, Spotlight-style)
+- ✅ Menu bar icon: cloud.bolt (compact, no clipping)
+- ✅ Live "X min ago" timer in dashboard (30s refresh)
+- ✅ Monitoring diagnostics in dashboard card
+- ✅ OSLog with .fault level for Release builds
   **Build status:** ✅ **BUILD SUCCEEDED**
 
 **Remaining:** D5.2 (demo video), D5.3 (submission text)

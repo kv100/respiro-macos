@@ -306,7 +306,7 @@ actor NudgeEngine {
             shouldShow: true,
             nudgeType: .practice,
             message: analysis.nudgeMessage ?? "Your activity patterns suggest elevated stress. A quick practice might help.",
-            suggestedPracticeID: analysis.suggestedPracticeID ?? "box-breathing",
+            suggestedPracticeID: analysis.suggestedPracticeID ?? Self.defaultFallbackPracticeID(),
             reason: reason,
             thinkingText: analysis.thinkingText,
             effortLevel: analysis.effortLevel
@@ -486,6 +486,19 @@ actor NudgeEngine {
             shouldShow: false, nudgeType: nil, message: nil,
             suggestedPracticeID: nil, reason: reason
         )
+    }
+
+    /// Fallback practice ID when AI doesn't suggest one. Rotates to avoid always suggesting box-breathing.
+    static func defaultFallbackPracticeID() -> String {
+        let fallbacks = [
+            "physiological-sigh",
+            "box-breathing",
+            "extended-exhale",
+            "grounding-54321",
+            "stop-technique",
+        ]
+        let hour = Calendar.current.component(.hour, from: Date())
+        return fallbacks[hour % fallbacks.count]
     }
 
     /// Build behavioral context suffix for enriched reason strings
