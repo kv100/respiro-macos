@@ -15,6 +15,15 @@ struct MainView: View {
         Group {
             if !appState.isOnboardingComplete {
                 OnboardingView()
+            } else if appState.showWeatherCheckIn {
+                WeatherCheckInView(
+                    onSelect: { weather in
+                        appState.completeWeatherCheckIn(weather: weather)
+                    },
+                    onSkip: {
+                        appState.skipWeatherCheckIn()
+                    }
+                )
             } else {
                 switch appState.currentScreen {
                 case .dashboard:
@@ -61,7 +70,12 @@ struct MainView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: appState.currentScreen)
+        .animation(.easeInOut(duration: 0.3), value: appState.showWeatherCheckIn)
         .onKeyPress(.escape) {
+            if appState.showWeatherCheckIn {
+                appState.skipWeatherCheckIn()
+                return .handled
+            }
             if appState.currentScreen != .dashboard {
                 appState.showDashboard()
                 return .handled

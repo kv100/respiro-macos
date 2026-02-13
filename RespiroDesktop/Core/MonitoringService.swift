@@ -18,6 +18,7 @@ actor MonitoringService {
     private var recentEntries: [StressAnalysisResponse] = [] // last 3
     private var dismissalCount: Int = 0
     private var monitorTask: Task<Void, Never>?
+    private var lastScreenshotTime: Date?
 
     // MARK: - Behavior Tracking State
 
@@ -69,6 +70,17 @@ actor MonitoringService {
 
     func startMonitoring() {
         guard !isRunning else { return }
+
+        // Debounce: if last screenshot was < 60 seconds ago, resume without resetting state
+        if let last = lastScreenshotTime, Date().timeIntervalSince(last) < 60 {
+            isRunning = true
+            monitorTask?.cancel()
+            monitorTask = Task { [weak self] in
+                await self?.monitorLoop()
+            }
+            return
+        }
+
         isRunning = true
         currentInterval = Interval.base
         consecutiveClearCount = 0
@@ -258,9 +270,14 @@ actor MonitoringService {
     // MARK: - Private
 
     private func monitorLoop() async {
+        // Initial delay: wait before first screenshot (let user settle in)
+        let initialDelay: UInt64 = 60 * 1_000_000_000 // 60 seconds
+        try? await Task.sleep(nanoseconds: initialDelay)
+
         while !Task.isCancelled && isRunning {
             do {
                 let response = try await performSingleCheck()
+                lastScreenshotTime = Date()
 
                 let weather = InnerWeather(rawValue: response.weather) ?? .clear
                 onWeatherUpdate?(weather, response)

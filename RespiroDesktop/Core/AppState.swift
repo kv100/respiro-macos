@@ -49,6 +49,20 @@ final class AppState {
     var lastSilenceDecision: SilenceDecision?
     var secondChancePractice: Practice?
 
+    // MARK: - Weather Check-In
+
+    var showWeatherCheckIn: Bool = false
+    var lastCheckInTime: Date?
+    private let checkInCooldown: TimeInterval = 2 * 3600  // 2 hours
+    private let longPauseThreshold: TimeInterval = 30 * 60  // 30 min
+    var monitoringPausedAt: Date?
+    var userReportedWeather: InnerWeather?
+
+    // MARK: - Day Summary Cache
+
+    var cachedDaySummary: DaySummaryResponse?
+    var cachedDaySummaryEntryCount: Int = 0
+
     // Behavioral context (populated by MonitoringService or DemoModeService)
     var currentBehaviorMetrics: BehaviorMetrics?
     var currentSystemContext: SystemContext?
@@ -123,12 +137,55 @@ final class AppState {
         // If monitoring is active, restart it with new mode
         if isMonitoring {
             await stopMonitoring()
-            await startMonitoring()
+            await startMonitoringDirectly()
         }
     }
 
-    func startMonitoring() async {
+    // MARK: - Monitoring Control (with weather check-in gate)
+
+    func requestStartMonitoring() {
+        let now = Date()
+        let needsCheckIn: Bool
+
+        // First start of day (no prior check-in)
+        if lastCheckInTime == nil {
+            needsCheckIn = true
+        }
+        // Resume after long pause (30+ min)
+        else if let pausedAt = monitoringPausedAt, now.timeIntervalSince(pausedAt) > longPauseThreshold {
+            // Respect 2h cooldown between check-ins
+            if let lastCheck = lastCheckInTime, now.timeIntervalSince(lastCheck) < checkInCooldown {
+                needsCheckIn = false
+            } else {
+                needsCheckIn = true
+            }
+        } else {
+            needsCheckIn = false
+        }
+
+        if needsCheckIn {
+            showWeatherCheckIn = true
+            // Don't start monitoring yet -- wait for check-in completion
+        } else {
+            Task { await startMonitoringDirectly() }
+        }
+    }
+
+    func completeWeatherCheckIn(weather: InnerWeather) {
+        showWeatherCheckIn = false
+        lastCheckInTime = Date()
+        userReportedWeather = weather
+        Task { await startMonitoringDirectly() }
+    }
+
+    func skipWeatherCheckIn() {
+        showWeatherCheckIn = false
+        Task { await startMonitoringDirectly() }
+    }
+
+    private func startMonitoringDirectly() async {
         isMonitoring = true
+        monitoringPausedAt = nil
 
         // Use demo mode if enabled
         if isDemoMode, let demoService = demoModeService {
@@ -153,6 +210,7 @@ final class AppState {
 
     func stopMonitoring() async {
         isMonitoring = false
+        monitoringPausedAt = Date()
 
         if isDemoMode {
             demoModeService?.stopDemoLoop()
@@ -165,7 +223,7 @@ final class AppState {
         if isMonitoring {
             await stopMonitoring()
         } else {
-            await startMonitoring()
+            requestStartMonitoring()
         }
     }
 

@@ -45,7 +45,10 @@ struct DaySummaryView: View {
         .frame(width: 360, height: 480)
         .background(Color(hex: "#142823"))
         .task {
-            await loadSummary()
+            // Only auto-load if we have a cached summary in AppState
+            if let cached = appState.cachedDaySummary {
+                summary = cached
+            }
         }
     }
 
@@ -115,10 +118,29 @@ struct DaySummaryView: View {
                 .font(.system(size: 28))
                 .foregroundStyle(Color(hex: "#8BA4B0"))
 
-            Text("No data yet today. Start monitoring to collect stress readings.")
-                .font(.system(size: 13))
-                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
-                .multilineTextAlignment(.center)
+            let count = fetchTodayEntries().count
+            if count < 3 {
+                Text("Need at least 3 readings for a summary.\nCurrently: \(count)/3")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
+                    .multilineTextAlignment(.center)
+            } else {
+                Text("\(count) readings collected today")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
+                    .multilineTextAlignment(.center)
+
+                Button("Generate Summary") {
+                    Task { await loadSummary() }
+                }
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Color(hex: "#10B981"))
+                .padding(.horizontal, 20)
+                .padding(.vertical, 10)
+                .background(Color(hex: "#10B981").opacity(0.15))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .buttonStyle(.plain)
+            }
         }
         .padding(24)
     }
@@ -166,6 +188,22 @@ struct DaySummaryView: View {
                 text: summary.recommendation,
                 accentColor: Color(hex: "#D4AF37")
             )
+
+            // Refresh button
+            Button {
+                appState.cachedDaySummary = nil
+                Task { await loadSummary() }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 11))
+                    Text("Refresh")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.50))
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 4)
         }
         .padding(16)
     }
@@ -409,7 +447,19 @@ struct DaySummaryView: View {
 
     private func loadSummary() async {
         let entries = fetchTodayEntries()
-        guard !entries.isEmpty else { return }
+
+        // Minimum 3 entries required
+        guard entries.count >= 3 else {
+            errorMessage = "Need at least 3 stress readings to generate a summary. Currently: \(entries.count)"
+            return
+        }
+
+        // Use cache if entry count hasn't changed
+        if let cached = appState.cachedDaySummary,
+           appState.cachedDaySummaryEntryCount == entries.count {
+            summary = cached
+            return
+        }
 
         isLoading = true
         errorMessage = nil
@@ -447,11 +497,15 @@ struct DaySummaryView: View {
 
         do {
             let service = try DaySummaryService()
-            summary = try await service.generateDaySummary(
+            let result = try await service.generateDaySummary(
                 entries: entrySnapshots,
                 practices: practiceSnapshots,
                 dismissals: dismissalSnapshots
             )
+            summary = result
+            // Cache the result
+            appState.cachedDaySummary = result
+            appState.cachedDaySummaryEntryCount = entries.count
         } catch {
             errorMessage = error.localizedDescription
         }

@@ -177,6 +177,10 @@ RespiroDesktop/
 - ✅ Active hours removed (monitor whenever app is running)
 - ✅ Max screenshot interval capped at 15 min
 - ✅ capturesAudio = false (no audio permission prompt)
+- ✅ Weather check-in on first start and after 30+ min pause
+- ✅ Monitoring debounce (60s min between screenshots, no spam)
+- ✅ 60s initial delay before first screenshot (let user settle)
+- ✅ Day Summary: min 3 entries, cache, manual Refresh button
   **Build status:** ✅ **BUILD SUCCEEDED**
 
 **Remaining:** D5.2 (demo video), D5.3 (submission text)
