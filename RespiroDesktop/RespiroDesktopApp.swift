@@ -29,16 +29,8 @@ struct RespiroDesktopApp: App {
             appDelegate.sharedModelContainer = sharedModelContainer
         }()
 
-        // Playtest window (only visible when opened explicitly)
-        Window("Playtest", id: "playtest") {
-            PlaytestWindowView()
-                .environment(appState)
-                .frame(width: 360, height: 480)
-                .preferredColorScheme(.dark)
-        }
-        .windowStyle(.hiddenTitleBar)
-        .windowResizability(.contentSize)
-        .defaultPosition(.center)
-        // Window (not WindowGroup) prevents state restoration auto-open
+        // Menu bar only app — no windows in Scene (popover handles all UI)
+        // Playtest accessible via Settings → Playtest button (opens in popover)
+        Settings { EmptyView() }
     }
 }

@@ -312,7 +312,7 @@ struct SettingsView: View {
                 .foregroundStyle(Color.white.opacity(0.45))
 
             Button(action: {
-                openWindow(id: "playtest")
+                appState.showPlaytest()
             }) {
                 HStack(spacing: 6) {
                     Image(systemName: "testtube.2")
