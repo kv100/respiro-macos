@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AppKit
 
 @MainActor
 @Observable
@@ -58,6 +59,8 @@ final class AppState {
     var monitoringPausedAt: Date?
     var userReportedWeather: InnerWeather?
     var monitoringDiagnostic: String = ""  // Live diagnostic shown in dashboard
+    private var checkInWindow: NSPanel?
+    private var checkInCloseObserver: Any?
 
     // MARK: - Day Summary Cache
 
@@ -168,11 +171,13 @@ final class AppState {
 
         if needsCheckIn {
             showWeatherCheckIn = true
+            showCheckInWindow()
         }
     }
 
     func completeWeatherCheckIn(weather: InnerWeather) {
         showWeatherCheckIn = false
+        dismissCheckInWindow()
         lastCheckInTime = Date()
         userReportedWeather = weather
         Task { await startMonitoringDirectly() }
@@ -180,7 +185,75 @@ final class AppState {
 
     func skipWeatherCheckIn() {
         showWeatherCheckIn = false
+        dismissCheckInWindow()
         Task { await startMonitoringDirectly() }
+    }
+
+    // MARK: - Floating Check-In Window
+
+    func showCheckInWindow() {
+        guard checkInWindow == nil else { return }
+
+        let state = self
+        let checkInView = WeatherCheckInView(
+            onSelect: { weather in
+                state.completeWeatherCheckIn(weather: weather)
+            },
+            onSkip: {
+                state.skipWeatherCheckIn()
+            }
+        )
+        .preferredColorScheme(.dark)
+
+        let hostingView = NSHostingView(rootView: checkInView)
+        hostingView.frame = NSRect(x: 0, y: 0, width: 320, height: 280)
+
+        let panel = NSPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 320, height: 280),
+            styleMask: [.titled, .closable, .fullSizeContentView, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+        panel.isFloatingPanel = true
+        panel.level = .floating
+        panel.titlebarAppearsTransparent = true
+        panel.titleVisibility = .hidden
+        panel.isMovableByWindowBackground = true
+        panel.backgroundColor = NSColor(red: 0.04, green: 0.12, blue: 0.10, alpha: 0.95)
+        panel.hasShadow = true
+        panel.isReleasedWhenClosed = false
+        panel.contentView = hostingView
+        panel.center()
+        panel.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+
+        // Observe window close (user clicks X) -- treat as skip
+        checkInCloseObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification,
+            object: panel,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            if self.showWeatherCheckIn {
+                self.skipWeatherCheckIn()
+            }
+            self.checkInWindow = nil
+            if let obs = self.checkInCloseObserver {
+                NotificationCenter.default.removeObserver(obs)
+                self.checkInCloseObserver = nil
+            }
+        }
+
+        checkInWindow = panel
+    }
+
+    func dismissCheckInWindow() {
+        if let obs = checkInCloseObserver {
+            NotificationCenter.default.removeObserver(obs)
+            checkInCloseObserver = nil
+        }
+        checkInWindow?.close()
+        checkInWindow = nil
     }
 
     private func startMonitoringDirectly() async {
