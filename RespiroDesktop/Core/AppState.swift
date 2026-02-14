@@ -323,6 +323,7 @@ final class AppState {
 
     /// Called from MonitoringService callback when new analysis arrives.
     func updateWeather(_ weather: InnerWeather, analysis: StressAnalysisResponse) {
+        logger.fault("📊 updateWeather: weather=\(weather.rawValue), confidence=\(String(format: "%.2f", analysis.confidence)), nudgeType=\(analysis.nudgeType ?? "nil"), signals=\(analysis.signals.prefix(3).joined(separator: ", "))")
         // Apply weather floor from user check-in
         var effectiveWeather = weather
         let floorOverridden: Bool
@@ -450,6 +451,8 @@ final class AppState {
                     systemContext: analysis.systemContext
                 )
             }
+            let severity = BehavioralContext.severity(behavioralCtx)
+            self.logger.fault("🧠 NudgeEngine input: severity=\(String(format: "%.2f", severity)), hasBehavioral=\(behavioralCtx != nil), switches=\(String(format: "%.1f", behavioralCtx?.metrics.contextSwitchesPerMinute ?? -1))/min, deviation=\(String(format: "%.2f", behavioralCtx?.baselineDeviation ?? -1))")
             var decision = await engine.shouldNudge(for: analysis, behavioral: behavioralCtx)
 
             // If floor overrode AI and engine decided not to nudge, force a nudge
@@ -478,11 +481,13 @@ final class AppState {
                 )
             }
 
+            self.logger.fault("📋 NudgeDecision: show=\(decision.shouldShow), type=\(decision.nudgeType?.rawValue ?? "nil"), reason=\(decision.reason)")
             self.pendingNudge = decision
             if decision.shouldShow, let nudgeType = decision.nudgeType {
                 // If behavioral override triggered a nudge but icon is still "clear",
                 // bump to "cloudy" so the icon doesn't contradict the nudge
                 if self.currentWeather == .clear {
+                    self.logger.fault("☁️ Bumping icon from clear→cloudy (nudge active)")
                     self.currentWeather = .cloudy
                 }
                 await engine.recordNudgeShown(type: nudgeType)
@@ -492,6 +497,7 @@ final class AppState {
                     isInternalStress: floorOverridden
                 )
             } else if !decision.shouldShow {
+                self.logger.fault("🤫 Silence: \(decision.reason)")
                 self.captureSilenceDecision(analysis: analysis, reason: decision.reason)
             }
         }
