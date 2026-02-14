@@ -7,7 +7,7 @@
 **[Download Respiro.dmg (v1.0.0)](https://github.com/kv100/respiro-macos/releases/latest/download/Respiro.dmg)** — macOS 14+, signed & notarized
 
 > Open DMG → drag to Applications → launch. Grant Screen Recording permission when prompted.
-> Works out of the box — **no API key needed.** Demo Mode showcases all features with pre-built scenarios.
+> Works out of the box — **no API key needed.**
 
 ## The Problem
 
