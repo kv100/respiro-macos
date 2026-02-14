@@ -8,3 +8,5 @@ build/
 .env
 .claude/settings.local.json
 .mcp.json
+docs/COST_ANALYSIS.md
+demo-video/

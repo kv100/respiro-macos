@@ -353,7 +353,7 @@ struct SettingsView: View {
                 Image(systemName: "lock.shield")
                     .font(.system(size: 11))
                     .foregroundStyle(Color(hex: "#10B981").opacity(0.70))
-                Text("Screenshots analyzed in memory only. Never stored to disk.")
+                Text("Screenshots sent to Claude API via HTTPS. Never stored locally. Sensitive apps auto-skipped.")
                     .font(.system(size: 12))
                     .foregroundStyle(Color.white.opacity(0.60))
                     .fixedSize(horizontal: false, vertical: true)

@@ -64,6 +64,23 @@ actor MonitoringService {
         static let clearMultiplier: Double = 1.5
     }
 
+    // MARK: - Privacy: Sensitive App Detection
+
+    private static let sensitiveAppBundleIDs: Set<String> = [
+        "com.agilebits.onepassword",   // 1Password
+        "com.apple.keychainaccess",     // Keychain Access
+        "com.lastpass.LastPass",        // LastPass
+        "com.bitwarden.desktop",        // Bitwarden
+        "com.dashlane.Dashlane",        // Dashlane
+        "com.apple.systempreferences",  // System Settings (may show passwords)
+    ]
+
+    private func isSensitiveAppActive() -> Bool {
+        guard let frontApp = NSWorkspace.shared.frontmostApplication,
+              let bundleID = frontApp.bundleIdentifier else { return false }
+        return Self.sensitiveAppBundleIDs.contains(where: { bundleID.hasPrefix($0) })
+    }
+
     // MARK: - Init
 
     init(screenMonitor: ScreenMonitor, visionClient: ClaudeVisionClient) {
@@ -75,20 +92,20 @@ actor MonitoringService {
 
     func startMonitoring() {
         guard !isRunning else {
-            logger.fault("⚠️ startMonitoring called but already running")
+            logger.debug("⚠️ startMonitoring called but already running")
             return
         }
 
         // Debounce: if last screenshot was < 60 seconds ago, resume without resetting state
         if let last = lastScreenshotTime, Date().timeIntervalSince(last) < 60 {
-            logger.fault("🔄 Resuming (debounce, last screenshot \(Int(Date().timeIntervalSince(last)))s ago)")
+            logger.debug("🔄 Resuming (debounce, last screenshot \(Int(Date().timeIntervalSince(last)))s ago)")
             isRunning = true
             monitorTask?.cancel()
             monitorTask = Task { await self.monitorLoop() }
             return
         }
 
-        logger.fault("▶️ Starting monitoring fresh. Interval: \(Int(Interval.base))s")
+        logger.debug("▶️ Starting monitoring fresh. Interval: \(Int(Interval.base))s")
         isRunning = true
         currentInterval = Interval.base
         consecutiveClearCount = 0
@@ -114,7 +131,7 @@ actor MonitoringService {
     private func startAppSwitchTracking() {
         stopAppSwitchTracking()
         let monitor = self
-        logger.fault("👀 Setting up NSWorkspace app switch observer")
+        logger.debug("👀 Setting up NSWorkspace app switch observer")
         // MUST use NSWorkspace.shared.notificationCenter (not NotificationCenter.default)
         MonitoringService._workspaceObserver = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didActivateApplicationNotification,
@@ -137,7 +154,7 @@ actor MonitoringService {
     private func recordAppSwitch(_ app: String) {
         // Only record if different from last app (avoid duplicates)
         if appSwitchHistory.last?.app != app {
-            logger.fault("🔀 App switch: \(app) (history: \(self.appSwitchHistory.count))")
+            logger.debug("🔀 App switch: \(app) (history: \(self.appSwitchHistory.count))")
             appSwitchHistory.append((app, Date()))
         }
         // Keep only last hour
@@ -148,6 +165,37 @@ actor MonitoringService {
     /// Perform a single capture + analyze cycle, returns the analysis result.
     /// When effort is .high or .max and tool context is available, uses tool use for practice selection.
     func performSingleCheck() async throws -> StressAnalysisResponse {
+        // Privacy: skip capture when sensitive app (password manager, etc.) is active
+        if isSensitiveAppActive() {
+            logger.debug("🔒 Skipping capture — sensitive app active")
+            let skipResponse = StressAnalysisResponse(
+                weather: "clear",
+                confidence: 1.0,
+                signals: ["sensitive_app_active"],
+                nudgeType: "none",
+                nudgeMessage: nil,
+                suggestedPracticeID: nil
+            )
+            recordResponse(skipResponse)
+            return skipResponse
+        }
+
+        // Privacy: skip capture when screen is being shared
+        let preContext = collectSystemContext()
+        if preContext.isScreenSharing {
+            logger.debug("🔒 Skipping capture — screen sharing detected")
+            let skipResponse = StressAnalysisResponse(
+                weather: "clear",
+                confidence: 1.0,
+                signals: ["screen_sharing_active"],
+                nudgeType: "none",
+                nudgeMessage: nil,
+                suggestedPracticeID: nil
+            )
+            recordResponse(skipResponse)
+            return skipResponse
+        }
+
         let imageData = try await screenMonitor.captureScreenshot()
 
         // Collect behavioral metrics and system context
@@ -286,20 +334,20 @@ actor MonitoringService {
     // MARK: - Private
 
     private func monitorLoop() async {
-        logger.fault("⏱ Monitor loop started. lastScreenshot: \(self.lastScreenshotTime?.description ?? "nil"), interval: \(Int(self.currentInterval))s")
+        logger.debug("⏱ Monitor loop started. lastScreenshot: \(self.lastScreenshotTime?.description ?? "nil"), interval: \(Int(self.currentInterval))s")
 
         // On resume after recent screenshot, skip to sleep. On fresh start, short delay.
         if let last = lastScreenshotTime, Date().timeIntervalSince(last) < currentInterval {
             let remaining = currentInterval - Date().timeIntervalSince(last)
-            logger.fault("⏱ Resuming, waiting \(Int(remaining))s remaining")
+            logger.debug("⏱ Resuming, waiting \(Int(remaining))s remaining")
             try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
         } else if lastScreenshotTime == nil {
-            logger.fault("⏱ First screenshot in 10s")
+            logger.debug("⏱ First screenshot in 10s")
             try? await Task.sleep(nanoseconds: 10_000_000_000)
         }
 
         while !Task.isCancelled && isRunning {
-            logger.fault("📸 Taking screenshot...")
+            logger.debug("📸 Taking screenshot...")
             onDiagnostic?("Analyzing...")
             let checkStart = Date()
             do {
@@ -309,7 +357,7 @@ actor MonitoringService {
 
                 let weather = InnerWeather(rawValue: response.weather) ?? .clear
                 let nextMin = Int(currentInterval / 60)
-                logger.fault("📸 Check complete: \(response.weather) (took \(String(format: "%.1f", elapsed))s). Next in \(Int(self.currentInterval))s")
+                logger.debug("📸 Check complete: \(response.weather) (took \(String(format: "%.1f", elapsed))s). Next in \(Int(self.currentInterval))s")
                 onDiagnostic?("\(response.weather) — next in \(nextMin)m")
                 onWeatherUpdate?(weather, response)
 
@@ -324,12 +372,12 @@ actor MonitoringService {
 
             // Sleep for the current interval
             let sleepMin = Int(currentInterval / 60)
-            logger.fault("💤 Sleeping \(Int(self.currentInterval))s")
+            logger.debug("💤 Sleeping \(Int(self.currentInterval))s")
             onDiagnostic?("Waiting \(sleepMin)m...")
             let sleepNanos = UInt64(currentInterval * 1_000_000_000)
             try? await Task.sleep(nanoseconds: sleepNanos)
         }
-        logger.fault("⏱ Monitor loop ended. isRunning=\(self.isRunning), cancelled=\(Task.isCancelled)")
+        logger.debug("⏱ Monitor loop ended. isRunning=\(self.isRunning), cancelled=\(Task.isCancelled)")
     }
 
     private func recordResponse(_ response: StressAnalysisResponse) {

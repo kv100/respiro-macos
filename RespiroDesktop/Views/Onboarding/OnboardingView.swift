@@ -105,7 +105,7 @@ struct OnboardingView: View {
                 .foregroundStyle(Color.white)
 
             VStack(spacing: 10) {
-                onboardingText("Periodic screenshots analyzed by AI (never stored)")
+                onboardingText("Periodic screenshots sent to Claude AI for analysis")
                 onboardingText("Suggests breathing and mindfulness exercises")
                 onboardingText("Learns when NOT to interrupt")
             }
@@ -131,9 +131,9 @@ struct OnboardingView: View {
                 .foregroundStyle(Color.white)
 
             VStack(spacing: 10) {
-                onboardingText("Screenshots analyzed in memory, immediately deleted")
-                onboardingText("No data leaves your Mac except to Claude API")
-                onboardingText("You control everything")
+                onboardingText("Screenshots analyzed in memory, deleted locally after analysis")
+                onboardingText("Data sent to Claude API via encrypted HTTPS connection")
+                onboardingText("Sensitive apps (password managers) are automatically skipped")
             }
 
             // Screen Recording Permission Button

@@ -74,7 +74,7 @@ enum ClaudeAPIError: Error, LocalizedError {
 struct ClaudeVisionClient: Sendable {
     enum Mode: Sendable {
         case direct(apiKey: String)
-        case proxy(supabaseURL: String, anonKey: String, deviceID: String)
+        case proxy  // Railway proxy — no auth headers needed
     }
 
     let mode: Mode
@@ -83,8 +83,8 @@ struct ClaudeVisionClient: Sendable {
         switch mode {
         case .direct:
             return URL(string: "https://api.anthropic.com/v1/messages")!
-        case .proxy(let url, _, _):
-            return URL(string: "\(url)/functions/v1/claude-proxy")!
+        case .proxy:
+            return URL(string: RespiroConfig.railwayProxyURL)!
         }
     }
 
@@ -187,7 +187,11 @@ struct ClaudeVisionClient: Sendable {
         - Cloudy + long session → cognitive (STOP, Self-Compassion)
         - Post-meeting + baseline deviation → grounding (transition to calm)
 
-        NEVER: read/quote messages, mention names, reference documents, diagnose conditions.
+        PRIVACY:
+        - The screenshot may contain sensitive information (messages, passwords, documents)
+        - Focus ONLY on workspace layout, app count, notification density, and activity patterns
+        - Do NOT process, store, or reference any readable text, names, or personal data
+        - NEVER quote messages, mention names, reference documents, or diagnose conditions
 
         RESPOND WITH JSON ONLY:
         { "weather", "confidence", "signals", "nudge_type", "nudge_message", "suggested_practice_id" }
@@ -245,7 +249,11 @@ struct ClaudeVisionClient: Sendable {
         - Post-meeting + baseline deviation → grounding (transition to calm)
         - Consider user history: repeat what worked, avoid what was dismissed
 
-        NEVER: read/quote messages, mention names, reference documents, diagnose conditions.
+        PRIVACY:
+        - The screenshot may contain sensitive information (messages, passwords, documents)
+        - Focus ONLY on workspace layout, app count, notification density, and activity patterns
+        - Do NOT process, store, or reference any readable text, names, or personal data
+        - NEVER quote messages, mention names, reference documents, or diagnose conditions
 
         RESPOND WITH JSON ONLY (after using tools if needed):
         { "weather", "confidence", "signals", "nudge_type", "nudge_message", "suggested_practice_id" }
@@ -253,24 +261,14 @@ struct ClaudeVisionClient: Sendable {
 
     // MARK: - Init
 
-    /// Auto-detect mode: proxy first (always available)
+    /// Default mode: Railway proxy (always available, no API key needed)
     init() {
-        let deviceID = DeviceID.current
-        self.mode = .proxy(
-            supabaseURL: RespiroConfig.supabaseURL,
-            anonKey: RespiroConfig.supabaseAnonKey,
-            deviceID: deviceID
-        )
+        self.mode = .proxy
     }
 
     /// Direct mode (BYOK)
     init(apiKey: String) {
         self.mode = .direct(apiKey: apiKey)
-    }
-
-    /// Explicit proxy mode
-    init(supabaseURL: String, anonKey: String, deviceID: String) {
-        self.mode = .proxy(supabaseURL: supabaseURL, anonKey: anonKey, deviceID: deviceID)
     }
 
     // MARK: - Mode Helpers
@@ -287,18 +285,16 @@ struct ClaudeVisionClient: Sendable {
                 "x-api-key": apiKey,
                 "anthropic-version": Self.apiVersion,
             ]
-        case .proxy(_, let anonKey, let deviceID):
-            return [
-                "Authorization": "Bearer \(anonKey)",
-                "apikey": anonKey,
-                "x-device-id": deviceID,
-            ]
+        case .proxy:
+            return [:]  // Railway proxy adds API key server-side
         }
     }
 
     // MARK: - Public API
 
     func analyzeScreenshot(_ imageData: Data, context: ScreenshotContext, effortLevel: EffortLevel = .low) async throws -> StressAnalysisResponse {
+        // Privacy: imageData is passed by value (copy-on-write), lives only for this request scope.
+        // The base64-encoded string is embedded in the JSON body and released when the request completes.
         try checkDailyLimit()
 
         let userPrompt = buildUserPrompt(context: context)
@@ -370,6 +366,9 @@ struct ClaudeVisionClient: Sendable {
 
     // MARK: - Tool Use Loop
 
+    /// Memory note: conversationMessages grows each round but is bounded by maxToolRounds (3).
+    /// Base64 image data is scoped to the initial messages array and released after the request completes.
+    ///
     /// Multi-turn loop: send request, handle tool_use blocks, send tool_result, repeat.
     /// Max `maxToolRounds` rounds to prevent infinite loops.
     private func runToolUseLoop(

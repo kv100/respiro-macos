@@ -169,14 +169,17 @@ actor ScreenMonitor {
     }
 
     /// Convert a `CGImage` to JPEG `Data` using `NSBitmapImageRep`.
+    /// Wrapped in autoreleasepool to prevent ObjC object accumulation during repeated captures.
     private func jpegData(from cgImage: CGImage) throws -> Data {
-        let rep = NSBitmapImageRep(cgImage: cgImage)
-        guard let data = rep.representation(
-            using: .jpeg,
-            properties: [.compressionFactor: jpegQuality]
-        ) else {
-            throw ScreenCaptureError.jpegConversionFailed
+        try autoreleasepool {
+            let rep = NSBitmapImageRep(cgImage: cgImage)
+            guard let data = rep.representation(
+                using: .jpeg,
+                properties: [.compressionFactor: jpegQuality]
+            ) else {
+                throw ScreenCaptureError.jpegConversionFailed
+            }
+            return data
         }
-        return data
     }
 }
