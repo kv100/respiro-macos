@@ -253,17 +253,13 @@ Or open `RespiroDesktop.xcodeproj` in Xcode and run.
 - API key stored locally, never transmitted to third parties
 - Menu bar only (LSUIElement) — no dock icon
 
-## Cross-Platform
-
-Respiro is also available on iOS (App Store). The macOS version is a standalone native app built specifically for the desktop experience.
-
 ## Roadmap
 
-- **Backend proxy** — Supabase Edge Function so users don't need their own API key
-- **Apple Sign-In** — authentication for production distribution
-- **iCloud sync** — stress data across Mac and iOS
+- **App Store distribution** — code signing, notarization, Sparkle auto-update
+- **Apple Sign-In** — authentication for rate-limited proxy access
 - **Calendar integration** — meeting context for smarter nudge timing
 - **Watch companion** — heart rate data for biometric stress signals
+- **iOS companion** — stress data sync across Mac and iPhone
 
 ---
 
