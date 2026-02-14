@@ -163,7 +163,7 @@ actor MonitoringService {
     private func recordAppSwitch(_ app: String) {
         // Only record if different from last app (avoid duplicates)
         if appSwitchHistory.last?.app != app {
-            logger.debug("🔀 App switch: \(app) (history: \(self.appSwitchHistory.count))")
+            logger.fault("🔀 App switch: \(app) (history: \(self.appSwitchHistory.count))")
             appSwitchHistory.append((app, Date()))
         }
         // Keep only last hour
@@ -287,6 +287,7 @@ actor MonitoringService {
             ?? "Detected \(weather.displayName.lowercased()) conditions but decided not to interrupt. Reason: \(reason)."
 
         let decision = SilenceDecision(
+            reason: reason,
             thinkingText: thinking,
             effortLevel: analysis.effortLevel ?? .high,
             detectedWeather: weather,
@@ -356,7 +357,7 @@ actor MonitoringService {
         }
 
         while !Task.isCancelled && isRunning {
-            logger.debug("📸 Taking screenshot...")
+            logger.fault("📸 Taking screenshot...")
             onDiagnostic?("Analyzing...")
             let checkStart = Date()
             do {
@@ -366,7 +367,7 @@ actor MonitoringService {
 
                 let weather = InnerWeather(rawValue: response.weather) ?? .clear
                 let nextMin = Int(currentInterval / 60)
-                logger.debug("📸 Check complete: \(response.weather) (took \(String(format: "%.1f", elapsed))s). Next in \(Int(self.currentInterval))s")
+                logger.fault("📸 Check complete: \(response.weather) (took \(String(format: "%.1f", elapsed))s). Next in \(Int(self.currentInterval))s")
                 onDiagnostic?("\(response.weather) — next in \(nextMin)m")
                 onWeatherUpdate?(weather, response)
 
@@ -381,7 +382,7 @@ actor MonitoringService {
 
             // Sleep for the current interval
             let sleepMin = Int(currentInterval / 60)
-            logger.debug("💤 Sleeping \(Int(self.currentInterval))s")
+            logger.fault("💤 Sleeping \(Int(self.currentInterval))s")
             onDiagnostic?("Waiting \(sleepMin)m...")
             let sleepNanos = UInt64(currentInterval * 1_000_000_000)
             try? await Task.sleep(nanoseconds: sleepNanos)

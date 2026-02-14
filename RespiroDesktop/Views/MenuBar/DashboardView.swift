@@ -183,7 +183,7 @@ struct DashboardView: View {
                             .font(.system(size: 13, weight: .medium))
                             .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.92))
 
-                        Text(silenceCardExpanded ? decision.thinkingText : truncatedThinking(decision.thinkingText))
+                        Text(silenceCardExpanded ? decision.thinkingText : decision.reasonSummary)
                             .font(.system(size: 12))
                             .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.84))
                             .lineLimit(silenceCardExpanded ? nil : 2)

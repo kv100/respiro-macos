@@ -84,6 +84,7 @@ final class DemoModeService {
         r2.effortLevel = .low
 
         let silence2 = SilenceDecision(
+            reason: "ai_no_nudge",
             thinkingText: "I'm detecting a deep focus state — code editor and terminal side by side, steady typing cadence for 15+ minutes. Even though I could offer encouragement, interrupting flow would do more harm than good. The best thing I can do right now is stay quiet and let the user work.",
             effortLevel: .low,
             detectedWeather: .clear,
@@ -116,6 +117,7 @@ final class DemoModeService {
         r4.effortLevel = .high
 
         let silence4 = SilenceDecision(
+            reason: "behavioral_contradiction",
             thinkingText: "Stress signals are clearly rising — rapid app switching, back-to-back meetings on calendar, email and Slack competing for attention. My instinct is to intervene, but looking more carefully at the pattern: the user is composing a thoughtful reply, checking calendar for context, then updating Slack. This is purposeful task management, not overwhelm. Interrupting would add another demand for attention at exactly the wrong moment. I'll monitor and step in only if the pattern becomes erratic.",
             effortLevel: .high,
             detectedWeather: .cloudy,

@@ -480,6 +480,11 @@ final class AppState {
 
             self.pendingNudge = decision
             if decision.shouldShow, let nudgeType = decision.nudgeType {
+                // If behavioral override triggered a nudge but icon is still "clear",
+                // bump to "cloudy" so the icon doesn't contradict the nudge
+                if self.currentWeather == .clear {
+                    self.currentWeather = .cloudy
+                }
                 await engine.recordNudgeShown(type: nudgeType)
                 self.showNudge()
                 self.sendNudgeNotification(
@@ -502,6 +507,7 @@ final class AppState {
             ?? "Detected \(weather.displayName.lowercased()) conditions but chose to stay quiet. Reason: \(reason.replacingOccurrences(of: "_", with: " "))."
 
         lastSilenceDecision = SilenceDecision(
+            reason: reason,
             thinkingText: thinking,
             effortLevel: analysis.effortLevel ?? .high,
             detectedWeather: weather,

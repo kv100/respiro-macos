@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 
 // MARK: - NudgeDecision
 
@@ -55,6 +56,8 @@ struct BehavioralContext: Sendable {
 // MARK: - NudgeEngine
 
 actor NudgeEngine {
+
+    private let logger = Logger(subsystem: "com.respiro.desktop", category: "NudgeEngine")
 
     // MARK: - Cooldown Constants
 
@@ -120,6 +123,8 @@ actor NudgeEngine {
 
         let now = self.now
         let bSuffix = behavioralSuffix(behavioral)
+        let severity = BehavioralContext.severity(behavioral)
+        logger.fault("🧠 shouldNudge: weather=\(analysis.weather), nudgeType=\(analysis.nudgeType ?? "nil"), confidence=\(String(format: "%.2f", analysis.confidence)), severity=\(String(format: "%.2f", severity)), dailyNudges=\(self.dailyNudgeCount), consecutiveDismissals=\(self.consecutiveDismissals)")
 
         // 0. Smart suppression: video call or screen sharing active
         if let ctx = behavioral?.systemContext {
@@ -131,10 +136,7 @@ actor NudgeEngine {
             }
         }
 
-        // 1. Calculate behavioral severity
-        let severity = BehavioralContext.severity(behavioral)
-
-        // 2. AI says don't nudge — check behavioral override
+        // 1. AI says don't nudge — check behavioral override
         guard let nudgeTypeRaw = analysis.nudgeType,
               let nudgeType = NudgeType(rawValue: nudgeTypeRaw) else {
             // Behavioral override: extreme distress forces practice nudge
@@ -223,6 +225,7 @@ actor NudgeEngine {
         }
 
         // All checks passed
+        logger.fault("✅ APPROVED: type=\(nudgeType.rawValue), reason=approved\(bSuffix)")
         return NudgeDecision(
             shouldShow: true,
             nudgeType: nudgeType,
@@ -482,7 +485,8 @@ actor NudgeEngine {
     }
 
     private func denied(reason: String) -> NudgeDecision {
-        NudgeDecision(
+        logger.fault("🚫 DENIED: \(reason)")
+        return NudgeDecision(
             shouldShow: false, nudgeType: nil, message: nil,
             suggestedPracticeID: nil, reason: reason
         )
