@@ -2,6 +2,13 @@
 
 > **AI-powered macOS stress coach** | Built with Claude Opus 4.6 | Anthropic Hackathon Feb 2026
 
+## Download
+
+**[Download Respiro.dmg (v1.0.0)](https://github.com/kv100/respiro-macos/releases/latest/download/Respiro.dmg)** — macOS 14+, signed & notarized
+
+> Open DMG → drag to Applications → launch. Grant Screen Recording permission when prompted.
+> Demo Mode works without an API key. For live AI analysis, set `ANTHROPIC_API_KEY` environment variable before launching.
+
 ## The Problem
 
 Knowledge workers spend 8+ hours staring at screens, unaware of mounting stress until it's too late. Existing wellness apps require manual check-ins — by then, the damage is done.
@@ -230,20 +237,43 @@ TipService (Sendable struct)             — 96 contextual wellness tips
 SoundService (@MainActor)               — Subtle system sound effects
 ```
 
-## Building
+## Getting Started
+
+### Option 1: Download (Recommended)
+
+1. **[Download Respiro.dmg](https://github.com/kv100/respiro-macos/releases/latest/download/Respiro.dmg)**
+2. Open DMG, drag **RespiroDesktop** to Applications
+3. Launch from Applications
+4. Grant **Screen Recording** permission when prompted
+5. (Optional) Set API key for live AI analysis:
+   ```bash
+   export ANTHROPIC_API_KEY="sk-ant-..."
+   open /Applications/RespiroDesktop.app
+   ```
+
+**Demo Mode** works without an API key — toggle in Settings (gear icon).
+
+### Option 2: Build from Source
 
 ```bash
-# Build
-xcodebuild -scheme RespiroDesktop -destination 'platform=macOS' build
-
-# Run (set API key)
-export ANTHROPIC_API_KEY="sk-ant-..."
-open build/Release/RespiroDesktop.app
+git clone https://github.com/kv100/respiro-macos.git
+cd respiro-macos
+open RespiroDesktop.xcodeproj
 ```
 
-Or open `RespiroDesktop.xcodeproj` in Xcode and run.
+In Xcode: select the `RespiroDesktop` scheme → Run (Cmd+R).
 
-**Demo mode** works without an API key — toggle in Settings.
+Or build from the command line:
+
+```bash
+xcodebuild -scheme RespiroDesktop -configuration Release build
+```
+
+### Requirements
+
+- macOS 14+ (Sonoma)
+- Screen Recording permission (ScreenCaptureKit)
+- Claude API key (optional — Demo Mode works without it)
 
 ## Privacy
 
@@ -255,7 +285,7 @@ Or open `RespiroDesktop.xcodeproj` in Xcode and run.
 
 ## Roadmap
 
-- **App Store distribution** — code signing, notarization, Sparkle auto-update
+- **Backend proxy** — Supabase Edge Function so users never handle API keys
 - **Apple Sign-In** — authentication for rate-limited proxy access
 - **Calendar integration** — meeting context for smarter nudge timing
 - **Watch companion** — heart rate data for biometric stress signals
