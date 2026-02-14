@@ -351,6 +351,11 @@ final class AppState {
         currentWeather = effectiveWeather
         lastAnalysis = analysis
 
+        // Update behavioral context for dashboard display
+        currentBehaviorMetrics = analysis.behaviorMetrics
+        currentSystemContext = analysis.systemContext
+        currentBaselineDeviation = analysis.baselineDeviation
+
         // Persist StressEntry to SwiftData
         if let ctx = modelContext {
             let entry = StressEntry(
