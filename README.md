@@ -52,30 +52,54 @@ End-of-day summary uses `.max` effort (10K thinking tokens) to reflect on the fu
 
 ## Features
 
-- **Multi-monitor support** — captures ALL displays, side-by-side montage for full context
-- **Weather-based stress visualization** — clear/cloudy/stormy in menu bar
-- **Menu bar context menu** — right-click for quick Start/Pause/Quit actions
-- **Stress trajectory graph** — smooth bezier curve showing your day
-- **20 evidence-based practices** — breathing, body, and mind techniques
-- **Smart nudge system** — cooldowns, daily limits, dismissal learning
-- **"The Silence Decision"** — visible AI restraint on dashboard
-- **Tool Use showcase** — AI tool calls displayed in nudge card
+### Core Experience
+
+- **Weather-based stress visualization** — clear/cloudy/stormy in menu bar with animated SF Symbols
+- **Multi-monitor support** — captures ALL displays, side-by-side montage for full workspace context
+- **"The Silence Decision"** — AI decides when NOT to interrupt and shows its reasoning
+- **Smart nudge system** — cooldowns, daily limits, dismissal learning, 3 nudge types
+- **Encouragement nudges** — lighter intervention for moderate stress
+- **macOS notifications** — nudges visible even when popover is closed, with action buttons
+- **Auto-open popover** — popover appears automatically when a nudge arrives
+
+### AI (Opus 4.6)
+
+- **Vision API** — multimodal screenshot analysis for stress detection
+- **Adaptive Thinking** — effort-scaled thinking budgets (1K / 4K / 10K tokens)
+- **Tool Use** — AI calls tools to select best practice, displayed in nudge card
+- **Day Summary** — end-of-day AI reflection with max thinking budget (1M context)
+- **Practice reason** — personalized "why this practice" explanation from AI
 - **Effort level indicator** — brain icon shows AI thinking depth (1-3 dots)
-- **Practice reason** — personalized "why this practice" explanation
-- **96 contextual wellness tips** — condition-based filtering by weather/time
-- **Category-specific science snippets** — 21 research-backed facts
-- **Second Chance** — suggests alternative practice from different category
-- **Adaptive screenshot intervals** — faster when stormy, slower when clear
-- **Sound design** — subtle system sounds for key moments
-- **Keyboard shortcuts** — Return, Escape, Space, 1/2/3 for quick navigation
-- **Demo mode** — 8 pre-scripted scenarios showcasing all Opus features
+
+### Practices
+
+- **20 evidence-based practices** — breathing, body, and mind techniques
+- **Practice Library** — browse all practices by category
+- **Smart practice selection** — rotation, avoids repeats, first-time default (physiological sigh)
+- **Weather check-in** — report how you feel before and after practice (delta badge)
+- **Second Chance** — suggests alternative practice from different category if weather didn't improve
+- **21 science snippets** — research-backed facts shown on completion
+
+### Behavioral Intelligence
+
+- **Personal baseline learning** — builds YOUR normal over 7 days of use
 - **Real-time context switch tracking** — NSWorkspace notification-based, not polling
-- **Screen sharing suppression** — blocks nudges during Loom/screen share
-- **Encouragement nudges** — lighter intervention for moderate stress (severity 0.4-0.7)
+- **Weather floor** — user-reported weather sets minimum for 30 minutes
+- **Adaptive screenshot intervals** — faster when stormy, slower when clear
+- **Screen sharing suppression** — blocks nudges during screen share
 - **Extreme behavioral override** — bypasses confidence gate at severity 0.85+
-- **dismiss_later semantics** — "not now" doesn't penalize, "I'm fine" does
-- **AI Playtest System** — 15 seed + 20 AI-generated scenarios, regression suite
+- **Dismiss-later semantics** — "not now" doesn't penalize, "I'm fine" does
 - **Wake-from-sleep** — immediate check after returning
+
+### Polish
+
+- **Stress trajectory graph** — smooth bezier curve showing your day
+- **96 contextual wellness tips** — filtered by weather and time of day
+- **Sound design** — subtle system sounds for nudge, practice, completion
+- **Keyboard shortcuts** — Return, Escape, 1/2/3 for quick navigation
+- **Menu bar context menu** — right-click for Start/Pause/Quit
+- **Demo mode** — 8 pre-scripted scenarios showcasing all Opus features
+- **AI Playtest System** — seed + AI-generated scenarios, regression suite
 
 ## 🧠 How Respiro Actually Works (The Hard Part)
 
