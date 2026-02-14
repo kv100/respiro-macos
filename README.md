@@ -273,13 +273,35 @@ xcodebuild -scheme RespiroDesktop -configuration Release build
 - Screen Recording permission (ScreenCaptureKit)
 - Claude API key (optional — Demo Mode works without it)
 
-## Privacy
+## Privacy & Security
 
-- Screenshots captured in memory only — **never written to disk**
-- All data stays local (SwiftData, no cloud sync)
-- Claude API analyzes visual stress cues, never reads message content or names
-- API key stored locally, never transmitted to third parties
-- Menu bar only (LSUIElement) — no dock icon
+Respiro is designed with privacy as a core principle, not an afterthought.
+
+### Screenshots
+
+- Captured in memory only — **never written to disk**
+- Sent to Claude API via **HTTPS** for analysis, then immediately discarded
+- AI focuses on workspace layout and activity patterns — instructed to **never process readable text, names, or personal data**
+
+### Sensitive App Protection
+
+- **Password managers** (1Password, LastPass, Bitwarden, Dashlane, Keychain Access) are automatically detected — **screenshot capture is skipped entirely** when they're in the foreground
+- **Screen sharing** is detected — capture pauses during active presentations to protect others' content
+- **System Settings** is also excluded (may display passwords)
+
+### Data Storage
+
+- All user data stays local (SwiftData, no cloud sync)
+- API keys stored in **macOS Keychain** (encrypted, never in plaintext)
+- No analytics, telemetry, or third-party SDKs — zero external dependencies
+- App runs sandboxed with minimum required entitlements
+
+### Transparency
+
+- Open source — every line of code is auditable
+- Onboarding clearly explains what data is sent and where
+- "The Silence Decision" panel shows exactly when and why the AI chose not to interrupt
+- Menu bar only (LSUIElement) — no dock icon, no background surprises
 
 ## Roadmap
 
