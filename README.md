@@ -2,10 +2,6 @@
 
 > **AI-powered macOS stress coach** | Built with Claude Opus 4.6 | Anthropic Hackathon Feb 2026
 
-<p align="center">
-  <img src="docs/assets/respiro-icon.png" alt="Respiro" width="128" />
-</p>
-
 ## The Problem
 
 Knowledge workers spend 8+ hours staring at screens, unaware of mounting stress until it's too late. Existing wellness apps require manual check-ins — by then, the damage is done.
@@ -244,10 +240,6 @@ Respiro is also available on iOS (App Store). The macOS version is a standalone 
 - **iCloud sync** — stress data across Mac and iOS
 - **Calendar integration** — meeting context for smarter nudge timing
 - **Watch companion** — heart rate data for biometric stress signals
-
-## License
-
-MIT
 
 ---
 
