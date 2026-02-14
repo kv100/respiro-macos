@@ -34,7 +34,7 @@ struct BehavioralContext: Sendable {
 
     /// Calculate behavioral severity score (0.0 - 1.0)
     static func severity(_ context: BehavioralContext?) -> Double {
-        guard let ctx = context else { return 0.5 }
+        guard let ctx = context else { return 0.0 }
         var score = 0.0
         let switches = ctx.metrics.contextSwitchesPerMinute
         if switches > 8 { score += 0.4 }
