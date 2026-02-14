@@ -66,7 +66,7 @@ actor MonitoringService {
 
     // MARK: - Privacy: Sensitive App Detection
 
-    private static let sensitiveAppBundleIDs: Set<String> = [
+    private static let defaultSensitiveApps: Set<String> = [
         "com.agilebits.onepassword",   // 1Password
         "com.apple.keychainaccess",     // Keychain Access
         "com.lastpass.LastPass",        // LastPass
@@ -76,9 +76,18 @@ actor MonitoringService {
     ]
 
     private func isSensitiveAppActive() -> Bool {
-        guard let frontApp = NSWorkspace.shared.frontmostApplication,
-              let bundleID = frontApp.bundleIdentifier else { return false }
-        return Self.sensitiveAppBundleIDs.contains(where: { bundleID.hasPrefix($0) })
+        guard let frontApp = NSWorkspace.shared.frontmostApplication else { return false }
+        let bundleID = frontApp.bundleIdentifier ?? ""
+        let appName = frontApp.localizedName ?? ""
+
+        // Check hardcoded bundle ID prefixes
+        if Self.defaultSensitiveApps.contains(where: { bundleID.hasPrefix($0) }) {
+            return true
+        }
+
+        // Check user-excluded apps by name
+        let userExcluded = UserDefaults.standard.stringArray(forKey: "respiro_excluded_apps") ?? []
+        return userExcluded.contains(appName)
     }
 
     // MARK: - Init

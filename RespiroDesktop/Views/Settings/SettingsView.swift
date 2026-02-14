@@ -17,6 +17,7 @@ struct SettingsView: View {
     @State private var hasLoaded: Bool = false
     @State private var showSavedIndicator: Bool = false
     @State private var useOwnKey: Bool = false
+    @State private var excludedApps: [String] = []
 
     private var currentPreferences: UserPreferences? {
         preferences.first
@@ -35,6 +36,9 @@ struct SettingsView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     preferencesSection
+                    sectionDivider
+
+                    excludedAppsSection
                     sectionDivider
 
                     aboutSection
@@ -326,6 +330,72 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Excluded Apps
+
+    private var excludedAppsSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            sectionHeader(title: "EXCLUDED APPS", icon: "eye.slash")
+
+            Text("Screenshots are skipped when these apps are in the foreground.")
+                .font(.system(size: 11))
+                .foregroundStyle(Color.white.opacity(0.45))
+                .fixedSize(horizontal: false, vertical: true)
+
+            ForEach(excludedApps, id: \.self) { app in
+                HStack {
+                    Text(app)
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color.white.opacity(0.92))
+                    Spacer()
+                    Button(action: { removeExcludedApp(app) }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(Color.white.opacity(0.30))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            Menu {
+                ForEach(runningAppNames, id: \.self) { name in
+                    Button(name) { addExcludedApp(name) }
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "plus.circle")
+                        .font(.system(size: 12))
+                    Text("Add App")
+                        .font(.system(size: 13, weight: .medium))
+                }
+                .foregroundStyle(Color(hex: "#10B981"))
+            }
+            .menuStyle(.borderlessButton)
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var runningAppNames: [String] {
+        let names = NSWorkspace.shared.runningApplications
+            .compactMap { $0.localizedName }
+            .filter { !$0.isEmpty && $0 != "RespiroDesktop" && !excludedApps.contains($0) }
+        return Array(Set(names)).sorted()
+    }
+
+    private func addExcludedApp(_ name: String) {
+        guard !excludedApps.contains(name) else { return }
+        excludedApps.append(name)
+        saveExcludedApps()
+    }
+
+    private func removeExcludedApp(_ name: String) {
+        excludedApps.removeAll { $0 == name }
+        saveExcludedApps()
+    }
+
+    private func saveExcludedApps() {
+        UserDefaults.standard.set(excludedApps, forKey: "respiro_excluded_apps")
+    }
+
     // MARK: - About
 
     private var aboutSection: some View {
@@ -430,6 +500,9 @@ struct SettingsView: View {
             showEncouragementNudges = prefs.showEncouragementNudges
             maxPracticeDuration = prefs.maxPracticeDuration
         }
+
+        // Load excluded apps
+        excludedApps = UserDefaults.standard.stringArray(forKey: "respiro_excluded_apps") ?? []
 
         // Load BYOK toggle state
         useOwnKey = UserDefaults.standard.bool(forKey: "respiro_use_own_key")

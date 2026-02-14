@@ -162,6 +162,26 @@ struct OnboardingView: View {
             .buttonStyle(.plain)
             .disabled(permissionGranted)
 
+            if !permissionGranted && permissionRequested {
+                VStack(spacing: 8) {
+                    Text("System Settings → Privacy & Security → Screen Recording → Enable RespiroDesktop")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color.white.opacity(0.45))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 16)
+
+                    Button("Open System Settings") {
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color(hex: "#10B981").opacity(0.80))
+                    .buttonStyle(.plain)
+                }
+                .padding(.top, 8)
+            }
+
             Spacer()
         }
         .padding(.horizontal, 24)
