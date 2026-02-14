@@ -34,13 +34,7 @@ struct SettingsView: View {
             // Scrollable settings content - INVISIBLE scroll
             ScrollView {
                 VStack(spacing: 0) {
-                    demoModeSection
-                    sectionDivider
-
                     preferencesSection
-                    sectionDivider
-
-                    playtestSection
                     sectionDivider
 
                     aboutSection
