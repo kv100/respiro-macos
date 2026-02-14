@@ -77,15 +77,23 @@ struct StressGraphView: View {
         VStack(spacing: 4) {
             // Y-axis labels + chart
             HStack(alignment: .top, spacing: 6) {
-                // Y-axis labels (weather icons at levels 1, 3, 5)
+                // Y-axis labels (5 levels: sun, sun.min, cloud, cloud.bolt, cloud.bolt.rain)
                 VStack(spacing: 0) {
                     Image(systemName: "sun.max")
                         .font(.system(size: 9))
                         .foregroundStyle(Color(hex: "#10B981"))
                     Spacer()
+                    Image(systemName: "sun.min")
+                        .font(.system(size: 8))
+                        .foregroundStyle(Color(hex: "#10B981").opacity(0.5))
+                    Spacer()
                     Image(systemName: "cloud")
                         .font(.system(size: 9))
                         .foregroundStyle(Color(hex: "#8BA4B0"))
+                    Spacer()
+                    Image(systemName: "cloud.bolt")
+                        .font(.system(size: 8))
+                        .foregroundStyle(Color(hex: "#7B6B9E").opacity(0.5))
                     Spacer()
                     Image(systemName: "cloud.bolt.rain")
                         .font(.system(size: 9))
@@ -167,13 +175,26 @@ struct StressGraphView: View {
             let points = calculatePoints(in: CGSize(width: geometry.size.width, height: 72))
             let labelCount = min(dataPoints.count, maxVisibleLabels(width: geometry.size.width))
             let step = max(1, dataPoints.count / labelCount)
+
+            // Generate labels with deduplication
+            let labelData: [(x: CGFloat, text: String)] = stride(from: 0, to: dataPoints.count, by: step).compactMap { index in
+                let safeIndex = min(index, points.count - 1)
+                guard safeIndex < points.count else { return nil }
+                let timeString = Self.timeFormatter.string(from: dataPoints[index].date).lowercased()
+                return (x: points[safeIndex].x, text: timeString)
+            }
+
+            // Filter out duplicates (consecutive same text)
+            let uniqueLabels = labelData.enumerated().filter { offset, item in
+                offset == 0 || item.text != labelData[offset - 1].text
+            }.map { $0.element }
+
             ZStack {
-                ForEach(Array(stride(from: 0, to: dataPoints.count, by: step)), id: \.self) { index in
-                    let safeIndex = min(index, points.count - 1)
-                    Text(Self.timeFormatter.string(from: dataPoints[index].date).lowercased())
+                ForEach(Array(uniqueLabels.enumerated()), id: \.offset) { _, label in
+                    Text(label.text)
                         .font(.system(size: 9))
                         .foregroundStyle(Color(hex: "#E0F4EE").opacity(0.60))
-                        .position(x: safeIndex < points.count ? points[safeIndex].x : 0, y: 6)
+                        .position(x: label.x, y: 6)
                 }
             }
         }
@@ -188,8 +209,20 @@ struct StressGraphView: View {
             return [CGPoint(x: size.width / 2, y: yPosition(forLevel: dataPoints[0].level, height: size.height))]
         }
 
-        return dataPoints.enumerated().map { index, point in
-            let x = CGFloat(index) / CGFloat(dataPoints.count - 1) * size.width
+        guard let firstTime = dataPoints.first?.date.timeIntervalSince1970,
+              let lastTime = dataPoints.last?.date.timeIntervalSince1970,
+              lastTime > firstTime else {
+            // Fallback to index-based if all same timestamp
+            return dataPoints.enumerated().map { index, point in
+                let x = CGFloat(index) / CGFloat(dataPoints.count - 1) * size.width
+                let y = yPosition(forLevel: point.level, height: size.height)
+                return CGPoint(x: x, y: y)
+            }
+        }
+
+        let timeRange = lastTime - firstTime
+        return dataPoints.map { point in
+            let x = CGFloat((point.date.timeIntervalSince1970 - firstTime) / timeRange) * size.width
             let y = yPosition(forLevel: point.level, height: size.height)
             return CGPoint(x: x, y: y)
         }
@@ -199,7 +232,7 @@ struct StressGraphView: View {
     private func yPosition(forLevel level: Int, height: CGFloat) -> CGFloat {
         let padding: CGFloat = 4
         let usable = height - padding * 2
-        let fraction = CGFloat(level - 1) / 4.0
+        let fraction = CGFloat(level - 1) / 4.0  // 5 levels: 0, 0.25, 0.5, 0.75, 1.0
         return padding + usable * fraction
     }
 

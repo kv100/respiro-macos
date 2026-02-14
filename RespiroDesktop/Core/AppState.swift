@@ -625,6 +625,9 @@ final class AppState {
         content.body = message
         content.sound = .default
         content.categoryIdentifier = "NUDGE"
+        if #available(macOS 12.0, *) {
+            content.interruptionLevel = .timeSensitive
+        }
 
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,

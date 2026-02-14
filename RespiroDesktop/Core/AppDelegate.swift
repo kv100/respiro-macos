@@ -43,7 +43,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         )
         let dismissAction = UNNotificationAction(
             identifier: "DISMISS",
-            title: "I'm Fine",
+            title: "Not Now",
             options: []
         )
         let nudgeCategory = UNNotificationCategory(

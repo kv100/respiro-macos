@@ -430,7 +430,12 @@ actor MonitoringService {
     private func collectSystemContext() -> SystemContext {
         let activeApp = NSWorkspace.shared.frontmostApplication?.localizedName ?? "Unknown"
         let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]]
-        let windowCount = windowList?.count ?? 0
+        let windowCount = windowList?.filter { window in
+            let layer = window[kCGWindowLayer as String] as? Int ?? -1
+            let name = window[kCGWindowOwnerName as String] as? String ?? ""
+            // Layer 0 = normal application windows; exclude system processes
+            return layer == 0 && !name.isEmpty && name != "Window Server" && name != "Dock"
+        }.count ?? 0
 
         let recentApps = appSwitchHistory.suffix(10).map { $0.app }
 
