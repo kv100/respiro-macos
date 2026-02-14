@@ -340,9 +340,8 @@ struct ScenarioGenerator: Sendable {
         switch mode {
         case .direct(let apiKey):
             return ["x-api-key": apiKey, "anthropic-version": Self.apiVersion]
-        case .proxy(_, _, let deviceID):
-            // Railway proxy handles Anthropic auth server-side
-            return ["x-device-id": deviceID]
+        case .proxy:
+            return [:]  // Railway proxy adds API key server-side
         }
     }
 

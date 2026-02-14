@@ -71,10 +71,10 @@ enum PracticeCatalog {
         category: .mind,
         duration: 60,
         steps: [
-            PracticeStep(id: "st-stop", instruction: "Stop what you're doing", duration: 10),
-            PracticeStep(id: "st-breath", instruction: "Take a deep breath", duration: 15),
-            PracticeStep(id: "st-observe", instruction: "Observe your experience", duration: 20),
-            PracticeStep(id: "st-proceed", instruction: "Proceed with awareness", duration: 15),
+            PracticeStep(id: "st-stop", instruction: "Put your hands in your lap. Pause everything", duration: 10),
+            PracticeStep(id: "st-breath", instruction: "Deep breath in through your nose... out through your mouth", duration: 15),
+            PracticeStep(id: "st-observe", instruction: "Scan your body: where do you feel tension right now?", duration: 20),
+            PracticeStep(id: "st-proceed", instruction: "Choose one small next step. Begin slowly", duration: 15),
         ]
     )
 
@@ -84,9 +84,9 @@ enum PracticeCatalog {
         category: .mind,
         duration: 90,
         steps: [
-            PracticeStep(id: "sc-mindful", instruction: "Acknowledge what you're feeling", duration: 30),
-            PracticeStep(id: "sc-humanity", instruction: "Connect with shared human experience", duration: 30),
-            PracticeStep(id: "sc-kindness", instruction: "Offer yourself kindness", duration: 30),
+            PracticeStep(id: "sc-mindful", instruction: "Say to yourself: 'This is a difficult moment'", duration: 30),
+            PracticeStep(id: "sc-humanity", instruction: "Remember: everyone struggles sometimes. You're not alone", duration: 30),
+            PracticeStep(id: "sc-kindness", instruction: "Place a hand on your chest. Say: 'May I be kind to myself'", duration: 30),
         ]
     )
 
@@ -107,9 +107,9 @@ enum PracticeCatalog {
         category: .mind,
         duration: 120,
         steps: [
-            PracticeStep(id: "td-name", instruction: "Name the recurring thought", duration: 30),
-            PracticeStep(id: "td-notice", instruction: "I notice I'm having the thought...", duration: 30),
-            PracticeStep(id: "td-watch", instruction: "Watch the thought float by like a cloud", duration: 60),
+            PracticeStep(id: "td-name", instruction: "What thought keeps looping? Finish: 'I keep thinking that...'", duration: 30),
+            PracticeStep(id: "td-notice", instruction: "Now reframe it: 'I notice I'm having the thought that...'", duration: 30),
+            PracticeStep(id: "td-watch", instruction: "Imagine placing that thought on a leaf in a stream. Watch it drift away", duration: 60),
         ]
     )
 
@@ -244,10 +244,10 @@ enum PracticeCatalog {
         category: .mind,
         duration: 120,
         steps: [
-            PracticeStep(id: "lk-self", instruction: "May I be happy, may I be well", duration: 30),
-            PracticeStep(id: "lk-loved", instruction: "Send warmth to someone you love", duration: 30),
-            PracticeStep(id: "lk-neutral", instruction: "Extend kindness to a neutral person", duration: 30),
-            PracticeStep(id: "lk-all", instruction: "Radiate compassion to all beings", duration: 30),
+            PracticeStep(id: "lk-self", instruction: "Repeat silently: 'May I be safe. May I be healthy. May I be at peace'", duration: 30),
+            PracticeStep(id: "lk-loved", instruction: "Picture someone you love. Say: 'May you be safe. May you be happy'", duration: 30),
+            PracticeStep(id: "lk-neutral", instruction: "Think of someone you saw today. Repeat the same wishes for them", duration: 30),
+            PracticeStep(id: "lk-all", instruction: "Expand outward: 'May everyone, everywhere, be at peace'", duration: 30),
         ]
     )
 
@@ -257,10 +257,10 @@ enum PracticeCatalog {
         category: .mind,
         duration: 90,
         steps: [
-            PracticeStep(id: "wt-list", instruction: "Mentally list your current worries", duration: 30),
-            PracticeStep(id: "wt-sort", instruction: "Sort: what can I control vs. not?", duration: 20),
-            PracticeStep(id: "wt-release", instruction: "Consciously let go of what you can't control", duration: 20),
-            PracticeStep(id: "wt-present", instruction: "Return your attention to the present", duration: 20),
+            PracticeStep(id: "wt-list", instruction: "Name your top 3 worries right now — one by one, silently", duration: 30),
+            PracticeStep(id: "wt-sort", instruction: "For each worry ask: can I act on this today? Yes or no?", duration: 20),
+            PracticeStep(id: "wt-release", instruction: "Imagine writing each 'no' item on paper and putting it in a drawer", duration: 20),
+            PracticeStep(id: "wt-present", instruction: "Look around. Name one thing you can see right now", duration: 20),
         ]
     )
 
@@ -270,9 +270,9 @@ enum PracticeCatalog {
         category: .mind,
         duration: 60,
         steps: [
-            PracticeStep(id: "ml-notice", instruction: "Notice all the sounds around you", duration: 20),
-            PracticeStep(id: "ml-focus", instruction: "Focus on just one sound", duration: 20),
-            PracticeStep(id: "ml-expand", instruction: "Expand awareness to all sounds again", duration: 20),
+            PracticeStep(id: "ml-notice", instruction: "Close your eyes. How many different sounds can you count?", duration: 20),
+            PracticeStep(id: "ml-focus", instruction: "Pick the quietest sound. Focus only on it", duration: 20),
+            PracticeStep(id: "ml-expand", instruction: "Now let all sounds in at once — like an orchestra", duration: 20),
         ]
     )
 
@@ -282,10 +282,10 @@ enum PracticeCatalog {
         category: .mind,
         duration: 120,
         steps: [
-            PracticeStep(id: "vis-imagine", instruction: "Picture a place where you feel completely safe", duration: 30),
-            PracticeStep(id: "vis-details", instruction: "Notice the colors, textures, light", duration: 30),
-            PracticeStep(id: "vis-warmth", instruction: "Feel the warmth and safety of this place", duration: 30),
-            PracticeStep(id: "vis-anchor", instruction: "Anchor this feeling — you can return anytime", duration: 30),
+            PracticeStep(id: "vis-imagine", instruction: "Close your eyes. Picture a place where you feel completely safe", duration: 30),
+            PracticeStep(id: "vis-details", instruction: "Look around in your mind: what colors do you see? What do you hear?", duration: 30),
+            PracticeStep(id: "vis-warmth", instruction: "Take a deep breath there. Feel the warmth and calm", duration: 30),
+            PracticeStep(id: "vis-anchor", instruction: "Remember this feeling. You can return here anytime", duration: 30),
         ]
     )
 

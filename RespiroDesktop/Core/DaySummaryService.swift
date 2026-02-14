@@ -7,8 +7,8 @@ actor DaySummaryService {
         switch mode {
         case .direct:
             return URL(string: "https://api.anthropic.com/v1/messages")!
-        case .proxy(let url, _, _):
-            return URL(string: "\(url)/functions/v1/claude-proxy")!
+        case .proxy:
+            return URL(string: RespiroConfig.railwayProxyURL)!
         }
     }
 
@@ -38,24 +38,14 @@ actor DaySummaryService {
         Keep each field to 1-2 sentences.
         """
 
-    /// Auto-detect mode: proxy first (always available)
+    /// Default mode: Railway proxy (always available, no API key needed)
     init() {
-        let deviceID = DeviceID.current
-        self.mode = .proxy(
-            supabaseURL: RespiroConfig.supabaseURL,
-            anonKey: RespiroConfig.supabaseAnonKey,
-            deviceID: deviceID
-        )
+        self.mode = .proxy
     }
 
     /// Direct mode (BYOK)
     init(apiKey: String) {
         self.mode = .direct(apiKey: apiKey)
-    }
-
-    /// Explicit proxy mode
-    init(supabaseURL: String, anonKey: String, deviceID: String) {
-        self.mode = .proxy(supabaseURL: supabaseURL, anonKey: anonKey, deviceID: deviceID)
     }
 
     // MARK: - Mode Helpers
@@ -67,12 +57,8 @@ actor DaySummaryService {
                 "x-api-key": apiKey,
                 "anthropic-version": Self.apiVersion,
             ]
-        case .proxy(_, let anonKey, let deviceID):
-            return [
-                "Authorization": "Bearer \(anonKey)",
-                "apikey": anonKey,
-                "x-device-id": deviceID,
-            ]
+        case .proxy:
+            return [:]  // Railway proxy adds API key server-side
         }
     }
 
