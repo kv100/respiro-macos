@@ -7,7 +7,7 @@
 **[Download Respiro.dmg (v1.0.0)](https://github.com/kv100/respiro-macos/releases/latest/download/Respiro.dmg)** — macOS 14+, signed & notarized
 
 > Open DMG → drag to Applications → launch. Grant Screen Recording permission when prompted.
-> Demo Mode works without an API key. For live AI analysis, set `ANTHROPIC_API_KEY` environment variable before launching.
+> Works out of the box — **no API key needed.** Demo Mode showcases all features with pre-built scenarios.
 
 ## The Problem
 
@@ -245,13 +245,11 @@ SoundService (@MainActor)               — Subtle system sound effects
 2. Open DMG, drag **RespiroDesktop** to Applications
 3. Launch from Applications
 4. Grant **Screen Recording** permission when prompted
-5. (Optional) Set API key for live AI analysis:
-   ```bash
-   export ANTHROPIC_API_KEY="sk-ant-..."
-   open /Applications/RespiroDesktop.app
-   ```
+5. Enable **Demo Mode** in Settings (gear icon) to explore all features
 
-**Demo Mode** works without an API key — toggle in Settings (gear icon).
+Demo Mode showcases all Opus 4.6 capabilities with pre-built scenarios — no setup needed.
+
+> **For personal use with live AI analysis:** set `export ANTHROPIC_API_KEY="sk-ant-..."` before launching.
 
 ### Option 2: Build from Source
 
