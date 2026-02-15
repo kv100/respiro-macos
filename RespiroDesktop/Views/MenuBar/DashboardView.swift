@@ -13,7 +13,8 @@ struct DashboardView: View {
     private let minuteTimer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
 
     private var todayEntries: [StressEntry] {
-        let start = Calendar.current.startOfDay(for: Date())
+        // Use 24h window instead of startOfDay so overnight sessions aren't cut at midnight
+        let start = Date().addingTimeInterval(-24 * 3600)
         return allEntries.filter { $0.timestamp >= start }
     }
 
