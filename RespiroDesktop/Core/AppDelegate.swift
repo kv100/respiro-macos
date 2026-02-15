@@ -115,6 +115,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
         }
 
+        // Wire auto-pause callback (user idle 30+ min → pause monitoring)
+        await service.setAutoPauseCallback { @Sendable in
+            Task { @MainActor in
+                state.handleAutoPause()
+            }
+        }
+
         appState.configureMonitoring(service: service)
 
         // Load initial learned patterns into monitoring service

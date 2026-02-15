@@ -33,6 +33,19 @@ actor MonitoringService {
     var onWeatherUpdate: (@Sendable (InnerWeather, StressAnalysisResponse) -> Void)?
     var onSilenceDecision: (@Sendable (SilenceDecision) -> Void)?
     var onDiagnostic: (@Sendable (String) -> Void)?
+    var onAutoPause: (@Sendable () -> Void)?
+
+    // MARK: - Idle Detection
+
+    private let autoPauseIdleThreshold: TimeInterval = 30 * 60 // 30 min
+
+    /// Check if user has been idle (no keyboard/mouse) for longer than threshold
+    private nonisolated func userIdleTime() -> TimeInterval {
+        let keyboard = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: .keyDown)
+        let mouse = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: .mouseMoved)
+        let click = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: .leftMouseDown)
+        return min(keyboard, mouse, click)
+    }
 
     // Active hours removed — monitor whenever app is running
 
@@ -278,6 +291,10 @@ actor MonitoringService {
         onDiagnostic = callback
     }
 
+    func setAutoPauseCallback(_ callback: @escaping @Sendable () -> Void) {
+        onAutoPause = callback
+    }
+
     /// Emit a silence decision when the AI analyzed but chose not to interrupt.
     func emitSilenceDecision(analysis: StressAnalysisResponse, reason: String) {
         let weather = InnerWeather(rawValue: analysis.weather) ?? .clear
@@ -358,6 +375,16 @@ actor MonitoringService {
         }
 
         while !Task.isCancelled && isRunning {
+            // Auto-pause if user has been idle for 30+ minutes (e.g., sleeping, away)
+            let idle = userIdleTime()
+            if idle >= autoPauseIdleThreshold {
+                logger.fault("😴 User idle for \(Int(idle))s — auto-pausing monitoring")
+                onDiagnostic?("Auto-paused (inactive)")
+                isRunning = false
+                onAutoPause?()
+                return
+            }
+
             logger.fault("📸 Taking screenshot...")
             onDiagnostic?("Analyzing...")
             let checkStart = Date()

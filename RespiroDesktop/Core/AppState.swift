@@ -313,6 +313,15 @@ final class AppState {
         }
     }
 
+    /// Called by MonitoringService when user has been idle 30+ min.
+    /// Pauses monitoring without stopping the service (it already stopped itself).
+    func handleAutoPause() {
+        logger.fault("😴 Auto-pause: user idle 30+ min")
+        isMonitoring = false
+        monitoringPausedAt = Date()
+        monitoringDiagnostic = "Auto-paused (inactive)"
+    }
+
     func toggleMonitoring() async {
         if isMonitoring {
             await stopMonitoring()

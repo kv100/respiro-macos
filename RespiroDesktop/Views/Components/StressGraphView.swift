@@ -18,16 +18,26 @@ struct StressGraphView: View {
             let level = Self.stressLevel(weather: weather, confidence: entry.confidence)
             return (date: entry.timestamp, weather: weather, level: level)
         }
-
-        // Group into 15-min buckets to prevent dense clusters from breaking the graph
         guard raw.count > 1 else { return raw }
 
+        // Trim to current session: only show data after the last 4h+ gap
+        let sessionGap: TimeInterval = 4 * 3600
+        var sessionStart = 0
+        for i in 1..<raw.count {
+            if raw[i].date.timeIntervalSince(raw[i - 1].date) >= sessionGap {
+                sessionStart = i
+            }
+        }
+        let session = Array(raw[sessionStart...])
+        guard session.count > 1 else { return session }
+
+        // Group into 15-min buckets to reduce visual noise
         let bucketSize: TimeInterval = 15 * 60
         var groups: [(date: Date, weather: InnerWeather, level: Int)] = []
         var currentBucket: [(date: Date, weather: InnerWeather, level: Int)] = []
-        var bucketStart: Date = raw[0].date
+        var bucketStart: Date = session[0].date
 
-        for point in raw {
+        for point in session {
             if point.date.timeIntervalSince(bucketStart) <= bucketSize {
                 currentBucket.append(point)
             } else {
@@ -38,9 +48,7 @@ struct StressGraphView: View {
                 bucketStart = point.date
             }
         }
-        // Flush last bucket — always keep the very latest point for accuracy
         if let last = currentBucket.last {
-            // If bucket has a worse point than the latest, emit both
             if let worst = currentBucket.max(by: { $0.level < $1.level }),
                worst.level > last.level {
                 groups.append(worst)
