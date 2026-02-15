@@ -323,7 +323,7 @@ final class AppState {
 
     /// Called from MonitoringService callback when new analysis arrives.
     func updateWeather(_ weather: InnerWeather, analysis: StressAnalysisResponse) {
-        logger.fault("📊 updateWeather: weather=\(weather.rawValue), confidence=\(String(format: "%.2f", analysis.confidence)), nudgeType=\(analysis.nudgeType ?? "nil"), signals=\(analysis.signals.prefix(3).joined(separator: ", "))")
+        logger.fault("📊 updateWeather: weather=\(weather.rawValue, privacy: .public), confidence=\(String(format: "%.2f", analysis.confidence), privacy: .public), nudgeType=\(analysis.nudgeType ?? "nil", privacy: .public), signals=\(analysis.signals.prefix(3).joined(separator: ", "), privacy: .public)")
         // Apply weather floor from user check-in
         var effectiveWeather = weather
         let floorOverridden: Bool
@@ -376,7 +376,7 @@ final class AppState {
         // Demo mode: bypass NudgeEngine cooldowns -- create decisions directly from analysis
         if isDemoMode {
             if let nudgeTypeRaw = analysis.nudgeType,
-               let nudgeType = NudgeType(rawValue: nudgeTypeRaw) {
+               let nudgeType = NudgeType.from(nudgeTypeRaw) {
                 var nudgeMessage = analysis.nudgeMessage
                 // If floor overrode AI, acknowledge internal stress
                 if floorOverridden {
@@ -428,32 +428,48 @@ final class AppState {
         }
 
         // Real mode: evaluate nudge decision asynchronously via NudgeEngine
+        logger.fault("🔄 About to create NudgeEngine Task. isDemoMode=\(self.isDemoMode, privacy: .public), nudgeEngine=\(self.nudgeEngine != nil, privacy: .public)")
         Task { @MainActor [weak self] in
-            guard let self, let engine = self.nudgeEngine else { return }
+            self?.logger.fault("🔄 NudgeEngine Task started")
+            guard let self, let engine = self.nudgeEngine else {
+                self?.logger.fault("⚠️ NudgeEngine Task guard failed: self=\(self != nil, privacy: .public), engine=\(self?.nudgeEngine != nil, privacy: .public)")
+                return
+            }
+
+            self.logger.fault("🔍 Step 1: guard passed, checking suppression. smartSuppression=\(self.smartSuppression != nil, privacy: .public)")
 
             // Check smart suppression first
             if let suppression = self.smartSuppression {
+                self.logger.fault("🔍 Step 2: calling shouldSuppress()")
                 let suppressionResult = suppression.shouldSuppress()
+                self.logger.fault("🔍 Step 3: shouldSuppress returned")
                 if let denied = engine.evaluateSuppression(suppressionResult) {
+                    self.logger.fault("🛑 SmartSuppression blocked nudge: \(denied.reason, privacy: .public)")
                     self.pendingNudge = denied
                     self.captureSilenceDecision(analysis: analysis, reason: denied.reason)
                     return
                 }
+                self.logger.fault("🔍 Step 4: suppression allowed")
+            } else {
+                self.logger.fault("🔍 Step 2b: no smartSuppression configured")
             }
+
+            self.logger.fault("🔍 Step 5: building behavioral context. metrics=\(analysis.behaviorMetrics != nil, privacy: .public)")
 
             // Build behavioral context for rule-based override
             var behavioralCtx: BehavioralContext? = nil
-            if let metrics = analysis.behaviorMetrics,
-               let deviation = analysis.baselineDeviation {
+            if let metrics = analysis.behaviorMetrics {
                 behavioralCtx = BehavioralContext(
                     metrics: metrics,
-                    baselineDeviation: deviation,
+                    baselineDeviation: analysis.baselineDeviation ?? 0.0,
                     systemContext: analysis.systemContext
                 )
             }
             let severity = BehavioralContext.severity(behavioralCtx)
-            self.logger.fault("🧠 NudgeEngine input: severity=\(String(format: "%.2f", severity)), hasBehavioral=\(behavioralCtx != nil), switches=\(String(format: "%.1f", behavioralCtx?.metrics.contextSwitchesPerMinute ?? -1))/min, deviation=\(String(format: "%.2f", behavioralCtx?.baselineDeviation ?? -1))")
+            self.logger.fault("🧠 NudgeEngine input: severity=\(String(format: "%.2f", severity), privacy: .public), hasBehavioral=\(behavioralCtx != nil, privacy: .public), switches=\(String(format: "%.1f", behavioralCtx?.metrics.contextSwitchesPerMinute ?? -1), privacy: .public)/min, deviation=\(String(format: "%.2f", behavioralCtx?.baselineDeviation ?? -1), privacy: .public)")
+            self.logger.fault("🔍 Step 6: calling engine.shouldNudge()")
             var decision = await engine.shouldNudge(for: analysis, behavioral: behavioralCtx)
+            self.logger.fault("🔍 Step 7: engine returned")
 
             // If floor overrode AI and engine decided not to nudge, force a nudge
             if floorOverridden && !decision.shouldShow {
@@ -481,7 +497,7 @@ final class AppState {
                 )
             }
 
-            self.logger.fault("📋 NudgeDecision: show=\(decision.shouldShow), type=\(decision.nudgeType?.rawValue ?? "nil"), reason=\(decision.reason)")
+            self.logger.fault("📋 NudgeDecision: show=\(decision.shouldShow, privacy: .public), type=\(decision.nudgeType?.rawValue ?? "nil", privacy: .public), reason=\(decision.reason, privacy: .public)")
             self.pendingNudge = decision
             if decision.shouldShow, let nudgeType = decision.nudgeType {
                 // If behavioral override triggered a nudge but icon is still "clear",
@@ -497,7 +513,7 @@ final class AppState {
                     isInternalStress: floorOverridden
                 )
             } else if !decision.shouldShow {
-                self.logger.fault("🤫 Silence: \(decision.reason)")
+                self.logger.fault("🤫 Silence: \(decision.reason, privacy: .public)")
                 self.captureSilenceDecision(analysis: analysis, reason: decision.reason)
             }
         }

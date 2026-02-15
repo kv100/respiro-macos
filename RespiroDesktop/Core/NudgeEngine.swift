@@ -124,7 +124,7 @@ actor NudgeEngine {
         let now = self.now
         let bSuffix = behavioralSuffix(behavioral)
         let severity = BehavioralContext.severity(behavioral)
-        logger.fault("🧠 shouldNudge: weather=\(analysis.weather), nudgeType=\(analysis.nudgeType ?? "nil"), confidence=\(String(format: "%.2f", analysis.confidence)), severity=\(String(format: "%.2f", severity)), dailyNudges=\(self.dailyNudgeCount), consecutiveDismissals=\(self.consecutiveDismissals)")
+        logger.fault("🧠 shouldNudge: weather=\(analysis.weather, privacy: .public), nudgeType=\(analysis.nudgeType ?? "nil", privacy: .public), confidence=\(String(format: "%.2f", analysis.confidence), privacy: .public), severity=\(String(format: "%.2f", severity), privacy: .public), dailyNudges=\(self.dailyNudgeCount, privacy: .public), dismissals=\(self.consecutiveDismissals, privacy: .public)")
 
         // 0. Smart suppression: video call or screen sharing active
         if let ctx = behavioral?.systemContext {
@@ -138,7 +138,7 @@ actor NudgeEngine {
 
         // 1. AI says don't nudge — check behavioral override
         guard let nudgeTypeRaw = analysis.nudgeType,
-              let nudgeType = NudgeType(rawValue: nudgeTypeRaw) else {
+              let nudgeType = NudgeType.from(nudgeTypeRaw) else {
             // Behavioral override: extreme distress forces practice nudge
             // Extreme severity (>= 0.85) overrides confidence gate — user is clearly in distress
             // Normal severity (0.7-0.85) still requires confidence >= 0.6
@@ -162,7 +162,8 @@ actor NudgeEngine {
         }
 
         // 3. Behavioral contradiction: AI says nudge but behavior is calm
-        if severity < 0.15 && analysis.weather == "stormy" {
+        // Only apply when we have behavioral data — without data, trust the AI
+        if behavioral != nil && severity < 0.15 && analysis.weather == "stormy" {
             return denied(reason: "behavioral_contradiction [severity=\(String(format: "%.2f", severity))\(bSuffix)]")
         }
 
@@ -225,7 +226,7 @@ actor NudgeEngine {
         }
 
         // All checks passed
-        logger.fault("✅ APPROVED: type=\(nudgeType.rawValue), reason=approved\(bSuffix)")
+        logger.fault("✅ APPROVED: type=\(nudgeType.rawValue, privacy: .public), reason=approved\(bSuffix, privacy: .public)")
         return NudgeDecision(
             shouldShow: true,
             nudgeType: nudgeType,
@@ -485,7 +486,7 @@ actor NudgeEngine {
     }
 
     private func denied(reason: String) -> NudgeDecision {
-        logger.fault("🚫 DENIED: \(reason)")
+        logger.fault("🚫 DENIED: \(reason, privacy: .public)")
         return NudgeDecision(
             shouldShow: false, nudgeType: nil, message: nil,
             suggestedPracticeID: nil, reason: reason

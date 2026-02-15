@@ -138,7 +138,7 @@ final class SmartSuppression {
             .combinedSessionState,
             eventType: .keyDown
         )
-        return lastEventTime < 30.0
+        return lastEventTime < 5.0
     }
 
     private func isWithinFirstActiveMinutes() -> Bool {

@@ -243,6 +243,7 @@ actor MonitoringService {
         response.behaviorMetrics = behaviorMetrics
         response.baselineDeviation = baselineDeviation
         response.systemContext = systemContext
+        logger.fault("📎 Attached metrics: switches=\(String(format: "%.1f", behaviorMetrics.contextSwitchesPerMinute), privacy: .public)/min, session=\(Int(behaviorMetrics.sessionDuration), privacy: .public)s, apps=\(behaviorMetrics.applicationFocus.count, privacy: .public), metricsNil=\(response.behaviorMetrics == nil, privacy: .public)")
 
         recordResponse(response)
         return response
@@ -367,7 +368,7 @@ actor MonitoringService {
 
                 let weather = InnerWeather(rawValue: response.weather) ?? .clear
                 let nextMin = Int(currentInterval / 60)
-                logger.fault("📸 Check complete: \(response.weather) (took \(String(format: "%.1f", elapsed))s). Next in \(Int(self.currentInterval))s")
+                logger.fault("📸 Check complete: \(response.weather, privacy: .public) (took \(String(format: "%.1f", elapsed), privacy: .public)s). Next in \(Int(self.currentInterval), privacy: .public)s")
                 onDiagnostic?("\(response.weather) — next in \(nextMin)m")
                 onWeatherUpdate?(weather, response)
 
@@ -375,7 +376,7 @@ actor MonitoringService {
             } catch {
                 let elapsed = Date().timeIntervalSince(checkStart)
                 let errMsg = error.localizedDescription
-                logger.error("❌ Check failed after \(String(format: "%.1f", elapsed))s: \(errMsg). Interval now \(Int(self.currentInterval))s")
+                logger.fault("❌ Check failed after \(String(format: "%.1f", elapsed), privacy: .public)s: \(errMsg, privacy: .public). Interval now \(Int(self.currentInterval), privacy: .public)s")
                 onDiagnostic?("Error: \(errMsg.prefix(50))")
                 currentInterval = max(currentInterval, Interval.afterPractice)
             }
