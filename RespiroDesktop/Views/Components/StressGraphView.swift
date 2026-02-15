@@ -13,11 +13,42 @@ struct StressGraphView: View {
     }()
 
     private var dataPoints: [(date: Date, weather: InnerWeather, level: Int)] {
-        entries.compactMap { entry in
+        let raw = entries.compactMap { entry -> (date: Date, weather: InnerWeather, level: Int)? in
             guard let weather = InnerWeather(rawValue: entry.weather) else { return nil }
             let level = Self.stressLevel(weather: weather, confidence: entry.confidence)
             return (date: entry.timestamp, weather: weather, level: level)
         }
+
+        // Group into 15-min buckets to prevent dense clusters from breaking the graph
+        guard raw.count > 1 else { return raw }
+
+        let bucketSize: TimeInterval = 15 * 60
+        var groups: [(date: Date, weather: InnerWeather, level: Int)] = []
+        var currentBucket: [(date: Date, weather: InnerWeather, level: Int)] = []
+        var bucketStart: Date = raw[0].date
+
+        for point in raw {
+            if point.date.timeIntervalSince(bucketStart) <= bucketSize {
+                currentBucket.append(point)
+            } else {
+                if let worst = currentBucket.max(by: { $0.level < $1.level }) {
+                    groups.append(worst)
+                }
+                currentBucket = [point]
+                bucketStart = point.date
+            }
+        }
+        // Flush last bucket — always keep the very latest point for accuracy
+        if let last = currentBucket.last {
+            // If bucket has a worse point than the latest, emit both
+            if let worst = currentBucket.max(by: { $0.level < $1.level }),
+               worst.level > last.level {
+                groups.append(worst)
+            }
+            groups.append(last)
+        }
+
+        return groups
     }
 
     /// Map weather + confidence to 5 stress levels:

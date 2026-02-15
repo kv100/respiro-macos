@@ -58,7 +58,9 @@ struct DashboardView: View {
                                 silenceCardVisible = true
                             }
                     }
-                    if let tip = currentTip {
+                    // Don't show wellness tip when silence card is visible —
+                    // breathing/practice tips look confusingly similar to nudge cards
+                    if appState.lastSilenceDecision == nil, let tip = currentTip {
                         wellnessTipCard(tip)
                     }
                     practiceLibraryButton
