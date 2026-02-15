@@ -80,7 +80,7 @@ final class MenuBarController: NSObject {
         }
     }
 
-    private func showPopover() {
+    func showPopover() {
         guard let button = statusItem?.button else { return }
         if popover?.isShown != true {
             popover?.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)

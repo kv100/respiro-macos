@@ -179,11 +179,12 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
             guard let appState = self?.appState else { return }
             switch actionID {
             case "START_PRACTICE":
-                if appState.pendingNudge?.shouldShow == true {
-                    appState.showPractice()
-                } else {
-                    appState.showDashboard()
+                // Start practice even if nudge already auto-dismissed
+                if appState.selectedPracticeID == nil {
+                    appState.selectedPracticeID = appState.pendingNudge?.suggestedPracticeID ?? "box-breathing"
                 }
+                appState.showPractice()
+                self?.menuBarController?.showPopover()
             case "DISMISS":
                 await appState.notifyDismissal(type: .imFine)
             default:
@@ -193,6 +194,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
                 } else {
                     appState.showDashboard()
                 }
+                self?.menuBarController?.showPopover()
             }
         }
         completionHandler()
