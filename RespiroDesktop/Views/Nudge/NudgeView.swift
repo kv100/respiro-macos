@@ -25,9 +25,6 @@ struct NudgeView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
-                .frame(maxHeight: 120)
-
             if let nudge = appState.pendingNudge, nudge.shouldShow, let nudgeType = nudge.nudgeType {
                 nudgeCard(nudge: nudge, type: nudgeType)
                     .padding(16)
