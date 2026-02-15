@@ -204,18 +204,21 @@ struct StressGraphView: View {
     private var timeLabels: some View {
         GeometryReader { geometry in
             let points = calculatePoints(in: CGSize(width: geometry.size.width, height: 72))
-            let labelCount = min(dataPoints.count, maxVisibleLabels(width: geometry.size.width))
-            let step = max(1, dataPoints.count / labelCount)
+            let maxLabels = maxVisibleLabels(width: geometry.size.width)
 
-            // Generate labels with deduplication
-            let labelData: [(x: CGFloat, text: String)] = stride(from: 0, to: dataPoints.count, by: step).compactMap { index in
-                let safeIndex = min(index, points.count - 1)
-                guard safeIndex < points.count else { return nil }
+            // Build candidate labels at evenly-spaced indices (always include last)
+            let step = max(1, dataPoints.count / maxLabels)
+            let baseIndices = Array(stride(from: 0, to: dataPoints.count, by: step))
+            let indices = baseIndices.last == dataPoints.count - 1
+                ? baseIndices
+                : baseIndices + [dataPoints.count - 1]
+
+            // Generate labels and deduplicate consecutive same-hour text
+            let labelData: [(x: CGFloat, text: String)] = indices.compactMap { index in
+                guard index < points.count else { return nil }
                 let timeString = Self.timeFormatter.string(from: dataPoints[index].date).lowercased()
-                return (x: points[safeIndex].x, text: timeString)
+                return (x: points[index].x, text: timeString)
             }
-
-            // Filter out duplicates (consecutive same text)
             let uniqueLabels = labelData.enumerated().filter { offset, item in
                 offset == 0 || item.text != labelData[offset - 1].text
             }.map { $0.element }
@@ -240,20 +243,12 @@ struct StressGraphView: View {
             return [CGPoint(x: size.width / 2, y: yPosition(forLevel: dataPoints[0].level, height: size.height))]
         }
 
-        guard let firstTime = dataPoints.first?.date.timeIntervalSince1970,
-              let lastTime = dataPoints.last?.date.timeIntervalSince1970,
-              lastTime > firstTime else {
-            // Fallback to index-based if all same timestamp
-            return dataPoints.enumerated().map { index, point in
-                let x = CGFloat(index) / CGFloat(dataPoints.count - 1) * size.width
-                let y = yPosition(forLevel: point.level, height: size.height)
-                return CGPoint(x: x, y: y)
-            }
-        }
-
-        let timeRange = lastTime - firstTime
-        return dataPoints.map { point in
-            let x = CGFloat((point.date.timeIntervalSince1970 - firstTime) / timeRange) * size.width
+        // Equal spacing — points evenly distributed regardless of time gaps.
+        // Time labels show actual timestamps, but visual spacing stays uniform.
+        let padding: CGFloat = 4
+        let usableWidth = size.width - padding * 2
+        return dataPoints.enumerated().map { index, point in
+            let x = padding + CGFloat(index) / CGFloat(dataPoints.count - 1) * usableWidth
             let y = yPosition(forLevel: point.level, height: size.height)
             return CGPoint(x: x, y: y)
         }
