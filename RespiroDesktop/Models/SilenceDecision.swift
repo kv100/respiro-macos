@@ -34,9 +34,9 @@ struct SilenceDecision: Identifiable, Sendable {
     var reasonSummary: String {
         let base = reason
             .replacingOccurrences(of: #"\s*\[.*?\]"#, with: "", options: .regularExpression)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines.union(CharacterSet(charactersIn: "[]")))
         switch base {
-        case "ai_no_nudge": return "AI determined no intervention needed"
+        case "ai_no_nudge": return "Everything looks fine — no need to interrupt"
         case "behavioral_contradiction": return "Behavior doesn't match — staying quiet"
         case "hard_min_interval": return "Too soon since last check"
         case "min_nudge_interval": return "Cooldown active between nudges"
