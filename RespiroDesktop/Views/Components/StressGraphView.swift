@@ -31,8 +31,11 @@ struct StressGraphView: View {
         let session = Array(raw[sessionStart...])
         guard session.count > 1 else { return session }
 
-        // Group into 15-min buckets to reduce visual noise
-        let bucketSize: TimeInterval = 15 * 60
+        // Adaptive bucket size based on session length
+        let sessionDuration = session.last!.date.timeIntervalSince(session.first!.date)
+        let bucketSize: TimeInterval = sessionDuration < 3600 ? 5 * 60
+            : sessionDuration < 3 * 3600 ? 10 * 60
+            : 15 * 60
         var groups: [(date: Date, weather: InnerWeather, level: Int)] = []
         var currentBucket: [(date: Date, weather: InnerWeather, level: Int)] = []
         var bucketStart: Date = session[0].date
