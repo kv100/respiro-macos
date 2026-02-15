@@ -245,13 +245,6 @@
 			path = Onboarding;
 			sourceTree = "<group>";
 		};
-		GROUP_PLAYTEST /* Playtest */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Playtest;
-			sourceTree = "<group>";
-		};
 		GROUP_PRACTICE /* Practice */ = {
 			isa = PBXGroup;
 			children = (
@@ -340,8 +333,7 @@
 				GROUP_COMPONENTS /* Components */,
 				GROUP_SETTINGS /* Settings */,
 				GROUP_SUMMARY /* Summary */,
-				GROUP_PLAYTEST /* Playtest */,
-			);
+				);
 			path = Views;
 			sourceTree = "<group>";
 		};
