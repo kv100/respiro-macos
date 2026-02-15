@@ -4,7 +4,7 @@ import SwiftData
 // MARK: - Baseline Service
 
 /// Learns user's behavioral baseline from 7+ days of history to detect stress-indicating deviations.
-/// Uses historical BehaviorMetrics to build a personalized normal range.
+/// All behavior data is persisted in SwiftData so learning survives app restarts.
 actor BaselineService {
 
     // MARK: - Dependencies
@@ -14,14 +14,13 @@ actor BaselineService {
     // MARK: - State
 
     private var currentBaseline: UserBaseline?
-    private var behaviorHistory: [BehaviorDataPoint] = []
 
     // MARK: - Constants
 
     private enum Config {
         static let minDaysForBaseline = 7
         static let maxHistoryDays = 30
-        static let deviationThreshold = 1.5 // 1.5x baseline = stress signal
+        static let deviationThreshold = 1.5
     }
 
     // MARK: - Init
@@ -37,18 +36,26 @@ actor BaselineService {
 
     /// Record a new behavior data point for baseline learning.
     func recordBehavior(_ metrics: BehaviorMetrics, at time: Date) async {
-        let dataPoint = BehaviorDataPoint(
-            timestamp: time,
-            metrics: metrics
-        )
-        behaviorHistory.append(dataPoint)
+        let entry = BehaviorDataEntry(timestamp: time, metrics: metrics)
+        modelContext.insert(entry)
+        try? modelContext.save()
 
-        // Keep only last 30 days
+        // Prune entries older than 30 days
         let cutoff = Calendar.current.date(byAdding: .day, value: -Config.maxHistoryDays, to: Date()) ?? Date()
-        behaviorHistory.removeAll { $0.timestamp < cutoff }
+        let oldDescriptor = FetchDescriptor<BehaviorDataEntry>(
+            predicate: #Predicate { $0.timestamp < cutoff }
+        )
+        if let oldEntries = try? modelContext.fetch(oldDescriptor) {
+            for old in oldEntries {
+                modelContext.delete(old)
+            }
+            try? modelContext.save()
+        }
 
         // Rebuild baseline if we have enough data
-        if behaviorHistory.count >= Config.minDaysForBaseline * 12 { // ~12 samples/day
+        let countDescriptor = FetchDescriptor<BehaviorDataEntry>()
+        let totalCount = (try? modelContext.fetchCount(countDescriptor)) ?? 0
+        if totalCount >= Config.minDaysForBaseline * 12 {
             await rebuildBaseline()
         }
     }
@@ -67,7 +74,6 @@ actor BaselineService {
     func calculateDeviation(current: BehaviorMetrics) -> Double? {
         guard let baseline = currentBaseline else { return nil }
 
-        // Calculate deviation across multiple dimensions
         var deviations: [Double] = []
 
         // Context switches (higher = more stress)
@@ -91,42 +97,47 @@ actor BaselineService {
         )
         deviations.append(focusDeviation)
 
-        // Return max deviation (most stressed dimension)
         return deviations.max() ?? 0.0
     }
 
-    /// Rebuild baseline from accumulated history.
-    /// Called automatically when enough data points exist.
+    /// Rebuild baseline from persisted history.
     func rebuildBaseline() async {
-        guard behaviorHistory.count >= Config.minDaysForBaseline * 12 else { return }
+        let cutoff = Calendar.current.date(byAdding: .day, value: -Config.maxHistoryDays, to: Date()) ?? Date()
+        let descriptor = FetchDescriptor<BehaviorDataEntry>(
+            predicate: #Predicate { $0.timestamp >= cutoff },
+            sortBy: [SortDescriptor(\.timestamp)]
+        )
+
+        guard let entries = try? modelContext.fetch(descriptor),
+              entries.count >= Config.minDaysForBaseline * 12 else { return }
 
         let userID = DeviceID.current
         let baseline = UserBaseline(userID: userID)
 
         // Calculate averages
-        let contextSwitches = behaviorHistory.map(\.metrics.contextSwitchesPerMinute)
+        let contextSwitches = entries.map(\.contextSwitchesPerMinute)
         baseline.avgContextSwitchRate = contextSwitches.reduce(0, +) / Double(contextSwitches.count)
 
-        let sessionLengths = behaviorHistory.map(\.metrics.sessionDuration)
+        let sessionLengths = entries.map(\.sessionDuration)
         baseline.typicalSessionLength = sessionLengths.reduce(0, +) / Double(sessionLengths.count)
 
         // Build normal app mix (weighted average of all app focus patterns)
         var appMixAccumulator: [String: Double] = [:]
-        for point in behaviorHistory {
-            for (app, percentage) in point.metrics.applicationFocus {
+        for entry in entries {
+            for (app, percentage) in entry.applicationFocus {
                 appMixAccumulator[app, default: 0.0] += percentage
             }
         }
         for key in appMixAccumulator.keys {
-            appMixAccumulator[key]? /= Double(behaviorHistory.count)
+            appMixAccumulator[key]? /= Double(entries.count)
         }
         baseline.normalAppMix = appMixAccumulator
 
         // Build weekday patterns (stress level by day of week)
         var weekdayAccumulator: [Int: [Double]] = [:]
-        for point in behaviorHistory {
-            let weekday = Calendar.current.component(.weekday, from: point.timestamp)
-            weekdayAccumulator[weekday, default: []].append(point.metrics.contextSwitchesPerMinute)
+        for entry in entries {
+            let weekday = Calendar.current.component(.weekday, from: entry.timestamp)
+            weekdayAccumulator[weekday, default: []].append(entry.contextSwitchesPerMinute)
         }
         for (weekday, values) in weekdayAccumulator {
             baseline.weekdayPattern[weekday] = values.reduce(0, +) / Double(values.count)
@@ -134,9 +145,9 @@ actor BaselineService {
 
         // Build time-of-day patterns (stress level by hour)
         var hourAccumulator: [Int: [Double]] = [:]
-        for point in behaviorHistory {
-            let hour = Calendar.current.component(.hour, from: point.timestamp)
-            hourAccumulator[hour, default: []].append(point.metrics.contextSwitchesPerMinute)
+        for entry in entries {
+            let hour = Calendar.current.component(.hour, from: entry.timestamp)
+            hourAccumulator[hour, default: []].append(entry.contextSwitchesPerMinute)
         }
         for (hour, values) in hourAccumulator {
             baseline.timeOfDayPattern[hour] = values.reduce(0, +) / Double(values.count)
@@ -144,7 +155,16 @@ actor BaselineService {
 
         baseline.lastUpdated = Date()
 
-        // Persist to SwiftData
+        // Delete old baselines for this user before inserting new one
+        let oldDescriptor = FetchDescriptor<UserBaseline>(
+            predicate: #Predicate { $0.userID == userID }
+        )
+        if let oldBaselines = try? modelContext.fetch(oldDescriptor) {
+            for old in oldBaselines {
+                modelContext.delete(old)
+            }
+        }
+
         modelContext.insert(baseline)
         try? modelContext.save()
 
@@ -166,8 +186,6 @@ actor BaselineService {
     }
 
     private func calculateFocusDeviation(current: [String: Double], baseline: [String: Double]) -> Double {
-        // Calculate how different the current app focus is from baseline
-        // Uses simple distance metric: sum of absolute differences
         var totalDifference = 0.0
 
         let allApps = Set(current.keys).union(Set(baseline.keys))
@@ -177,16 +195,6 @@ actor BaselineService {
             totalDifference += abs(currentFocus - baselineFocus)
         }
 
-        // Normalize: 0.0 = identical, 2.0 = completely different
         return min(totalDifference, 2.0)
     }
-}
-
-// MARK: - Data Point
-
-/// Single behavior observation with timestamp.
-/// Stored in-memory, not persisted (only baseline is persisted).
-private struct BehaviorDataPoint: Sendable {
-    let timestamp: Date
-    let metrics: BehaviorMetrics
 }

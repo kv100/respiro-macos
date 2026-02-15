@@ -299,37 +299,6 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Playtest
-
-    private var playtestSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            sectionHeader(title: "PLAYTEST", icon: "testtube.2")
-
-            Text("AI exploration loop. Opus 4.6 tests the app, finds blind spots, and invents new tests.")
-                .font(.system(size: 11))
-                .foregroundStyle(Color.white.opacity(0.45))
-
-            Button(action: {
-                appState.showPlaytest()
-            }) {
-                HStack(spacing: 6) {
-                    Image(systemName: "testtube.2")
-                        .font(.system(size: 12))
-                    Text("Run Exploration")
-                        .font(.system(size: 13, weight: .medium))
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color(hex: "#10B981").opacity(0.15))
-                )
-                .foregroundStyle(Color(hex: "#10B981"))
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
     // MARK: - Excluded Apps
 
     private var excludedAppsSection: some View {

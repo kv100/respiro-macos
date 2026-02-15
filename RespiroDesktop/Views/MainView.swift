@@ -42,24 +42,6 @@ struct MainView: View {
                     OnboardingView()
                 case .summary:
                     DaySummaryView()
-                case .playtest:
-                    if let service = appState.playtestService {
-                        PlaytestView(
-                            service: service,
-                            onBack: { appState.showSettings() },
-                            onScenarioTap: { scenario in
-                                appState.showPlaytestDetail(scenario)
-                            }
-                        )
-                    }
-                case .playtestDetail(let scenario):
-                    if let service = appState.playtestService {
-                        ScenarioDetailView(
-                            scenario: scenario,
-                            evaluation: service.evaluation(for: scenario.id),
-                            onBack: { appState.showPlaytest() }
-                        )
-                    }
                 case .practiceLibrary:
                     PracticeLibraryView()
                 }

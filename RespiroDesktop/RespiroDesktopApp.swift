@@ -13,6 +13,8 @@ struct RespiroDesktopApp: App {
             PracticeSession.self,
             DismissalEvent.self,
             UserPreferences.self,
+            UserBaseline.self,
+            BehaviorDataEntry.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
@@ -30,7 +32,6 @@ struct RespiroDesktopApp: App {
         }()
 
         // Menu bar only app — no windows in Scene (popover handles all UI)
-        // Playtest accessible via Settings → Playtest button (opens in popover)
         Settings { EmptyView() }
     }
 }

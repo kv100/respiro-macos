@@ -359,50 +359,6 @@ actor NudgeEngine {
         return dailyNudgeCount
     }
 
-    func cooldownSnapshot() -> PlaytestResult.CooldownSnapshot {
-        let now = self.now
-        var isInCooldown = false
-        var cooldownReason: String?
-
-        // Order matches shouldNudge() priority: hard_min → dismissal → daily → intervals → practice cooldown
-        if let last = lastNudgeTime, now.timeIntervalSince(last) < Cooldown.hardMinInterval {
-            isInCooldown = true
-            cooldownReason = "hard_min_interval"
-        } else if let last = lastDismissalTime {
-            let cooldown = consecutiveDismissals >= 3
-                ? Cooldown.consecutiveDismissalCooldown
-                : Cooldown.postDismissalCooldown
-            if now.timeIntervalSince(last) < cooldown {
-                isInCooldown = true
-                cooldownReason = consecutiveDismissals >= 3 ? "consecutive_dismissal_cooldown" : "post_dismissal_cooldown"
-            }
-        }
-        if !isInCooldown && dailyNudgeCount >= Cooldown.maxDailyTotalNudges {
-            isInCooldown = true
-            cooldownReason = "daily_total_limit"
-        } else if !isInCooldown && dailyPracticeNudgeCount >= Cooldown.maxDailyPracticeNudges {
-            isInCooldown = true
-            cooldownReason = "daily_practice_limit"
-        } else if !isInCooldown, let last = lastNudgeTime, now.timeIntervalSince(last) < Cooldown.minAnyNudgeInterval {
-            isInCooldown = true
-            cooldownReason = "min_nudge_interval"
-        } else if !isInCooldown, let last = lastPracticeNudgeTime, now.timeIntervalSince(last) < Cooldown.minPracticeInterval {
-            isInCooldown = true
-            cooldownReason = "min_practice_interval"
-        } else if !isInCooldown, let last = lastPracticeCompletedTime, now.timeIntervalSince(last) < Cooldown.postPracticeCooldown {
-            isInCooldown = true
-            cooldownReason = "post_practice_cooldown"
-        }
-
-        return PlaytestResult.CooldownSnapshot(
-            consecutiveDismissals: consecutiveDismissals,
-            dailyNudgeCount: dailyNudgeCount,
-            dailyPracticeNudgeCount: dailyPracticeNudgeCount,
-            isInCooldown: isInCooldown,
-            cooldownReason: cooldownReason
-        )
-    }
-
     // MARK: - False Positive Analysis
 
     /// Record dismissal context for false positive pattern detection
