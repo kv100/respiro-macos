@@ -153,6 +153,7 @@ struct ClaudeVisionClient: Sendable {
         1. VISUAL CUES:
            - Tab count, notification volume, app switching, video calls
            - Error messages, deadline content
+           - IMPORTANT: Distinguish browser TABS (at the top of the browser window) from BOOKMARKS BAR items (below the address bar). Only count actual open tabs, NOT bookmarks.
            - NOT message content, names, or documents
 
         2. BEHAVIORAL PATTERNS (NEW):
@@ -207,6 +208,7 @@ struct ClaudeVisionClient: Sendable {
         1. VISUAL CUES:
            - Tab count, notification volume, app switching, video calls
            - Error messages, deadline content
+           - IMPORTANT: Distinguish browser TABS (at the top of the browser window) from BOOKMARKS BAR items (below the address bar). Only count actual open tabs, NOT bookmarks.
            - NOT message content, names, or documents
 
         2. BEHAVIORAL PATTERNS (NEW):
