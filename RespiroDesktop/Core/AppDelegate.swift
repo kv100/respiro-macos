@@ -176,12 +176,20 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
             guard let appState = self?.appState else { return }
             switch actionID {
             case "START_PRACTICE":
-                appState.showPractice()
+                if appState.pendingNudge?.shouldShow == true {
+                    appState.showPractice()
+                } else {
+                    appState.showDashboard()
+                }
             case "DISMISS":
                 await appState.notifyDismissal(type: .imFine)
             default:
                 // User tapped the notification itself -- open the app
-                appState.showNudge()
+                if appState.pendingNudge?.shouldShow == true {
+                    appState.showNudge()
+                } else {
+                    appState.showDashboard()
+                }
             }
         }
         completionHandler()
