@@ -215,6 +215,11 @@ final class PracticeManager {
 
     private var practiceTask: Task<Void, Never>?
 
+    // Wall-clock timer (Bug 1 fix)
+    private var practiceStartTime: Date?
+    private var pauseAccumulated: TimeInterval = 0
+    private var pauseStartTime: Date?
+
     // MARK: - Computed
 
     var progress: Double {
@@ -237,10 +242,15 @@ final class PracticeManager {
         currentPhase = .idle
         completedCycles = 0
 
+        // Initialize wall-clock timer
+        practiceStartTime = Date()
+        pauseAccumulated = 0
+        pauseStartTime = nil
+
         switch type {
         case .physiologicalSigh:
-            totalCycles = 10
-            totalDuration = 60
+            totalCycles = 8
+            totalDuration = 64
         case .boxBreathing:
             totalCycles = 5
             totalDuration = 90  // 5 cycles x (4+4+4+4)s = 80s + buffer ≈ 90s
@@ -317,11 +327,16 @@ final class PracticeManager {
 
     func pausePractice() {
         isPaused = true
+        pauseStartTime = Date()
         practiceTask?.cancel()
     }
 
     func resumePractice() {
         isPaused = false
+        if let ps = pauseStartTime {
+            pauseAccumulated += Date().timeIntervalSince(ps)
+            pauseStartTime = nil
+        }
         practiceTask?.cancel()
         practiceTask = Task { [weak self] in
             guard let self else { return }
@@ -337,6 +352,9 @@ final class PracticeManager {
         currentPhase = .idle
         completedCycles = 0
         remainingSeconds = 0
+        practiceStartTime = nil
+        pauseAccumulated = 0
+        pauseStartTime = nil
     }
 
     func completePractice() {
@@ -345,6 +363,9 @@ final class PracticeManager {
         isActive = false
         isPaused = false
         currentPhase = .idle
+        practiceStartTime = nil
+        pauseAccumulated = 0
+        pauseStartTime = nil
     }
 
     // Grounding: user taps to confirm an item
@@ -414,35 +435,39 @@ final class PracticeManager {
              .lovingKindness, .worryTime, .mindfulListening, .visualization:
             await runGenericStepPractice()
         }
+
+        // Safety: if timer expired but completePractice wasn't called, force it
+        if isActive && !isPaused && remainingSeconds <= 0 {
+            completePractice()
+        }
     }
 
     // MARK: - Physiological Sigh Pattern
 
-    // Double-inhale (2s) + long-exhale (4s) x 10 cycles = 60s
+    // Double-inhale (4.0s) + long-exhale (4.0s) x 8 cycles = 64s
     private func runPhysiologicalSigh() async {
         let startCycle = completedCycles
 
         for cycle in startCycle..<totalCycles {
             guard !Task.isCancelled else { return }
 
-            // Phase 1: First inhale (1.0s)
-            setPhase(.inhale, duration: 1.0)
-            if await sleepPhase(seconds: 1.0) { return }
+            // Phase 1: Deep first inhale (2.0s)
+            setPhase(.inhale, duration: 2.0)
+            if await sleepPhase(seconds: 2.0) { return }
 
-            // Phase 2: Short hold (0.3s)
-            setPhase(.hold, duration: 0.3)
-            if await sleepPhase(seconds: 0.3) { return }
+            // Phase 2: Brief hold (0.5s)
+            setPhase(.hold, duration: 0.5)
+            if await sleepPhase(seconds: 0.5) { return }
 
-            // Phase 3: Second inhale (0.7s)
-            setPhase(.inhale, duration: 0.7)
-            if await sleepPhase(seconds: 0.7) { return }
+            // Phase 3: Second "top-up" inhale (1.5s)
+            setPhase(.inhale, duration: 1.5)
+            if await sleepPhase(seconds: 1.5) { return }
 
-            // Phase 4: Long exhale (4.0s)
+            // Phase 4: Long slow exhale (4.0s)
             setPhase(.exhale, duration: 4.0)
             if await sleepPhase(seconds: 4.0) { return }
 
             completedCycles = cycle + 1
-            remainingSeconds = max(0, totalDuration - (completedCycles * 6))
         }
 
         completePractice()
@@ -453,7 +478,6 @@ final class PracticeManager {
     // inhale(4s) + hold(4s) + exhale(4s) + hold(4s) x 5 = 80s
     private func runBoxBreathing() async {
         let startCycle = completedCycles
-        let cycleLength = 16 // 4+4+4+4
 
         for cycle in startCycle..<totalCycles {
             guard !Task.isCancelled else { return }
@@ -475,7 +499,6 @@ final class PracticeManager {
             if await sleepPhase(seconds: 4.0) { return }
 
             completedCycles = cycle + 1
-            remainingSeconds = max(0, totalDuration - (completedCycles * cycleLength))
         }
 
         completePractice()
@@ -487,7 +510,6 @@ final class PracticeManager {
         // Tick down the timer; actual progression is driven by user taps
         while remainingSeconds > 0 && !Task.isCancelled && isActive {
             if await sleepPhase(seconds: 1.0) { return }
-            remainingSeconds = max(0, remainingSeconds - 1)
         }
 
         if remainingSeconds <= 0 {
@@ -506,7 +528,6 @@ final class PracticeManager {
             currentSTOPPhase = phase
             let duration = phase.duration
             if await sleepPhase(seconds: duration) { return }
-            remainingSeconds = max(0, remainingSeconds - Int(duration))
         }
 
         completePractice()
@@ -523,7 +544,6 @@ final class PracticeManager {
             currentCompassionPhase = phase
             let duration = phase.duration
             if await sleepPhase(seconds: duration) { return }
-            remainingSeconds = max(0, remainingSeconds - Int(duration))
         }
 
         completePractice()
@@ -534,7 +554,6 @@ final class PracticeManager {
     // inhale(4s) + exhale(6s) x 9 = 90s
     private func runExtendedExhale() async {
         let startCycle = completedCycles
-        let cycleLength = 10 // 4+6
 
         for cycle in startCycle..<totalCycles {
             guard !Task.isCancelled else { return }
@@ -548,7 +567,6 @@ final class PracticeManager {
             if await sleepPhase(seconds: 6.0) { return }
 
             completedCycles = cycle + 1
-            remainingSeconds = max(0, totalDuration - (completedCycles * cycleLength))
         }
 
         completePractice()
@@ -565,7 +583,6 @@ final class PracticeManager {
             currentDefusionPhase = phase
             let duration = phase.duration
             if await sleepPhase(seconds: duration) { return }
-            remainingSeconds = max(0, remainingSeconds - Int(duration))
         }
 
         completePractice()
@@ -576,7 +593,6 @@ final class PracticeManager {
     // inhale(5s) + exhale(5s) x 12 = 120s
     private func runCoherentBreathing() async {
         let startCycle = completedCycles
-        let cycleLength = 10 // 5+5
 
         for cycle in startCycle..<totalCycles {
             guard !Task.isCancelled else { return }
@@ -590,7 +606,6 @@ final class PracticeManager {
             if await sleepPhase(seconds: 5.0) { return }
 
             completedCycles = cycle + 1
-            remainingSeconds = max(0, totalDuration - (completedCycles * cycleLength))
         }
 
         completePractice()
@@ -601,7 +616,6 @@ final class PracticeManager {
     // inhale(4s) + hold(7s) + exhale(8s) x 6 = 114s
     private func runFourSevenEight() async {
         let startCycle = completedCycles
-        let cycleLength = 19 // 4+7+8
 
         for cycle in startCycle..<totalCycles {
             guard !Task.isCancelled else { return }
@@ -616,7 +630,6 @@ final class PracticeManager {
             if await sleepPhase(seconds: 8.0) { return }
 
             completedCycles = cycle + 1
-            remainingSeconds = max(0, totalDuration - (completedCycles * cycleLength))
         }
 
         completePractice()
@@ -627,7 +640,6 @@ final class PracticeManager {
     // inhale(5s) + exhale(5s) x 9 = 90s
     private func runBellyBreathing() async {
         let startCycle = completedCycles
-        let cycleLength = 10 // 5+5
 
         for cycle in startCycle..<totalCycles {
             guard !Task.isCancelled else { return }
@@ -639,7 +651,6 @@ final class PracticeManager {
             if await sleepPhase(seconds: 5.0) { return }
 
             completedCycles = cycle + 1
-            remainingSeconds = max(0, totalDuration - (completedCycles * cycleLength))
         }
 
         completePractice()
@@ -650,7 +661,6 @@ final class PracticeManager {
     // left inhale(4s) + hold(2s) + right exhale(4s) + right inhale(4s) + hold(2s) + left exhale(4s) x 6 = 120s
     private func runAlternateNostril() async {
         let startCycle = completedCycles
-        let cycleLength = 20 // 4+2+4+4+2+4
 
         for cycle in startCycle..<totalCycles {
             guard !Task.isCancelled else { return }
@@ -678,7 +688,6 @@ final class PracticeManager {
             if await sleepPhase(seconds: 4.0) { return }
 
             completedCycles = cycle + 1
-            remainingSeconds = max(0, totalDuration - (completedCycles * cycleLength))
         }
 
         completePractice()
@@ -689,7 +698,6 @@ final class PracticeManager {
     // inhale(6s) + exhale(6s) x 10 = 120s
     private func runResonanceBreathing() async {
         let startCycle = completedCycles
-        let cycleLength = 12 // 6+6
 
         for cycle in startCycle..<totalCycles {
             guard !Task.isCancelled else { return }
@@ -701,7 +709,6 @@ final class PracticeManager {
             if await sleepPhase(seconds: 6.0) { return }
 
             completedCycles = cycle + 1
-            remainingSeconds = max(0, totalDuration - (completedCycles * cycleLength))
         }
 
         completePractice()
@@ -723,7 +730,6 @@ final class PracticeManager {
             currentStepInstruction = step.instruction
             let duration = Double(step.duration)
             if await sleepPhase(seconds: duration) { return }
-            remainingSeconds = max(0, remainingSeconds - step.duration)
         }
 
         completePractice()
@@ -731,7 +737,7 @@ final class PracticeManager {
 
     // MARK: - Sleep Utility
 
-    /// Sleep for a given duration, ticking down remainingSeconds.
+    /// Sleep for a given duration, updating remainingSeconds from wall clock.
     /// Returns true if cancelled.
     private func sleepPhase(seconds: Double) async -> Bool {
         let intervalMs: UInt64 = 100
@@ -741,11 +747,17 @@ final class PracticeManager {
             guard !Task.isCancelled else { return true }
             try? await Task.sleep(nanoseconds: intervalMs * 1_000_000)
 
-            // Update remaining seconds every full second
-            if tick > 0 && tick % 10 == 0 {
-                remainingSeconds = max(0, remainingSeconds - 1)
+            // Update remaining from wall clock every 500ms (every 5 ticks)
+            if tick % 5 == 4 {
+                updateRemainingFromClock()
             }
         }
         return Task.isCancelled
+    }
+
+    private func updateRemainingFromClock() {
+        guard let start = practiceStartTime else { return }
+        let elapsed = Date().timeIntervalSince(start) - pauseAccumulated
+        remainingSeconds = max(0, totalDuration - Int(elapsed))
     }
 }

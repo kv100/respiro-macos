@@ -152,14 +152,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         )
         await service.updateToolContext(toolContext)
 
-        // P6.5: Wake-from-sleep detection — trigger immediate check after 30s
+        // Wake-from-sleep detection — reset session and check after short delay
         NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didWakeNotification,
             object: nil,
             queue: .main
         ) { _ in
             Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 30_000_000_000)
+                // Reset session immediately — sleep gap means new work session
+                await service.resetSession()
+                state.monitoringDiagnostic = "Waking up..."
+                // Short delay for network/display to stabilize
+                try? await Task.sleep(nanoseconds: 5_000_000_000)
                 await service.triggerImmediateCheck()
             }
         }

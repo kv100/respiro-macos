@@ -337,6 +337,25 @@ actor MonitoringService {
 
     // Active hours removed — app monitors whenever running
 
+    /// Reset session state after wake-from-sleep or long gap.
+    /// Clears all accumulated behavioral data so the new session starts fresh.
+    func resetSession() {
+        let oldDuration: TimeInterval
+        if let start = sessionStartTime {
+            oldDuration = Date().timeIntervalSince(start)
+        } else {
+            oldDuration = 0
+        }
+        logger.fault("🔄 Resetting session (was \(Int(oldDuration))s). Clearing behavioral state.")
+        sessionStartTime = Date()
+        appSwitchHistory = []
+        recentEntries = []
+        consecutiveClearCount = 0
+        dismissalCount = 0
+        lastScreenshotTime = nil
+        currentInterval = Interval.base
+    }
+
     /// Trigger an immediate check (e.g., after wake from sleep).
     func triggerImmediateCheck() async {
         guard isRunning else { return }
@@ -412,8 +431,18 @@ actor MonitoringService {
             let sleepMin = Int(currentInterval / 60)
             logger.fault("💤 Sleeping \(Int(self.currentInterval))s")
             onDiagnostic?("Waiting \(sleepMin)m...")
+            let expectedInterval = currentInterval
+            let sleepStart = Date()
             let sleepNanos = UInt64(currentInterval * 1_000_000_000)
             try? await Task.sleep(nanoseconds: sleepNanos)
+
+            // Detect sleep gap: if actual elapsed time >> expected, Mac was sleeping
+            let actualElapsed = Date().timeIntervalSince(sleepStart)
+            if actualElapsed > expectedInterval * 2 {
+                logger.fault("🔄 Sleep gap detected: expected \(Int(expectedInterval))s, actual \(Int(actualElapsed))s — resetting session")
+                resetSession()
+                onDiagnostic?("Session reset (wake)")
+            }
         }
         logger.debug("⏱ Monitor loop ended. isRunning=\(self.isRunning), cancelled=\(Task.isCancelled)")
     }
