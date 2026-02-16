@@ -436,8 +436,9 @@ final class PracticeManager {
             await runGenericStepPractice()
         }
 
-        // Safety: if timer expired but completePractice wasn't called, force it
-        if isActive && !isPaused && remainingSeconds <= 0 {
+        // Safety: if practice method finished and we're still active, complete it
+        // (covers timing jitter where remainingSeconds may be 1-2s off)
+        if isActive && !isPaused {
             completePractice()
         }
     }
@@ -738,7 +739,7 @@ final class PracticeManager {
     // MARK: - Sleep Utility
 
     /// Sleep for a given duration, updating remainingSeconds from wall clock.
-    /// Returns true if cancelled.
+    /// Returns true if cancelled or practice time expired.
     private func sleepPhase(seconds: Double) async -> Bool {
         let intervalMs: UInt64 = 100
         let ticks = Int(seconds * 10)
@@ -750,6 +751,8 @@ final class PracticeManager {
             // Update remaining from wall clock every 500ms (every 5 ticks)
             if tick % 5 == 4 {
                 updateRemainingFromClock()
+                // Break early when timer expires — don't keep sleeping
+                if remainingSeconds <= 0 { return false }
             }
         }
         return Task.isCancelled

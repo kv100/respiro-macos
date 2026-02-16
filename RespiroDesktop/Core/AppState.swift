@@ -96,6 +96,12 @@ final class AppState {
     private var weatherFloorExpiry: Date?
     private let weatherFloorDuration: TimeInterval = 30 * 60  // 30 min
 
+    // MARK: - Practice Effect Decay (post-practice improvement blending)
+
+    private var practiceEffectWeather: InnerWeather?
+    private var practiceEffectTime: Date?
+    private let practiceEffectDecayDuration: TimeInterval = 15 * 60  // 15 min
+
     // MARK: - Day Summary Cache
 
     var cachedDaySummary: DaySummaryResponse?
@@ -335,6 +341,19 @@ final class AppState {
             floorOverridden = false
         }
 
+        // Apply practice effect decay (blend AI result with post-practice improvement)
+        var effectiveConfidence = analysis.confidence
+        let weight = practiceEffectWeight()
+        if weight > 0, let effectWeather = practiceEffectWeather {
+            let aiScore = weatherToScore(effectiveWeather, confidence: analysis.confidence)
+            let practiceScore = weatherToScore(effectWeather, confidence: 0.8)
+            let blendedScore = aiScore * (1.0 - weight) + practiceScore * weight
+            let (blendedWeather, blendedConfidence) = scoreToWeatherAndConfidence(blendedScore)
+            effectiveWeather = blendedWeather
+            effectiveConfidence = blendedConfidence
+            logger.fault("Practice effect: weight=\(String(format: "%.0f%%", weight * 100), privacy: .public), aiScore=\(String(format: "%.1f", aiScore), privacy: .public), practiceScore=\(String(format: "%.1f", practiceScore), privacy: .public), blended=\(String(format: "%.1f", blendedScore), privacy: .public) -> \(blendedWeather.rawValue, privacy: .public)")
+        }
+
         currentWeather = effectiveWeather
         lastAnalysis = analysis
 
@@ -343,12 +362,12 @@ final class AppState {
         currentSystemContext = analysis.systemContext
         currentBaselineDeviation = analysis.baselineDeviation
 
-        // Persist StressEntry to SwiftData
+        // Persist StressEntry to SwiftData (with blended weather if practice effect active)
         if let ctx = modelContext {
             let entry = StressEntry(
                 timestamp: Date(),
-                weather: analysis.weather,
-                confidence: analysis.confidence,
+                weather: effectiveWeather.rawValue,
+                confidence: effectiveConfidence,
                 signals: analysis.signals,
                 nudgeType: analysis.nudgeType,
                 nudgeMessage: analysis.nudgeMessage,
@@ -604,6 +623,30 @@ final class AppState {
             // Clear weather floor — user completed practice and reported new state
             weatherFloor = nil
             weatherFloorExpiry = nil
+
+            // Set practice effect if user improved
+            let before = selectedWeatherBefore ?? currentWeather
+            let rank: [InnerWeather: Int] = [.clear: 0, .cloudy: 1, .stormy: 2]
+            if (rank[after] ?? 0) < (rank[before] ?? 0) {
+                practiceEffectWeather = after
+                practiceEffectTime = Date()
+            }
+
+            // Persist post-practice weather as a new graph point
+            if let ctx = modelContext {
+                let entry = StressEntry(
+                    timestamp: Date(),
+                    weather: after.rawValue,
+                    confidence: 0.8,
+                    signals: ["practice_completed"],
+                    nudgeType: nil,
+                    nudgeMessage: nil,
+                    suggestedPracticeID: nil,
+                    screenshotInterval: 300
+                )
+                ctx.insert(entry)
+                try? ctx.save()
+            }
         }
         currentScreen = .completion
     }
@@ -646,5 +689,42 @@ final class AppState {
             trigger: nil  // immediate
         )
         UNUserNotificationCenter.current().add(request)
+    }
+
+    // MARK: - Practice Effect Helpers
+
+    /// Map weather + confidence to a 1-5 score matching graph levels
+    /// 1 = clear high confidence (best), 5 = stormy high confidence (worst)
+    private func weatherToScore(_ weather: InnerWeather, confidence: Double) -> Double {
+        switch weather {
+        case .clear:
+            return confidence >= 0.6 ? 1.0 : 2.0
+        case .cloudy:
+            return 3.0
+        case .stormy:
+            return confidence >= 0.7 ? 5.0 : 4.0
+        }
+    }
+
+    /// Map a 1-5 score back to weather + confidence for StressEntry
+    private func scoreToWeatherAndConfidence(_ score: Double) -> (InnerWeather, Double) {
+        if score <= 1.5 { return (.clear, 0.8) }
+        if score <= 2.5 { return (.clear, 0.4) }
+        if score <= 3.5 { return (.cloudy, 0.5) }
+        if score <= 4.5 { return (.stormy, 0.5) }
+        return (.stormy, 0.9)
+    }
+
+    /// Calculate current practice effect weight (0.0 to 0.6, decaying linearly)
+    private func practiceEffectWeight() -> Double {
+        guard let time = practiceEffectTime else { return 0 }
+        let elapsed = Date().timeIntervalSince(time)
+        if elapsed >= practiceEffectDecayDuration {
+            // Expired — clear the effect
+            practiceEffectWeather = nil
+            practiceEffectTime = nil
+            return 0
+        }
+        return 0.6 * (1.0 - elapsed / practiceEffectDecayDuration)
     }
 }
